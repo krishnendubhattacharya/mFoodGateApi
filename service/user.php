@@ -158,7 +158,7 @@ function getlogin(){
 		$logged_in = $user->is_logged_in;
 		if($logged_in==0){
 		    $id = $user->id;
-		    $arr['is_logged_in'] = 1;
+		    //$arr['is_logged_in'] = 1;
 		    $arr['last_login'] = date('Y-m-d h:m:s');
 		    $updateinfo['save_data'] = $arr;
 		    // print_r($updateinfo);exit;
@@ -166,10 +166,10 @@ function getlogin(){
 		    if(!empty($update)){
 		    //print_r($update);exit;
 		    $user->is_active=1;
-		    $user->is_logged_in=1;
+		    //$user->is_logged_in=1;
 		    $user->last_login=$arr['last_login'];
 		    $user_details = json_encode($user);
-		    $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}'; 
+		    $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}';
 		    }
 		}
 		else{
@@ -209,7 +209,7 @@ function activeProfile($unique_id){
 		$logged_in = $user->is_logged_in;
 		
 		    $id = $user->id;
-		    $arr['is_logged_in'] = 1;
+		    //$arr['is_logged_in'] = 1;
 		    $arr['is_active'] = 1;
 		    $arr['last_login'] = date('Y-m-d h:m:s');
 		    $updateinfo['save_data'] = $arr;
@@ -218,7 +218,7 @@ function activeProfile($unique_id){
 		    if(!empty($update)){
 		    //print_r($update);exit;
 		    $user->is_active=1;
-		    $user->is_logged_in=1;
+		    //$user->is_logged_in=1;
 		    $user->last_login=$arr['last_login'];
 		    $user_details = json_encode($user);
 		    
