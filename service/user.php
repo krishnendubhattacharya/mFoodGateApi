@@ -158,7 +158,7 @@ function getlogin(){
 		$logged_in = $user->is_logged_in;
 		if($logged_in==0){
 		    $id = $user->id;
-		    $arr['is_logged_in'] = 1;
+		    //$arr['is_logged_in'] = 1;
 		    $arr['last_login'] = date('Y-m-d h:m:s');
 		    $updateinfo['save_data'] = $arr;
 		    // print_r($updateinfo);exit;
@@ -166,10 +166,10 @@ function getlogin(){
 		    if(!empty($update)){
 		    //print_r($update);exit;
 		    $user->is_active=1;
-		    $user->is_logged_in=1;
+		    //$user->is_logged_in=1;
 		    $user->last_login=$arr['last_login'];
 		    $user_details = json_encode($user);
-		    $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}'; 
+		    $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}';
 		    }
 		}
 		else{
@@ -209,7 +209,7 @@ function activeProfile($unique_id){
 		$logged_in = $user->is_logged_in;
 		
 		    $id = $user->id;
-		    $arr['is_logged_in'] = 1;
+		    //$arr['is_logged_in'] = 1;
 		    $arr['is_active'] = 1;
 		    $arr['last_login'] = date('Y-m-d h:m:s');
 		    $updateinfo['save_data'] = $arr;
@@ -218,7 +218,7 @@ function activeProfile($unique_id){
 		    if(!empty($update)){
 		    //print_r($update);exit;
 		    $user->is_active=1;
-		    $user->is_logged_in=1;
+		    //$user->is_logged_in=1;
 		    $user->last_login=$arr['last_login'];
 		    $user_details = json_encode($user);
 		    
@@ -316,6 +316,106 @@ function getlogout(){
 	$result = '{"type":"error","message":"Still Logged In"}'; 
     }
     echo $result;
+}
+
+function fbLoginUser(){
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $is_active = 1;
+    
+	$email = $body->email;
+	$fb_id = $body->id;
+	$body->fb_id  = $fb_id;
+	$name = $body->name;
+	
+	$name = explode(' ',$name);
+	
+	$body->first_name = $name[0];
+	$body->last_name = $name[1];
+	
+	unset($body->id);
+	unset($body->name);
+	
+	//$email = isset($user->email)?$user->email:$user->username;
+	//echo $email;exit;
+	//$pass = md5($body->password);
+	$result='';
+	
+	if(!empty($email)){
+	    $db = getConnection();
+	    $sql = "SELECT * FROM users WHERE email=:email";
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("email", $email);
+	    //$stmt->bindParam("password", $pass);
+	    //$stmt->bindParam("is_active", $is_active);
+	    $stmt->execute();	
+	    $count = $stmt->rowCount();
+	    //echo $count;exit;
+	    $user = $stmt->fetchObject();
+	    $stmt = null;
+	    $db = null;
+	    //print_r($user);exit;
+	    if($count==0){
+	        $unique_code = time().rand(100000,1000000);
+                $body->unique_code = $unique_code;
+                $body->user_type_id = 2;
+                $body->is_active = 1;
+                $body->registration_date = date('Y-m-d h:m:s');
+                $body->last_login = date('Y-m-d h:m:s');
+                
+                $allinfo['save_data'] = $body;
+                //$allinfo['unique_data'] = $unique_field;
+                $user_details = add(json_encode($allinfo),'users');
+                $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}';
+		//$result = '{"type":"error","message":"You are Not Valid User"}'; 
+	    }
+	    elseif($count > 0){
+		//$result = json_encode($user); 
+		$logged_in = $user->is_logged_in;
+		$db = getConnection();
+                $sql = "SELECT * FROM users WHERE fb_id=:fb_id";
+                $stmt = $db->prepare($sql);  
+                $stmt->bindParam("fb_id", $fb_id);
+                
+                $stmt->execute();	
+                $user_count = $stmt->rowCount();
+                //echo $count;exit;
+                $user = $stmt->fetchObject();
+                $stmt = null;
+                $db = null;
+                if($user_count > 0){
+                        $id = $user->id;
+                        //$arr['is_logged_in'] = 1;
+                        $arr['last_login'] = date('Y-m-d h:m:s');
+                        $updateinfo['save_data'] = $arr;
+                        // print_r($updateinfo);exit;
+                        $update = edit(json_encode($updateinfo),'users',$id);
+                        if(!empty($update)){
+                        //print_r($update);exit;
+                        $user->is_active=1;
+                        //$user->is_logged_in=1;
+                        $user->last_login=$arr['last_login'];
+                        $user_details = json_encode($user);
+                        $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}';
+                        }
+                }else{
+                
+                        $result = '{"type":"error","message":"Email already exist,please try with another fb account"}';
+                
+                }
+		
+		}
+		
+	   // }
+	    //
+	    echo $result;
+	}
+}
+
+function profileImageUpload(){
+        $request = Slim::getInstance()->request();
+        $body = json_decode($request->getBody());
+        echo json_encode($body);
 }
 
 

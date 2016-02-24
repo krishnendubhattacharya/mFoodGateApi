@@ -27,6 +27,8 @@ $app->get('/users', 'getAllUsers');
 $app->get('/user/:id',	'getUser');
 $app->post('/users/logout', 'getlogout');
 $app->delete('/users/:id','deleteUser');
+$app->post('/fbloginuser', 'fbLoginUser');
+$app->post('/profileimageupload', 'profileImageUpload');
 
 $app->post('/coupons', 'addCoupon');
 $app->get('/coupons', 'getAllCoupons');
