@@ -2,6 +2,7 @@
 
 require 'Slim/Slim.php';
 require 'config.php';
+require 'class/class.phpmailer.php';
 require 'sendmail.php';
 require 'service/crud.php';
 require 'service/service.php';
@@ -29,6 +30,7 @@ $app->post('/users/logout', 'getlogout');
 $app->delete('/users/:id','deleteUser');
 $app->post('/fbloginuser', 'fbLoginUser');
 $app->post('/profileimageupload', 'profileImageUpload');
+$app->get('/testmail', 'testMail');
 
 $app->post('/coupons', 'addCoupon');
 $app->get('/coupons', 'getAllCoupons');

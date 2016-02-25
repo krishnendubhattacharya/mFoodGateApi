@@ -1,4 +1,10 @@
 <?php
+define("ADMINEMAIL","postmaster@codelaamaa.com");
+define("EMAILPASSWORD","CodeLaamaa99@");
+define("MAILSERVER","box669.bluehost.com");
+define("MAILPORT","587");
+define("ISSSL",true);
+
 function getConnection() {
 	$dbhost="localhost";
 	$dbuser="root";

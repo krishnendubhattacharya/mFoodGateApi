@@ -41,7 +41,7 @@ function addUser() {
 	    $user_details = json_decode($user_details);
 	    //echo  $user_details->email; exit;
 	  //  print_r($user_details);exit;
-	    $from = 'info@mfood.com';
+	    $from = ADMINEMAIL;
 	    $to = $user_details->email;
 	    $subject ='User Registration';
 	    $body ='<html><body><p>Dear User,</p>
@@ -52,7 +52,7 @@ function addUser() {
 		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"><strong>Password: '.$pass.'</strong></span></p>
 
 		    <p><span style="color:rgb(77, 76, 76); font-family:helvetica,arial">Please <a href="'.$activation_link.'/'.$unique_code.'">Click Here</a> </span><span style="color:rgb(77, 76, 76); font-family:helvetica,arial">&nbsp;to verify your account.</span><br />
-		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>info@mfood.com<br />
+		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
 		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Thanks again for signing up with the site</span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
 
 		    <p>Thanks,<br />
@@ -60,7 +60,7 @@ function addUser() {
 
 		    <p>&nbsp;</p></body></html>
 		    ';
-	    sendMail($from,$to,$subject,$body);
+	    sendMail($to,$subject,$body);
 	    $result = '{"type":"success","message":"Added Succesfully"}'; 
 	    }
 	    else{
@@ -271,7 +271,7 @@ function getforgetPass(){
 		// print_r($updateinfo);exit;
 		$update = edit(json_encode($updateinfo),'users',$id);
 		if(!empty($update)){
-		    $from = 'info.mfood@gmail.com';
+		    $from = ADMINEMAIL;
 		    $to = $user->email;
 		    $subject ='Forgot Password';
 		    $body ='<html><body><p>Dear User,</p>
@@ -286,7 +286,7 @@ function getforgetPass(){
 
 			    <p>&nbsp;</p></body></html>
 			    ';
-		    sendMail($from,$to,$subject,$body);
+		    sendMail($to,$subject,$body);
 		//print_r($update);exit;
 		$result = '{"type":"success","message":"Changed Password Succesfully"}'; 
 		}
@@ -416,6 +416,16 @@ function profileImageUpload(){
         $request = Slim::getInstance()->request();
         $body = json_decode($request->getBody());
         echo json_encode($body);
+}
+
+function testMail(){
+        $to = "nits.anup@gmail.com";
+        $subject = "hello";
+        $body = "Hi Anup";
+        sendMail($to,$subject,$body);
+        $result = '{"type":"success","message":"Send Succesfully"}';
+        echo $result;
+
 }
 
 
