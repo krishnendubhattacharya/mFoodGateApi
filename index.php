@@ -9,6 +9,7 @@ require 'service/service.php';
 require 'service/user.php';
 require 'service/coupon.php';
 require 'service/category.php';
+require 'service/voucher.php';
 
 $app = new Slim();
 
@@ -42,6 +43,9 @@ $app->get('/categories',  'getAllCats');
 $app->get('/category/:id', 'getCat');
 $app->put('/categories/:id', 'updateCat');
 $app->delete('/categories/:id', 'deleteCat');
+
+$app->get('/allvoucher',  'getAllActiveVoucher');
+$app->get('/expiresoonvoucher', 'getExpireSoonVoucher');
 
 
 $app->response()->header("Content-Type", "application/json");
