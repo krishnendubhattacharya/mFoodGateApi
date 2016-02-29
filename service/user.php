@@ -4,8 +4,27 @@ function getAllUsers() {
 	echo $result;
 }
 function getUser($id) {
-        $result = findById($id,'users');
-        echo $result;	
+        $request = findById($id,'users');
+	$body = json_decode($request);
+	//print_r($body);exit;
+	if(!empty($body)){
+	    $site_path = SITEURL;
+	    $aa = date("d M, Y", strtotime($body->registration_date));
+	    $body->registration_date=$aa;
+	    $ab = date("d M, Y", strtotime($body->last_login));
+	    $body->last_login=$ab;
+	    if(!empty($body->image)){
+		$bb = $site_path . "user_images/" . $body->image;
+	    }
+	    else{
+		$bb = $site_path . "user_images/default-profile.png";
+	    }
+	    $body->image =$bb;
+	    $user_details = json_encode($body);
+	    $result = '{"type":"success","user_details":'.$user_details.'}';
+	}
+	
+	echo $result;
 }
 
 function addUser() {	
@@ -393,6 +412,8 @@ function fbLoginUser(){
                         if(!empty($update)){
                         //print_r($update);exit;
                         $user->is_active=1;
+			//$user->registration_date = date('d M, Y', strtotime($update->registration_date));
+			//$user->image = $site_path . "user_images/" . $update->image;
                         //$user->is_logged_in=1;
                         $user->last_login=$arr['last_login'];
                         $user_details = json_encode($user);
@@ -412,10 +433,97 @@ function fbLoginUser(){
 	}
 }
 
+/*function profileImageUpload(){
+        $request = Slim::getInstance()->request();
+        $body = json_decode($request->getBody());
+        $target_dir = realpath('user_images')."/";
+        $unique_code = time().rand(100000,1000000);
+        $target_file = $target_dir . $unique_code.'_'.basename($_FILES["file"]["name"]);
+        move_uploaded_file($_FILES["file"]["tmp_name"], $target_file);
+        //echo realpath('user_images');        
+        print_r($_FILES["file"]);
+        print_r($_POST);
+        echo json_encode($body);
+}*/
+
 function profileImageUpload(){
         $request = Slim::getInstance()->request();
         $body = json_decode($request->getBody());
-        echo json_encode($body);
+	$site_path = SITEURL;
+        $target_dir = realpath('user_images')."/";
+        $unique_code = time().rand(100000,1000000);
+	$img = $unique_code.'_'.basename($_FILES["file"]["name"]);
+        $target_file = $target_dir . $img;
+        if(move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)){
+	    //echo realpath('user_images');        
+	 //   print_r($_FILES["file"]);
+	 //   print_r($_POST);
+	    $path = $site_path . "user_images/" . $img;
+	    $uid = $_POST['user_id'];
+	    $user = array();
+	    $user['image'] = $img;
+	    $updateinfo['save_data'] = $user;
+		    // print_r($updateinfo);exit;
+	    $update = edit(json_encode($updateinfo),'users',$uid);
+
+	    if(!empty($update)){
+		    $result = '{"type":"success","message":"Image Uploaded Successfully","user_image_details":"'.$path.'"}';
+	    }
+	    else{
+		    $result = '{"type":"error","message":"Try again! Not Uploaded"}';
+	    }
+	}
+	else{
+		$result = '{"type":"error","message":"Try again! Not Uploaded"}';
+	}
+        echo $result;
+}
+
+function changePassword(){
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+  //  print_r($body);exit;
+    $id = $body->user_id;
+    $oldpass = $body->oldpass;
+    $newpass = $body->newpass;
+    $confirmpass = $body->confirmpass;
+	$db = getConnection();
+	$sql = "SELECT * FROM users WHERE  users.id=:id";
+	$stmt = $db->prepare($sql);  
+	$stmt->bindParam("id", $id);
+	$stmt->execute();	
+	$count = $stmt->rowCount();
+	$user = $stmt->fetchObject();
+	//print_r($user);exit;
+        $stmt = null;
+        $db = null;
+	if($count==0){
+	    $result = '{"type":"error","message":"You are not a valid user"}';
+	}
+	else if($count>0){
+	    if($user->password==md5($oldpass)){
+		if($newpass==$confirmpass){
+		    $userbody = array();
+		    $userbody['txt_pwd'] = $newpass;
+		    $userbody['password'] = md5($newpass);
+		    $allinfo['save_data'] = $userbody;
+		    $changePass = edit(json_encode($allinfo),'users',$id);
+		    if($changePass){
+			$result = '{"type":"success","message":"You have changed password Succesfully","userdetails":'.$changePass.'}';
+		    }
+		    else{
+			$result = '{"type":"error","message":"Password could not save successfully. Try again"}';
+		    }
+		}
+		else if($newpass!=$confirmpass){
+		     $result = '{"type":"error","message":"New password is not matched to Confirm Password"}';
+		}
+	    }
+	    else{
+		$result = '{"type":"error","message":"You have entered wrong password"}';
+	    }
+	}
+	echo $result;
 }
 
 function testMail(){

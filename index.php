@@ -23,6 +23,7 @@ $app->delete('/wines/:id','deleteWine');
 $app->post('/users', 'addUser');
 $app->post('/users/login', 'getlogin');
 $app->post('/users/forgotPass', 'getforgetPass');
+$app->post('/users/changePassword', 'changePassword');
 $app->put('/users/:id', 'updateUser');
 $app->put('/users/activeProfile/:id', 'activeProfile');
 $app->get('/users', 'getAllUsers');
@@ -44,9 +45,10 @@ $app->get('/category/:id', 'getCat');
 $app->put('/categories/:id', 'updateCat');
 $app->delete('/categories/:id', 'deleteCat');
 
-$app->get('/allvoucher',  'getAllActiveVoucher');
-$app->get('/expiresoonvoucher', 'getExpireSoonVoucher');
-
+$app->get('/allvoucher/:user_id',  'getAllActiveVoucher');
+$app->get('/expiresoonvoucher/:user_id', 'getExpireSoonVoucher');
+$app->get('/vourcherdetail/:id', 'getVoucherUserMerchentDetail');
+/*$app->post('/resale', 'getResale');*/
 
 $app->response()->header("Content-Type", "application/json");
 $app->run();
