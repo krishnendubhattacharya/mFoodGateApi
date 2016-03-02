@@ -13,6 +13,7 @@ require 'service/voucher.php';
 
 $app = new Slim();
 
+
 $app->get('/wines', 'getWines');
 $app->get('/wines/:id',	'getWine');
 $app->get('/wines/search/:query', 'findByName');

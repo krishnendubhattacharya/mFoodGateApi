@@ -1,4 +1,5 @@
 <?php
+
 function getAllActiveVoucher($user_id) {     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
