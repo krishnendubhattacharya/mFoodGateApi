@@ -10,9 +10,10 @@ require 'service/user.php';
 require 'service/coupon.php';
 require 'service/category.php';
 require 'service/voucher.php';
+require 'service/points.php';
 
 $app = new Slim();
-
+$app->config('debug', true);
 
 $app->get('/wines', 'getWines');
 $app->get('/wines/:id',	'getWine');
@@ -54,6 +55,9 @@ $app->get('/ownresellList/:id','getResellListPostOwn');
 $app->get('/othersresellList/:id','getResellListPostOthers');
 $app->get('/bidders/:id/:userid','getBidderList');
 $app->post('/bids', 'addBid');
+$app->get('/ownbid/:userid', 'getResellListBidOwn');
+
+$app->get('/mypoints/:user_id',  'getMyPoints');
 
 $app->response()->header("Content-Type", "application/json");
 $app->response()->header("Access-Control-Allow-Origin : * ");

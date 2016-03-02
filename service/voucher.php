@@ -1,5 +1,4 @@
 <?php
-
 function getAllActiveVoucher($user_id) {     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
@@ -380,10 +379,12 @@ function addBid(){
 }
 
 
-function getResellListBidOwn(){
+function getResellListBidOwn($userid){
 	$current_date = date('Y-m-d');
 	 $resales = array();
-	   	 $sql = "SELECT voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price FROM voucher_resales, vouchers WHERE voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and vouchers.user_id=:user_id";
+	   	 //$sql = "SELECT voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price FROM voucher_resales, vouchers WHERE voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and vouchers.user_id=:user_id";
+	   	 
+	   	 $sql = "SELECT voucher_bids.voucher_id,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price FROM voucher_bids, voucher_resales, vouchers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_bids.user_id=:user_id";
 	   	
 	   
     try {
@@ -394,19 +395,19 @@ function getResellListBidOwn(){
 	    $stmt->execute();
 	    $resales = $stmt->fetchAll(PDO::FETCH_OBJ);  
 	    //print_r($resales);exit;
-	  //  $resale_count = $stmt->rowCount();
+	    $resale_count = $stmt->rowCount();
 	    $stmt=null;
 	    $db=null;
 	    if(!empty($resales)){
 	    		$resales = json_encode($resales);
-	    	     $result = '{"success":{"resale_details":'.$resales.'} }';
+	    	     $result = '{"type":"success","resale_details":'.$resales.'}';
 	    }
 	    else if(empty($resales)){
-		    $result = '{"error":{"text":"No Records Found"} }'; 
+		    $result = '{"type":"error","text":"No Records Found"}'; 
 		}
        } 
        catch(PDOException $e) {
-	    $result =  '{"error":{"text":'. $e->getMessage() .'}}'; 
+	    $result =  '{"type":"error","text":'. $e->getMessage() .'}'; 
 	}
 	echo  $result;
 }
