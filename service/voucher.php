@@ -146,10 +146,14 @@ function getVoucherUserMerchentDetail($vid){
 	echo  $result;
 }
 
-/*function getResale(){
+function addResale(){
     $request = Slim::getInstance()->request();
     $body = json_decode($request->getBody());
-    $vid = $_POST['voucher_id'];
+   // print_r($body);exit;
+   //$vid = $_POST['voucher_id'];
+    $vid = $body->voucher_id;
+    $resale_details = array();
+    //echo $vid;exit;
     $sql = "SELECT * FROM voucher_resales WHERE voucher_id=:voucher_id";
     try {
 	    $db = getConnection();
@@ -162,20 +166,251 @@ function getVoucherUserMerchentDetail($vid){
 	    $db=null;
 	    if($resale_count==0){
 		$body->created_on = date('Y-m-d h:m:s');
+		$body->is_sold = 0;
+		$body->is_active = 1;
 		$allinfo['save_data'] = $body;
 		$resale_details = add(json_encode($allinfo),'voucher_resales');
 		if(!empty($resale_details)){
 		    $resale_details = json_decode($resale_details);
-		    $result = '{"success":{"resale_count":'. $resale_count .',"resale_details":'.$resale_details.'} }'; 
+		    $dd = date('d M, Y',strtotime($resale_details->created_on));
+		    $resale_details->created_on = $dd;
+		    $resale_details = json_encode($resale_details);
+		    $result = '{"type":"success","text":"Your Voucher is posted for resale Successfully","resale_details":'.$resale_details.' }'; 
+		}
+		else{
+		    $result = '{"type":"error","text":"Try Again!","resale_details":'.$resale_details.'}'; 
 		}
 	    }
-	    
-	    
+	    else if($resale_count > 0){
+		$result = '{"error":{"resale_count":'. $resale_count .'} }';
+	    }
        } catch(PDOException $e) {
 	    $result =  '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
 	echo  $result;
-}*/
+}
+
+function getResellListPostOwn($userid){
+	 $current_date = date('Y-m-d');
+	 $resales = array();
+	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id=:user_id";
+	   	
+	   
+    try {
+	    $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("user_id", $userid);
+	    $stmt->bindParam("current_date", $current_date);
+	    $stmt->execute();
+	    $resales = $stmt->fetchAll(PDO::FETCH_OBJ);  
+	    //print_r($resales);exit;
+	  	$list_count = $stmt->rowCount();
+	    $stmt=null;
+	    $db=null;
+	    if(!empty($resales)){
+			for($i=0;$i<$list_count;$i++){
+			    $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
+			    $resales[$i]->expire_date = $todate;
+			}
+	    		$resales = json_encode($resales);
+	    	     $result = '{"type":"success","resale_details":'.$resales.' }';
+	    }
+	    else if(empty($resales)){
+		    $result = '{"type":"error","text":"No Records Found" }'; 
+		}
+       } 
+       catch(PDOException $e) {
+	    $result =  '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	echo  $result;
+}
+
+function getResellListPostOthers($userid){
+	$current_date = date('Y-m-d');
+	 $resales = array();
+	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";   	
+	   
+    try {
+	    $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("user_id", $userid);
+	    $stmt->bindParam("current_date", $current_date);
+	    $stmt->execute();
+	    $resales = $stmt->fetchAll(PDO::FETCH_OBJ);  
+	    //print_r($resales);exit;
+	    $list_count = $stmt->rowCount();
+	    $stmt=null;
+	    $db=null;
+	    if(!empty($resales)){
+	    		for($i=0;$i<$list_count;$i++){
+			    $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
+			    $resales[$i]->expire_date = $todate;
+			}
+	    		$resales = json_encode($resales);
+	    	     $result = '{"type":"success","resale_details":'.$resales.'}';
+	    }
+	    else if(empty($resales)){
+		    $result = '{"type":"error","text":"No Records Found"}'; 
+		}
+       } 
+       catch(PDOException $e) {
+	    $result =  '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	echo  $result;
+}
+
+function getBidderList($id,$userid){
+	$current_date = date('Y-m-d');
+	$resales = array();
+	/*if(!isset($id)){
+		echo '{"type":"error","text":"Missing First parameter"}';
+	}
+	else if(!isset($userid)){
+		echo '{"type":"error","Missing Second parameter"}';
+	}
+	else if($id!='' && $userid!=''){*/
+		$sql1 = "SELECT * FROM voucher_resales WHERE id=:id";
+		try {
+			$db = getConnection();
+			$stmt = $db->prepare($sql1);  
+			$stmt->bindParam("id", $id);
+			$stmt->execute();
+			//$resales = $stmt->fetchObject(); 
+			$resale_count = $stmt->rowCount();
+			if($resale_count==0){
+				$result = '{"type":"error","text":"No Records Found, Invalid Resale Id"}'; 
+			}
+			else if($resale_count > 0){
+				$sql2 = "SELECT * FROM users WHERE id=:userid";
+				$stmt = $db->prepare($sql2);  
+				$stmt->bindParam("userid", $userid);
+				$stmt->execute();
+				//$resales = $stmt->fetchObject(); 
+				$user_count = $stmt->rowCount();
+				if($user_count==0){
+					$result = '{"type":"error","text":"No Records Found, Invalid User "}'; 
+				}
+				else if($user_count > 0){	
+					   	 $sql = "SELECT users.first_name, users.last_name, users.email, users.image, users.phone, users.last_login, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id as voucher_resale_user, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price, voucher_bids.user_id as bidder_id FROM voucher_resales, vouchers, users, voucher_bids  WHERE voucher_bids.user_id=users.id and vouchers.to_date >=:current_date and voucher_bids.is_active ='1' and voucher_resales.is_sold='0' and voucher_bids.voucher_resale_id = voucher_resales.id and voucher_bids.voucher_id = vouchers.id and voucher_bids.user_id!=:userid and voucher_bids.voucher_resale_id=:voucher_resale_id";   	
+					   
+				    /*try {
+					    $db = getConnection();*/
+					    $stmt = $db->prepare($sql); 
+					    $stmt->bindParam("userid", $userid); 
+					    $stmt->bindParam("voucher_resale_id", $id);
+					    $stmt->bindParam("current_date", $current_date);
+					    $stmt->execute();
+					    $resales = $stmt->fetchAll(PDO::FETCH_OBJ);  
+					    //print_r($resales);exit;
+					    $bid_count = $stmt->rowCount();
+					    $stmt=null;
+					    $db=null;
+						    if(!empty($resales)){
+						    		for($i=0;$i<$bid_count;$i++){
+								    $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
+								    $resales[$i]->expire_date = $todate;
+								}
+						    		$resales = json_encode($resales);
+						    	     $result = '{"type":"success","resale_details":'.$resales.' }';
+						    }
+						    else if(empty($resales)){
+							    $result = '{"type":"error","text":"No Records Found"}'; 
+							}
+						}
+				}
+			} 
+			 catch(PDOException $e) {
+				 $result =  '{"type":"error","text":'. $e->getMessage() .'}'; 
+			}		  
+		//}
+	echo $result;
+}
+
+function addBid(){
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $voucher_resale_id = $body->voucher_resale_id;
+    $uid = $body->user_id;
+    $resale_details = array();
+    //echo $vid;exit;
+    $sql1 = "SELECT * FROM voucher_resales WHERE id=:voucher_resale_id and is_sold='0' and is_active='1'";
+    try {
+	    $db = getConnection();
+	    $stmt = $db->prepare($sql1);  
+	    $stmt->bindParam("voucher_resale_id", $voucher_resale_id);
+	    $stmt->execute();
+	    //$resales = $stmt->fetchObject(); 
+	    $resale_count = $stmt->rowCount();
+	    if($resale_count==0){
+	    		 $result = '{"type":"error","text":"Already Sold"}'; 
+	    }
+	    else{
+		    $sql = "SELECT * FROM voucher_bids WHERE voucher_resale_id=:voucher_resale_id and user_id=:userid";
+		    $stmt = $db->prepare($sql);  
+		    $stmt->bindParam("voucher_resale_id", $voucher_resale_id);
+		    $stmt->bindParam("userid", $uid);
+		    $stmt->execute();
+		    //$resales = $stmt->fetchObject(); 
+		    $bid_count = $stmt->rowCount();
+		    $stmt=null;
+		    $db=null;
+		    if($bid_count==0){
+			//$body->m_points = null;
+			$body->is_accepted = 0;
+			$body->is_active = 1;
+			$allinfo['save_data'] = $body;
+			$bid_details = add(json_encode($allinfo),'voucher_bids');
+				if(!empty($bid_details)){
+					    //$bid_details  = json_encode($bid_details);
+					    $result = '{"type":"success","text":"You bid this voucher Successfully","bid_details":'.$bid_details.' }'; 
+				}
+				else{
+					    $result = '{"type":"error","text":"Try Again!","bid_details":'.$bid_details.'}'; 
+				}
+		    }
+		    else if($bid_count > 0){
+				$result = '{"type":"error","text":"You have already bid this voucher"}';
+		    }
+		} 
+	}catch(PDOException $e) {
+	    $result =  '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	echo  $result;
+}
+
+
+function getResellListBidOwn(){
+	$current_date = date('Y-m-d');
+	 $resales = array();
+	   	 $sql = "SELECT voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price FROM voucher_resales, vouchers WHERE voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and vouchers.user_id=:user_id";
+	   	
+	   
+    try {
+	    $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("user_id", $userid);
+	    $stmt->bindParam("current_date", $current_date);
+	    $stmt->execute();
+	    $resales = $stmt->fetchAll(PDO::FETCH_OBJ);  
+	    //print_r($resales);exit;
+	  //  $resale_count = $stmt->rowCount();
+	    $stmt=null;
+	    $db=null;
+	    if(!empty($resales)){
+	    		$resales = json_encode($resales);
+	    	     $result = '{"success":{"resale_details":'.$resales.'} }';
+	    }
+	    else if(empty($resales)){
+		    $result = '{"error":{"text":"No Records Found"} }'; 
+		}
+       } 
+       catch(PDOException $e) {
+	    $result =  '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+	echo  $result;
+}
+
+
 
 function soldCount($uniqueData,$tableName) {
         $uniqueData = json_decode($uniqueData);

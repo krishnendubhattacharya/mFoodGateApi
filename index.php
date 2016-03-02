@@ -48,9 +48,17 @@ $app->delete('/categories/:id', 'deleteCat');
 $app->get('/allvoucher/:user_id',  'getAllActiveVoucher');
 $app->get('/expiresoonvoucher/:user_id', 'getExpireSoonVoucher');
 $app->get('/vourcherdetail/:id', 'getVoucherUserMerchentDetail');
-/*$app->post('/resale', 'getResale');*/
+$app->post('/resale', 'addResale');
+$app->get('/ownresellList/:id','getResellListPostOwn');
+$app->get('/othersresellList/:id','getResellListPostOthers');
+$app->get('/bidders/:id/:userid','getBidderList');
+$app->post('/bids', 'addBid');
 
 $app->response()->header("Content-Type", "application/json");
+$app->response()->header("Access-Control-Allow-Origin : * ");
+$app->response()->header("Access-Control-Allow-Methods : POST, GET, OPTIONS, DELETE, PUT ");
+
+
 $app->run();
 
 ?>
