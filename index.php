@@ -1,7 +1,7 @@
 <?php
 
 
-    
+
 
 require 'Slim/Slim.php';
 require 'config.php';
@@ -59,10 +59,6 @@ $app->get('/ownresellList/:id','getResellListPostOwn');
 $app->get('/othersresellList/:id','getResellListPostOthers');
 $app->get('/bidders/:id/:userid','getBidderList');
 $app->post('/bids', 'addBid');
-$app->get('/ownbid/:userid', 'getResellListBidOwn');
-
-$app->get('/mypoints/:user_id',  'getMyPoints');
-$app->get('/expiresoonpoints/:user_id',  'getExpireSoonPoints');
 
 $app->response()->header("Content-Type", "application/json");
 //$app->response()->header("Access-Control-Allow-Origin : * ");

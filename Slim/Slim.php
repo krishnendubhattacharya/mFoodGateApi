@@ -1061,14 +1061,14 @@ class Slim {
                         $httpMethodsAllowed = array_merge($httpMethodsAllowed, $route->getHttpMethods());
                     }
                 }
-                if ( !$dispatched ) {
+                /*if ( !$dispatched ) {
                     if ( $httpMethodsAllowed ) {
                         $this->response()->header('Allow', implode(' ', $httpMethodsAllowed));
                         $this->halt(405);
                     } else {
                         $this->notFound();
                     }
-                }
+                }*/
                 $this->response()->write(ob_get_clean());
                 $this->applyHook('slim.after.router');
                 $this->view->getData('flash')->save();

@@ -1,8 +1,8 @@
 <?php
-define("ADMINEMAIL","mfoogateadmin@mitralink-sinergi.com");
-define("EMAILPASSWORD","Mitralink03");
-define("MAILSERVER","mail.mitralink-sinergi.com");
-define("MAILPORT","25");
+define("ADMINEMAIL","postmaster@codelaamaa.com");
+define("EMAILPASSWORD","CodeLaamaa99@");
+define("MAILSERVER","box669.bluehost.com");
+define("MAILPORT","587");
 //define("ISSSL",true);
 define("SITEURL","http://107.170.152.166/mFoodGateAPI/");
 
