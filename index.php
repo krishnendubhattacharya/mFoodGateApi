@@ -1,5 +1,8 @@
 <?php
 
+
+    
+
 require 'Slim/Slim.php';
 require 'config.php';
 require 'class/class.phpmailer.php';
@@ -10,9 +13,10 @@ require 'service/user.php';
 require 'service/coupon.php';
 require 'service/category.php';
 require 'service/voucher.php';
+require 'service/points.php';
 
 $app = new Slim();
-
+$app->config('debug', true);
 
 $app->get('/wines', 'getWines');
 $app->get('/wines/:id',	'getWine');
@@ -34,6 +38,7 @@ $app->delete('/users/:id','deleteUser');
 $app->post('/fbloginuser', 'fbLoginUser');
 $app->post('/profileimageupload', 'profileImageUpload');
 $app->get('/testmail', 'testMail');
+$app->get('/clientlist/:id', 'getAllClientUser');
 
 $app->post('/coupons', 'addCoupon');
 $app->get('/coupons', 'getAllCoupons');
@@ -54,10 +59,14 @@ $app->get('/ownresellList/:id','getResellListPostOwn');
 $app->get('/othersresellList/:id','getResellListPostOthers');
 $app->get('/bidders/:id/:userid','getBidderList');
 $app->post('/bids', 'addBid');
+$app->get('/ownbid/:userid', 'getResellListBidOwn');
+
+$app->get('/mypoints/:user_id',  'getMyPoints');
+$app->get('/expiresoonpoints/:user_id',  'getExpireSoonPoints');
 
 $app->response()->header("Content-Type", "application/json");
-$app->response()->header("Access-Control-Allow-Origin : * ");
-$app->response()->header("Access-Control-Allow-Methods : POST, GET, OPTIONS, DELETE, PUT ");
+//$app->response()->header("Access-Control-Allow-Origin : * ");
+//$app->response()->header("Access-Control-Allow-Methods : POST, GET, OPTIONS, DELETE, PUT ");
 
 
 $app->run();
