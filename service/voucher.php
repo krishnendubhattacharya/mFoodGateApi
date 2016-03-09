@@ -427,6 +427,119 @@ function getResellListBidOwn($userid){
 	echo  $result;
 }
 
+function saveVoucherResale(){
+	$request = Slim::getInstance()->request();
+	$body = json_decode($request->getBody());
+	//print_r($body);exit;
+	$sql = "SELECT voucher_owner.id, voucher_owner.is_active, vouchers.id as voucher_id, vouchers.offer_id, vouchers.view_id, vouchers.user_id, users.first_name, users.last_name, users.email  FROM vouchers, voucher_owner, users WHERE voucher_owner.voucher_id = vouchers.id and vouchers.user_id = users.id and voucher_owner.is_active = '1' and voucher_owner.voucher_id=:voucherid and vouchers.user_id=:userid";
+	   	  
+    try {
+	    $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("voucherid", $body->voucher_id);
+	    $stmt->bindParam("userid", $body->to_user_id);
+	    $stmt->execute();
+	    $saveresales = $stmt->fetchObject();  
+	   // print_r($saveresales);exit;
+	    //$resale_count = $stmt->rowCount();
+	   $ownerid = $saveresales->id;
+	   $offerid = $saveresales->offer_id;
+	   $viewid = $saveresales->view_id;
+	   $resaleid = $body->resell_id;
+	   $bidid = $body->bid_id;
+	    $vid = $saveresales->voucher_id;
+	    //print_r($resales);
+	   if(!empty($saveresales)){
+	   	$sql2 = "SELECT * FROM users WHERE users.id=:uid";
+	    	$stmt2 = $db->prepare($sql2);  
+	    	$stmt2->bindParam("uid", $body->from_user_id);
+	    	$stmt2->execute();
+	    	$fromUser = $stmt2->fetchObject();
+	    	
+	     $sql1 = "SELECT * FROM voucher_resales, voucher_bids WHERE voucher_resales.voucher_id = voucher_bids.voucher_id AND voucher_resales.is_sold =  '1' AND voucher_resales.id=:resaleId AND voucher_bids.id=:bidId AND voucher_bids.is_accepted =  '1' AND voucher_bids.voucher_id=:voucherid";
+	    $stmt1 = $db->prepare($sql1);  
+	    $stmt1->bindParam("voucherid", $vid);
+	    $stmt1->bindParam("resaleId", $resaleid);
+	    $stmt1->bindParam("bidId", $bidid);
+	    $stmt1->execute();
+	    //$checkSales = $stmt1->fetchObject();
+	    $checkSales = $stmt1->rowCount();
+	    //print_r($checkSales);exit;
+	    $stmt=null;
+	    $db=null;
+	    if($checkSales==0){
+	    		$arr = array();
+	    		$arr['is_active'] = 0;
+	    		$arr['sold_date'] = date('Y-m-d h:i:s');
+	    		$allinfo['save_data'] = $arr;
+			$old_owner_details = edit(json_encode($allinfo),'voucher_owner',$ownerid);
+			//print_r($old_owner_details);exit;
+			if($old_owner_details){
+				$arr1 = array();
+				$arr1['is_sold'] = '1';
+				$arr1['sold_on'] =  date('Y-m-d h:i:s');
+				$resaleinfo['save_data'] = $arr1;
+				$voucher_resales = edit(json_encode($resaleinfo),'voucher_resales',$resaleid);
+				if($voucher_resales){
+					$arr2 = array();
+					$arr2['is_accepted'] = '1';
+					$bidinfo['save_data'] = $arr2;
+					$voucher_bids = edit(json_encode($bidinfo),'voucher_bids',$bidid);
+					if($voucher_bids){
+						$data = array();
+						$data['voucher_id'] = $body->voucher_id;
+						$data['offer_id'] = $offerid;
+						$data['voucher_view_id'] = $viewid;
+						$data['from_user_id'] = $body->from_user_id;
+						$data['to_user_id'] = $body->to_user_id;
+						$data['price'] = $body->price;
+						$data['offer_price'] = '0.00';
+						$data['offer_percent'] = '0.00';
+						$data['is_active'] = '1';
+						$data['purchased_date'] = date('Y-m-d h:i:s');
+						$newinfo['save_data'] = $data;
+						$new_owner_details  = add(json_encode($newinfo),'voucher_owner');
+						if(!empty($new_owner_details)){
+						$new = json_decode($new_owner_details);
+						    $from = ADMINEMAIL;
+						    //$to = $saveresales->email;
+						    $to = 'nits.ananya15@gmail.com';
+						    $subject ='Resale Voucher Sell';
+						    $body ='<html><body><p>Dear '.$saveresales->first_name.' '.$saveresales->last_name.',</p>
+
+							    <p>'.$fromUser->first_name.' '.$fromUser->last_name. ' have Sold  a resale voucher<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher View Id :</span>'.$new->voucher_view_id.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$new->price.'<br />
+							    
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
+
+							    <p>Thanks,<br />
+							    mFood&nbsp;Team</p>
+
+							    <p>&nbsp;</p></body></html>';
+							    
+						    sendMail($to,$subject,$body);
+						  	$result = '{"type":"success","message":"You have sold the voucher successfully" }';
+						  }
+					}
+				}
+			}
+		  }
+		  else if($checkSales > 0){
+		  		$result = '{"type":"error","message":"Already accepted"}'; 
+		  }	
+		}
+		else if(empty($saveresales)){
+			$result = '{"type":"error","message":"No Records Found"}'; 
+		}
+       } 
+       catch(PDOException $e) {
+	    $result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	  }
+	echo  $result;
+
+}
 
 
 function soldCount($uniqueData,$tableName) {
@@ -455,6 +568,70 @@ function soldCount($uniqueData,$tableName) {
 	
 	return $userCount;
         
+}
+
+function getAllFeaturedCats($cat_id) {     
+
+        $is_active = 1;  
+	$newdate = date('Y-m-d');
+	//$newdate = "2016-03-08";
+        $sql = "SELECT * FROM offers where offers.offer_to_date =:date and offers.is_active=1";
+        if($cat_id != 0){
+                $sql.=" and offers.category_id =:cat_id";
+        }
+        echo $newdate;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("date", $newdate);
+		if($cat_id != 0){
+		        $stmt->bindParam("cat_id", $cat_id);
+		}
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = $todate;
+		    
+		}
+		$db = null;
+		echo  json_encode($vouchers); 
+	} catch(PDOException $e) {
+		echo '{"error":{"message":'. $e->getMessage() .'}}'; 
+	}
+}
+
+function getOwnOffer($user_id) {     
+
+        $is_active = 1;  
+	$newdate = date('Y-m-d');
+	//$newdate = "2016-03-08";
+        $sql = "SELECT * FROM offers where offers.merchant_id =:user_id and offers.is_active=1";
+        
+        
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("user_id", $user_id);
+		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->expire_date = $todate;
+		    
+		}
+		$db = null;
+		echo  json_encode($vouchers); 
+	} catch(PDOException $e) {
+		echo '{"error":{"message":'. $e->getMessage() .'}}'; 
+	}
 }
 
 

@@ -1,5 +1,8 @@
 <?php
 
+
+    
+
 require 'Slim/Slim.php';
 require 'config.php';
 require 'class/class.phpmailer.php';
@@ -44,11 +47,14 @@ $app->delete('/coupons/:id','deleteCoupon');
 
 $app->post('/categories',  'addCat');
 $app->get('/categories',  'getAllCats');
+$app->get('/getCategories',  'getAllActiveCats');
+$app->get('/getFeaturedCategories/:id',  'getAllFeaturedCats');
 $app->get('/category/:id', 'getCat');
 $app->put('/categories/:id', 'updateCat');
 $app->delete('/categories/:id', 'deleteCat');
 
 $app->get('/allvoucher/:user_id',  'getAllActiveVoucher');
+$app->get('/ownoffer/:user_id',  'getOwnOffer');
 $app->get('/expiresoonvoucher/:user_id', 'getExpireSoonVoucher');
 $app->get('/vourcherdetail/:id', 'getVoucherUserMerchentDetail');
 $app->post('/resale', 'addResale');
@@ -57,6 +63,7 @@ $app->get('/othersresellList/:id','getResellListPostOthers');
 $app->get('/bidders/:id/:userid','getBidderList');
 $app->post('/bids', 'addBid');
 $app->get('/ownbid/:userid', 'getResellListBidOwn');
+$app->post('/saveVoucherResale', 'saveVoucherResale');
 
 $app->get('/mypoints/:user_id',  'getMyPoints');
 $app->get('/expiresoonpoints/:user_id',  'getExpireSoonPoints');

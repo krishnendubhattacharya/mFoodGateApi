@@ -7,6 +7,26 @@ function getCat($id) {
         $result = findById($id,'category');
         echo $result;	
 }
+
+function getAllActiveCats() {        
+	$sql = "SELECT * FROM category WHERE is_active=1";
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);  
+		//$stmt->bindParam("id", $id);
+		$stmt->execute();			
+		$category = $stmt->fetchAll(PDO::FETCH_OBJ); 
+		$db = null;
+		if(!empty($category)){
+		        echo '{"type":"success","category": ' . json_encode($category) . '}'; 
+		}else{
+		        echo '{"type":"error","message":"No record found"}'; 
+		}
+	} catch(PDOException $e) {
+		return '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+}
+
 function addCat() {	
 	
 	$request = Slim::getInstance()->request();
