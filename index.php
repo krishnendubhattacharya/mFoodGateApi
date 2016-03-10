@@ -64,6 +64,10 @@ $app->get('/bidders/:id/:userid','getBidderList');
 $app->post('/bids', 'addBid');
 $app->get('/ownbid/:userid', 'getResellListBidOwn');
 $app->post('/saveVoucherResale', 'saveVoucherResale');
+$app->get('/offerdetail/:id', 'getOfferDetail');
+$app->post('/offerImageUpload', 'offerImageUpload');
+
+$app->post('/saveOffer', 'addOffer');
 
 $app->get('/mypoints/:user_id',  'getMyPoints');
 $app->get('/expiresoonpoints/:user_id',  'getExpireSoonPoints');

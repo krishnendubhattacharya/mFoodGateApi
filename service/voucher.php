@@ -634,5 +634,160 @@ function getOwnOffer($user_id) {
 	}
 }
 
+function addOffer(){
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+   // print_r($body);exit;
+   //$vid = $_POST['voucher_id'];
+    //$vid = $body->voucher_id;
+    $offer = array();
+    //echo $vid;exit;
+    //$sql = "SELECT * FROM voucher_resales WHERE voucher_id=:voucher_id";
+    //try {
+	    
+	    //if($resale_count==0){
+		$body->created_on = date('Y-m-d h:m:s');
+		$body->offer_from_date = date('Y-m-d',strtotime($body->offer_from_date));
+		$body->offer_to_date = date('Y-m-d',strtotime($body->offer_to_date));
+		//$body->is_sold = 0;
+		$body->is_active = 1;
+		$allinfo['save_data'] = $body;
+		$offer = add(json_encode($allinfo),'offers');
+		if(!empty($offer)){
+		    $offer = json_decode($offer);
+		    $dd = date('d M, Y',strtotime($offer->created_on));
+		    $offer->created_on = $dd;
+		    $offers = json_encode($offer);
+		    $result = '{"type":"success","message":"Added Successfully","offers":'.$offers.' }'; 
+		}
+		else{
+		    $result = '{"type":"error","message":"Try Again!"}'; 
+		}
+	    //}
+	    
+       //} 
+	echo  $result;
+}
+
+
+function getOfferDetail($vid){
+  //  $sql = "SELECT * FROM vouchers, offers, users where vouchers.offer_id = offers.id and vouchers.user_id = users.id and vouchers.id=:id";
+    $sql = "SELECT * FROM offers WHERE offers.id=:id";
+    $offerId ='';
+    $offer_image = array();
+    $restaurant_details = array();
+    $site_path = SITEURL;
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);  
+		$stmt->bindParam("id", $vid);
+		$stmt->execute();
+		$vouchers = $stmt->fetchObject(); 
+		$to_date = date('d M,Y', strtotime($vouchers->offer_to_date));
+		//$offer_to_date = date('d M,Y', strtotime($vouchers->offer_to_date));
+		$vouchers->expire_date = $to_date;
+		//$vouchers->offer_to_date = $offer_to_date;
+		if(!empty($vouchers)){
+			$marchantId = $vouchers->merchant_id;
+			$offerId = $vouchers->id;
+			$sql1 = "SELECT * FROM offer_images WHERE offer_images.offer_id=:offerid";
+			$stmt1 = $db->prepare($sql1);  
+			$stmt1->bindParam("offerid", $offerId);
+			$stmt1->execute();
+			$countvoucherimage = $stmt1->rowCount();
+			$offerr_image = $stmt1->fetchAll(PDO::FETCH_OBJ);  
+			//print_r($offer_image);
+			//exit; 
+			if(empty($offerr_image)){
+			    $img = $site_path.'voucher_images/default.jpg';
+			    $offer_image[0]['image'] = $img;
+
+			}
+			else{
+			    for($i=0;$i<$countvoucherimage;$i++){
+				$img = $site_path."voucher_images/".$offerr_image[$i]->image;
+				//echo $img;
+				
+				$offer_image[$i]['image'] = $img;
+				
+			    }
+			}
+			//print_r($offer_image);exit;
+			/*$sql2 = "SELECT restaurant_details.title, restaurant_details.logo, restaurant_details.address, restaurant_details.user_id FROM restaurant_details, offers  WHERE offers.merchant_id = restaurant_details.user_id and offers.restaurant_id = restaurant_details.id and offers.id=:off_id and restaurant_details.user_id=:merchantid";
+			$stmt2 = $db->prepare($sql2);  
+			$stmt2->bindParam("off_id", $offerId);
+			$stmt2->bindParam("merchantid", $marchantId);
+			$stmt2->execute();
+			$countrestaurant = $stmt2->rowCount();
+			$restaurant_details = $stmt2->fetchObject(); 
+			//$offer_to_date = date('d M,Y', strtotime($restaurant_details->offer_to_date));
+			//$restaurant_details->offer_to_date = $offer_to_date;
+			if(empty($restaurant_details)){
+			    $image = $site_path.'restaurant_images/default.jpg';
+			    $restaurant_details->logo = $image;
+			}
+			else{
+			   // for($i=0;$i<$countrestaurant;$i++){
+				$img = $site_path."restaurant_images/".$restaurant_details->logo;
+				$restaurant_details->logo = $img;
+			    //}
+			}*/
+			$unique_field = array();
+			$unique_field['offer_id'] = $offerId;
+			$unique_field['is_active'] = 1;
+			$soldCount = soldCount(json_encode($unique_field),'vouchers');
+			//echo $soldCount;exit;
+			$voucher_details = json_encode($vouchers); 
+			//$restaurant_details = json_encode($restaurant_details);
+			$offer_image = json_encode($offer_image);
+			$db = null;
+			$result = '{"type":"success","offer_details":'.$voucher_details.',"offer_image":'.$offer_image.',"total_sold":'.$soldCount.'}';
+		}
+		else if(empty($vouchers)){
+			$result = '{"type":"error","message":"Not found Offer Id"}';
+		}
+
+	} catch(PDOException $e) {
+		$result =  '{"error":{"message":'. $e->getMessage() .'}}'; 
+	}
+
+
+	echo  $result;
+}
+
+function offerImageUpload(){
+        $request = Slim::getInstance()->request();
+        $body = json_decode($request->getBody());
+	$site_path = SITEURL;
+        $target_dir = realpath('voucher_images')."/";
+        $unique_code = time().rand(100000,1000000);
+	$img = $unique_code.'_'.basename($_FILES["file"]["name"]);
+        $target_file = $target_dir . $img;
+        if(move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)){
+	    //echo realpath('user_images');        
+	 //   print_r($_FILES["file"]);
+	 //   print_r($_POST);
+	    $path = $site_path . "voucher_images/" . $img;
+	    $uid = $_POST['offer_id'];
+	    $offer = array();
+	    $offer['image'] = $img;
+	    $offer['offer_id'] = $uid;
+	    $updateinfo['save_data'] = $offer;
+		    // print_r($updateinfo);exit;
+	    $update = add(json_encode($updateinfo),'offer_images');
+
+	    if(!empty($update)){
+		    $result = '{"type":"success","message":"Image Uploaded Successfully","offer_image_details":"'.$path.'"}';
+	    }
+	    else{
+		    $result = '{"type":"error","message":"Try again! Not Uploaded"}';
+	    }
+	}
+	else{
+		$result = '{"type":"error","message":"Try again! Not Uploaded"}';
+	}
+        echo $result;
+}
+
 
 ?>
