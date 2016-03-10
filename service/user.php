@@ -46,11 +46,12 @@ function addUser() {
 	    $user->txt_pwd = $pass;
 	    $user->unique_code = $unique_code;
 	    $user->password = md5($user->password);
-	    if($user->user_type_id == 'Merchant'){
+	    /*if($user->user_type_id == 'Merchant'){
 	        $user->user_type_id = 3;
 	    }else{
 	        $user->user_type_id = 2;
-	    }
+	    }*/
+	    $user->user_type_id = 2;
 	    //$user->user_type_id = '2';
 	    $user->registration_date = date('Y-m-d h:m:s');
 	    $activation_link = $user->activation_url;
