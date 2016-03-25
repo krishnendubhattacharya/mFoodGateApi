@@ -115,6 +115,47 @@ function edit($data,$table,$id) {
         }
 }
 
+function editByField($data,$table,$conditions) {
+        $data = json_decode($data); 
+       
+        if(!empty($data->save_data)){
+                $sql = "UPDATE ".$table." SET ";
+                $updatequery = '';
+                foreach($data->save_data as $key=>$value){
+                        if(empty($updatequery)){
+                                $updatequery = $key."=:".$key;
+                        }else{
+                                $updatequery .= ", ".$key."=:".$key;
+                        }                        
+                }
+                $sql .= $updatequery." WHERE ";
+                foreach($conditions as $key=>$condition)
+                {
+                    $sql .= "$key=:$key";
+                }
+                
+                try {
+		        $db = getConnection();
+		        $stmt = $db->prepare($sql); 
+		        foreach($data->save_data as $key=>$value){
+		                $stmt->bindParam($key, $data->save_data->$key);
+		        }
+                        foreach($conditions as $key=>$condition)
+                        {
+                            $stmt->bindParam("$key", $condition);
+                        }
+		        		
+		        $stmt->execute();
+		        //$data->save_data->id=$id;
+		        $db = null;
+		        return json_encode($data->save_data); 
+	        }
+	        catch(PDOException $e) {
+		        return '{"error":{"text":'. $e->getMessage() .'}}'; 
+	        }
+        }
+}
+
 function delete($table,$id) {
         $sql = "DELETE FROM ".$table." WHERE id=:id";
         try {
@@ -129,5 +170,22 @@ function delete($table,$id) {
 	}
         
 }
+
+/*function getlist($table,$conditions) {
+        $sql = "select * FROM ".$table." where order_id=:order_id ORDER BY id desc";
+	
+	try {
+            
+		$db = getConnection();
+		$stmt = $db->prepare($sql);  
+		$stmt->bindParam("id", $id);
+		$stmt->execute();			
+		$user = $stmt->fetchObject();  
+		$db = null;
+		return json_encode($user); 
+	} catch(PDOException $e) {
+		return '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+}*/
 
 ?>

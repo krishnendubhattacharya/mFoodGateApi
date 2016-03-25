@@ -1,0 +1,46 @@
+<?php
+function getAllActiveVoucher($user_id) {     
+        $is_active = 1;   
+        $sql = "SELECT * FROM vouchers INNER JOIN offers ON vouchers.offer_id=offers.id where vouchers.is_active=:is_active and vouchers.user_id=:user_id";
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);  
+		$stmt->bindParam("is_active", $is_active);
+		$stmt->bindParam("user_id", $user_id);
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$db = null;
+		echo  json_encode($vouchers); 
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+}
+function getExpireSoonVoucher($user_id) {
+        $is_active = 1;
+        $current_date = date('Y-m-d');
+        $newDate = date('Y-m-d',strtotime('+7 days'));
+        $sql = "SELECT * FROM vouchers INNER JOIN offers ON vouchers.offer_id=offers.id WHERE vouchers.is_active=:is_active and vouchers.user_id=:user_id and vouchers.to_date BETWEEN :start and :end";
+        try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql); 
+		$stmt->bindParam("is_active", $is_active); 
+		$stmt->bindParam("start", $current_date);
+		$stmt->bindParam("end", $newDate);
+		$stmt->bindParam("user_id", $user_id);
+		$stmt->execute();			
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$db = null;
+		echo  json_encode($vouchers); 
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+        //echo $current_date;
+        //echo $newDate;
+        //$result = findById($id,'vouchers');
+        //echo $result;	
+}
+
+
+
+
+?>
