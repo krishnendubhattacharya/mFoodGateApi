@@ -13,8 +13,13 @@ function getMyPoints($user_id){
         {
             $points = array_map(function($t,$k){
                 $t->sl = $k+1;
+<<<<<<< HEAD
                 //$t->type = ($t->type=='C'?'Credit':'Debit');
 				$t->date = date('m/d/Y',  strtotime($t->date));
+=======
+                $t->type = ($t->type=='C'?'Credit':'Debit');
+                $t->date = date('m/d/Y',  strtotime($t->date));
+>>>>>>> origin/master
                 $t->expire_date = date('m/d/Y',  strtotime($t->expire_date));
                 return $t;
             }, $points,  array_keys($points));
@@ -28,6 +33,7 @@ function getMyPoints($user_id){
     exit;
 }
 
+<<<<<<< HEAD
 function redeemUserPoints()
 {
      $request = Slim::getInstance()->request();
@@ -142,6 +148,8 @@ function getUsersPoints($user_id)
     exit;
 }
 
+=======
+>>>>>>> origin/master
 function getExpireSoonPoints($user_id)
 {
     $rarray = array();
@@ -159,6 +167,7 @@ function getExpireSoonPoints($user_id)
         $points = $stmt->fetchAll(PDO::FETCH_OBJ); 
         if(!empty($points))
         {
+<<<<<<< HEAD
             $points = array_map(function($t,$k){
                 $t->sl = $k+1;
                 //$t->type = ($t->type=='C'?'Credit':'Debit');
@@ -166,6 +175,15 @@ function getExpireSoonPoints($user_id)
                 $t->expire_date = date('m/d/Y',  strtotime($t->expire_date));
                 return $t;
             }, $points,  array_keys($points));
+=======
+            $points = array_map(function($t,$k) use($i){
+                $t->sl = $k+1;
+                $t->type = ($t->type=='C'?'Credit':'Debit');
+                $t->date = date('m/d/Y',  strtotime($t->date));
+                $t->expire_date = date('m/d/Y',  strtotime($t->expire_date));
+                return $t;
+            }, $points,array_keys($points));
+>>>>>>> origin/master
         }
         $rarray = array('status' => 'success','data' => $points);
     }
