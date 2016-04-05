@@ -10,24 +10,24 @@ require 'service/coupon.php';
 require 'service/category.php';
 require 'service/voucher.php';
 require 'service/points.php';
-require 'service/location.php';
+/*require 'service/location.php';
 require 'service/resturant.php';
 require 'service/news.php';
 require 'service/contents.php';
 require 'service/sitesettings.php';
 require 'service/paypal.php';
 require 'service/swap.php';
-
+require 'service/menus.php';
+require 'service/events.php';*/
+ 
 $app = new Slim();
 $app->config('debug', true);
-
 $app->get('/wines', 'getWines');
 $app->get('/wines/:id',	'getWine');
 $app->get('/wines/search/:query', 'findByName');
 $app->post('/wines', 'addWine');
 $app->put('/wines/:id', 'updateWine');
 $app->delete('/wines/:id','deleteWine');
-
 $app->post('/users', 'addUser');
 $app->post('/users/login', 'getlogin');
 $app->post('/users/forgotPass', 'getforgetPass');
@@ -42,12 +42,10 @@ $app->post('/fbloginuser', 'fbLoginUser');
 $app->post('/profileimageupload', 'profileImageUpload');
 $app->get('/testmail', 'testMail');
 $app->get('/clientlist/:id', 'getAllClientUser');
-
 $app->post('/coupons', 'addCoupon');
 $app->get('/coupons', 'getAllCoupons');
 $app->put('/coupons/:id', 'updateCoupon');
 $app->delete('/coupons/:id','deleteCoupon');
-
 $app->post('/categories',  'addCat');
 $app->get('/categories',  'getAllCats');
 $app->get('/getCategories',  'getAllActiveCats');
@@ -63,7 +61,6 @@ $app->get('/getResturantPromo/:rid',  'getResturantPromo');
 $app->get('/category/:id', 'getCat');
 $app->put('/categories/:id', 'updateCat');
 $app->delete('/categories/:id', 'deleteCat');
-
 $app->get('/allvoucher/:user_id',  'getAllActiveVoucher');
 $app->get('/ownoffer/:user_id',  'getOwnOffer');
 $app->get('/expiresoonvoucher/:user_id', 'getExpireSoonVoucher');
@@ -84,17 +81,15 @@ $app->get('/getRelatedPromo','getRelatedPromo');
 $app->get('/getMyMembership/:userid','getMyMembership');
 $app->get('/getMyMembershipExpireSoon/:userid','getMyMembershipExpireSoon');
 $app->post('/saveOffer', 'addOffer');
-
-
-$app->get('/getLocations',  'getAllActiveLocation');
+$app->get('/getAllActiveMembership/:userid','getAllActiveMembership');
+$app->post('/merchantSaveMember','merchantSaveMember');
+$app->get('/getLocations',  'getAllActiveLocation'); 
 $app->post('/giftVoucher', 'giftVoucher');
 $app->get('/getPromoList',  'getPromoList');
 $app->get('/getExpireSoonPromoList',  'getExpireSoonPromoList');
-
 /***********Restuarant Call***********/
 $app->get('/getFeaturedResturantHome', 'getFeaturedResturantHome');
 $app->get('/getResturantByCategory/:cid', 'getResturantByCategory');
-
 /***********News Call***********/
 $app->post('/addNews', 'addNews');
 $app->get('/getNewsListAll', 'getNewsListAll');
@@ -105,24 +100,18 @@ $app->get('/getNewsDetail/:id', 'getNewsDetail');
 $app->get('/getNewsList', 'getNewsList');
 $app->post('/updateNews', 'updateNews');
 $app->delete('/deleteNews/:news_id', 'deleteNews');
-
-
 /***********Contents Call***********/
 $app->get('/getContent/:page_header', 'getContent');
-
 /***********SiteSettings Call***********/
 $app->get('/getSiteSetting', 'getSiteSetting');
-
 /***********Paypal Call***********/
 $app->post('/cart_checkout', 'cart_checkout');
 $app->post('/success_payment', 'success_payment');
-
 /*************Swap Call***********/
 $app->post('/swap', 'addSwap');
 $app->get('/swaplist', 'swaplist');
 $app->get('/swapdetails/:sid', 'swapdetails'); 
-$app->post('/swapinterest', 'swapinterest');  
-
+$app->post('/swapinterest', 'swapinterest');
 /**********points Call*********/
 $app->get('/mypoints/:user_id',  'getMyPoints');
 $app->get('/expiresoonpoints/:user_id',  'getExpireSoonPoints');
@@ -130,13 +119,19 @@ $app->get('/getUsersPoints/:user_id',  'getUsersPoints');
 $app->post('/redeemUserPoints',  'redeemUserPoints');
 $app->get('/swapInterestAccept/:siid',  'swapInterestAccept');
 
+/*************** Menus ***************/
+$app->post('/addMenu',  'addMenu');
+$app->get('/getMenuByUser/:user_id',  'getMenuByUser');
+$app->post('/menuFileUpload',  'menuFileUpload');
+$app->post('/updateMenu',  'updateMenu'); 
+
+/*************** Events  *************/
+$app->post('/eventFilesUpload',  'eventFilesUpload');
+$app->get('/getEventsByUser/:user_id',  'getEventsByUser');
+$app->post('/addEvent',  'addEvent');
 
 $app->response()->header("Content-Type", "application/json");
 //$app->response()->header("Access-Control-Allow-Origin : * ");
 //$app->response()->header("Access-Control-Allow-Methods : POST, GET, OPTIONS, DELETE, PUT ");
-
-
 $app->run();
-
 ?>
-
