@@ -103,30 +103,11 @@ function updateUser($id) {
 	
 	$body = $request->getBody();
 	$user = json_decode($body);
-       
-        //$user_id = $id;
 	if(isset($user->id)){
 	        unset($user->id);
 	}	
-        if(!empty($user->dob))
-        {
-            $user->dob = date("Y-m-d", strtotime($user->dob));
-        }
 	$allinfo['save_data'] = $user;
 	$result = edit(json_encode($allinfo),'users',$id);
-        if($result)
-        {
-            if(!empty($user->areaList))
-            {
-                foreach($user->areaList as $area)
-                {
-                    $temp = array();
-                    $temp['user_id'] = $user_id;
-                    $temp['location_id'] = $area->id;
-                    add(json_encode(array('save_data'=>$temp)),'merchant_location_map');
-                }
-            }
-        }
 	/*if(!empty($user_details)){
 	        $result = '{"type":"success","message":"Updated Succesfully"}'; 
 	}else{

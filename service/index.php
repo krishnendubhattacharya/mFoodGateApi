@@ -17,9 +17,6 @@ require 'service/contents.php';
 require 'service/sitesettings.php';
 require 'service/paypal.php';
 require 'service/swap.php';
-require 'service/menus.php';
-require 'service/events.php';
- 
 $app = new Slim();
 $app->config('debug', true);
 $app->get('/wines', 'getWines');
@@ -82,8 +79,7 @@ $app->get('/getMyMembership/:userid','getMyMembership');
 $app->get('/getMyMembershipExpireSoon/:userid','getMyMembershipExpireSoon');
 $app->post('/saveOffer', 'addOffer');
 $app->get('/getAllActiveMembership/:userid','getAllActiveMembership');
-$app->post('/merchantSaveMember','merchantSaveMember');
-$app->get('/getLocations',  'getAllActiveLocation'); 
+$app->get('/getLocations',  'getAllActiveLocation');
 $app->post('/giftVoucher', 'giftVoucher');
 $app->get('/getPromoList',  'getPromoList');
 $app->get('/getExpireSoonPromoList',  'getExpireSoonPromoList');
@@ -118,19 +114,6 @@ $app->get('/expiresoonpoints/:user_id',  'getExpireSoonPoints');
 $app->get('/getUsersPoints/:user_id',  'getUsersPoints');
 $app->post('/redeemUserPoints',  'redeemUserPoints');
 $app->get('/swapInterestAccept/:siid',  'swapInterestAccept');
-
-/*************** Menus ***************/
-$app->post('/addMenu',  'addMenu');
-$app->get('/getMenuByUser/:user_id',  'getMenuByUser');
-$app->post('/menuFileUpload',  'menuFileUpload');
-$app->post('/updateMenu',  'updateMenu'); 
-$app->delete('/deleteMenu/:menu_id', 'deleteMenu'); 
-
-/*************** Events  *************/
-$app->post('/eventFilesUpload',  'eventFilesUpload');
-$app->get('/getEventsByUser/:user_id',  'getEventsByUser');
-$app->post('/addEvent',  'addEvent');
-
 $app->response()->header("Content-Type", "application/json");
 //$app->response()->header("Access-Control-Allow-Origin : * ");
 //$app->response()->header("Access-Control-Allow-Methods : POST, GET, OPTIONS, DELETE, PUT ");

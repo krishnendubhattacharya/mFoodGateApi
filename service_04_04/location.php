@@ -1,7 +1,6 @@
 <?php
-
 function getAllLocations() {
-        $result = getAll('locations');   
+        $result = getAll('locations');
 	echo $result;
 }
 function getLocation($id) {
@@ -10,10 +9,10 @@ function getLocation($id) {
 }
 
 function getAllActiveLocation() {    
-           
+            
 	//$sql = "SELECT locations.id, locations.name, lacation_category_map.category_id from locations LEFT JOIN lacation_category_map ON locations.id = lacation_category_map.location_id";
 	
-	$sql = "SELECT locations.id, locations.city FROM locations where locations.is_active=1";
+	$sql = "SELECT locations.id, locations.name FROM locations where locations.is_active=1";
 	
 	
 	try {

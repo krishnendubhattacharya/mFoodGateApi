@@ -1769,8 +1769,7 @@ function merchantSaveMember() {
 	            $user['unique_code'] = $unique_code;
 	            $user['password'] = md5($pass);
 	            
-	            $user['user_type_id'] = 2;
-	            $user['is_active'] = 1;	            
+	            $user['user_type_id'] = 2;	            
 	            $user['registration_date'] = date('Y-m-d h:m:s');
 	            //$activation_link = $user->activation_url;
 	            
@@ -1840,7 +1839,7 @@ function merchantSaveMember() {
 	        }
 	}
 	else if($user_exist == "Existing User"){
-	        $unique_code = $membership_info->unique_code;
+	        $unique_code = $membership_info->user_code;
 	        $sql = "SELECT * FROM users where users.unique_code=:unique_code";
 	        $db = getConnection();
 		$stmt = $db->prepare($sql);  
@@ -1881,8 +1880,7 @@ function merchantSaveMember() {
                         $result = '{"type":"success","message":"Added successfully"}';
                 }
                 
-	}
-	echo $result;	
+	}	
         
 }
 

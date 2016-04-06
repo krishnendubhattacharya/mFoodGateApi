@@ -1,0 +1,47 @@
+<?php
+function getAllUsers() {
+        $result = getAll('users');
+	echo $result;
+}
+function getUser($id) {
+        $result = findById($id,'users');
+        echo $result;	
+}
+
+function addUser() {	
+	
+	$request = Slim::getInstance()->request();
+	
+	$user = json_decode($request->getBody());
+	$unique_field = array();
+	$unique_field['email']=$user->email;
+	$unique_field['username']=$user->username;
+	$allinfo['save_data'] = $user;
+	$allinfo['unique_data'] = $unique_field;
+	
+	$result = add(json_encode($allinfo),'users');
+	echo $result;
+	
+}
+
+function updateuser($id) {
+	$request = Slim::getInstance()->request();
+	
+	$body = $request->getBody();
+	$user = json_decode($body);
+	if(isset($user->id)){
+	        unset($user->id);
+	}	
+	$allinfo['save_data'] = $user;
+	$result = edit(json_encode($allinfo),'users',$id);
+	echo $result;
+	
+}
+
+function deleteuser($id) {
+       $result =  delete('users',$id);
+       echo $result;	
+}
+
+
+?>
