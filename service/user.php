@@ -3,6 +3,12 @@ function getAllUsers() {
         $result = getAll('users');
 	echo $result;
 }
+
+function getAllMerchants() {
+        $result = findByCondition(array('user_type_id' => 3),'users');
+	echo $result;
+}
+
 function getUser($id) {
         $request = findById($id,'users');
 	$body = json_decode($request);
@@ -20,6 +26,10 @@ function getUser($id) {
 		$bb = $site_path . "user_images/default-profile.png";
 	    }
 	    $body->image =$bb;
+            $body->locations = json_decode(findByCondition(array('user_id'=>$id),'merchant_location_map'));
+           // print_r($body->locations);
+           // exit;
+            $body->categories = json_decode(findByCondition(array('user_id'=>$id),'merchant_category_map'));
 	    $user_details = json_encode($body);
 	    $result = '{"type":"success","user_details":'.$user_details.'}';
 	}
@@ -104,7 +114,7 @@ function updateUser($id) {
 	$body = $request->getBody();
 	$user = json_decode($body);
        
-        //$user_id = $id;
+        $user_id = $id;
 	if(isset($user->id)){
 	        unset($user->id);
 	}	
@@ -112,18 +122,39 @@ function updateUser($id) {
         {
             $user->dob = date("Y-m-d", strtotime($user->dob));
         }
+        $arealist = $user->areaList;
+        unset($user->areaList);
+        
+        $typelist = $user->typeList;
+        unset($user->typeList);
+        
 	$allinfo['save_data'] = $user;
+        //print_r($allinfo);
+        //exit;
 	$result = edit(json_encode($allinfo),'users',$id);
         if($result)
         {
-            if(!empty($user->areaList))
+            deleteAll('merchant_location_map',array('user_id' => $user_id));
+            if(!empty($arealist))
             {
-                foreach($user->areaList as $area)
+                foreach($arealist as $area)
                 {
                     $temp = array();
                     $temp['user_id'] = $user_id;
                     $temp['location_id'] = $area->id;
                     add(json_encode(array('save_data'=>$temp)),'merchant_location_map');
+                }
+            }
+            
+            deleteAll('merchant_category_map',array('user_id' => $user_id));
+            if(!empty($typelist))
+            {
+                foreach($typelist as $type)
+                {
+                    $temp = array();
+                    $temp['user_id'] = $user_id;
+                    $temp['category_id'] = $type->id;
+                    add(json_encode(array('save_data'=>$temp)),'merchant_category_map');
                 }
             }
         }
@@ -142,33 +173,7 @@ function deleteUser($id) {
        echo $result;	
 }
 
-function rowCount($uniqueData,$tableName) {
-        $uniqueData = json_decode($uniqueData);
-        $queryField='';
-        $aliseField='';
-        $db = getConnection();
-	$sql = "SELECT * FROM ".$tableName." WHERE ";
-	$i=0;
-        foreach($uniqueData as $key=>$value){
-                if($i ==0){
-                        $sql .= $key."=:".$key;
-                }else{
-                        $sql .= ' or '.$key."=:".$key;
-                }
-                $i++;                
-        }
-	$stmt = $db->prepare($sql);
-	foreach($uniqueData as $key=>$value){
-	        $stmt->bindParam($key, $value);
-	}		
-	$stmt->execute();	
-	$userCount = $stmt->rowCount();
-	$stmt=null;
-	$db=null;
-	
-	return $userCount;
-        
-}
+
 
 function getlogin(){
     $request = Slim::getInstance()->request();
@@ -183,6 +188,60 @@ function getlogin(){
 	if(!empty($email) && !empty($pass)){
 	    $db = getConnection();
 	    $sql = "SELECT * FROM users WHERE email=:email and password=:password and is_active=:is_active";
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("email", $email);
+	    $stmt->bindParam("password", $pass);
+	    $stmt->bindParam("is_active", $is_active);
+	    $stmt->execute();	
+	    $count = $stmt->rowCount();
+	    //echo $count;exit;
+	    $user = $stmt->fetchObject();
+	    $db = null;
+	    //print_r($user);exit;
+	    if($count==0){
+		$result = '{"type":"error","message":"You are Not Valid User"}'; 
+	    }
+	    elseif($count==1){
+		//$result = json_encode($user); 
+		$logged_in = $user->is_logged_in;
+		if($logged_in==0){
+		    $id = $user->id;
+		    //$arr['is_logged_in'] = 1;
+		    $arr['last_login'] = date('Y-m-d h:m:s');
+		    $updateinfo['save_data'] = $arr;
+		    // print_r($updateinfo);exit;
+		    $update = edit(json_encode($updateinfo),'users',$id);
+		    if(!empty($update)){
+		    //print_r($update);exit;
+		    $user->is_active=1;
+		    //$user->is_logged_in=1;
+		    $user->last_login=$arr['last_login'];
+		    $user_details = json_encode($user);
+		    $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}';
+		    }
+		}
+		else{
+		    $result = '{"type":"error","message":"You are already Logged In"}'; 
+		}
+	    }
+	    //
+	    echo $result;
+	}
+}
+
+function adminlogin(){
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $is_active = 1;
+    //print_r($body);exit;
+	$email = $body->email;
+	//$email = isset($user->email)?$user->email:$user->username;
+	//echo $email;exit;
+	$pass = md5($body->password);
+	$result='';
+	if(!empty($email) && !empty($pass)){
+	    $db = getConnection();
+	    $sql = "SELECT * FROM users WHERE email=:email and password=:password and is_active=:is_active and user_type_id=1";
 	    $stmt = $db->prepare($sql);  
 	    $stmt->bindParam("email", $email);
 	    $stmt->bindParam("password", $pass);

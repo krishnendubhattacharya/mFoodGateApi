@@ -27,95 +27,6 @@ function findById($id,$table) {
 	}
 }
 
-function findByCondition($conditions,$table) {
-	$sql = "SELECT * FROM ".$table;
-	try {
-            if(!empty($conditions)) 
-            {
-                $sql .= " WHERE ";
-                foreach ($conditions as $key=>$condition)
-                {
-                    $sql .= "$key=:$key ";
-                }
-            }
-            $db = getConnection();
-            $stmt = $db->prepare($sql);  
-            if(!empty($conditions))
-            {
-                foreach ($conditions as $key=>$condition)
-                {
-                    $stmt->bindParam("$key", $condition);
-                    //$sql .= "$key=:$key ";
-                }
-            }
-
-            $stmt->execute();			
-            $user = $stmt->fetchAll(PDO::FETCH_OBJ);
-            $db = null;
-            return json_encode($user); 
-	} catch(PDOException $e) {
-		return '{"error":{"text":'. $e->getMessage() .'}}'; 
-	}
-}
-
-function rowCount($uniqueData,$tableName) {
-        $uniqueData = json_decode($uniqueData);
-        $queryField='';
-        $aliseField='';
-        $db = getConnection();
-	$sql = "SELECT * FROM ".$tableName." WHERE ";
-	$i=0;
-        foreach($uniqueData as $key=>$value){
-                if($i ==0){
-                        $sql .= $key."=:".$key;
-                }else{
-                        $sql .= ' or '.$key."=:".$key;
-                }
-                $i++;                
-        }
-	$stmt = $db->prepare($sql);
-	foreach($uniqueData as $key=>$value){
-	        $stmt->bindParam($key, $value);
-	}		
-	$stmt->execute();	
-	$userCount = $stmt->rowCount();
-	$stmt=null;
-	$db=null;
-	
-	return $userCount;
-}
-
-function rowCountByCondition($conditions,$table) {
-        $sql = "SELECT * FROM ".$table;
-	try {
-            if(!empty($conditions)) 
-            {
-                $sql .= " WHERE ";
-                foreach ($conditions as $key=>$condition)
-                {
-                    $sql .= "LOWER($key)=:$key ";
-                }
-            }
-            $db = getConnection();
-            $stmt = $db->prepare($sql);  
-            if(!empty($conditions))
-            {
-                foreach ($conditions as $key=>$condition)
-                {
-                    $stmt->bindParam("$key", strtolower($condition));
-                    //$sql .= "$key=:$key ";
-                }
-            }
-
-            $stmt->execute();			
-            $userCount = $stmt->rowCount();
-            $db = null;
-            return $userCount; 
-	} catch(PDOException $e) {
-		return '{"error":{"text":'. $e->getMessage() .'}}'; 
-	}
-}
-
 function add($data,$table) {
         $data = json_decode($data);       
         
@@ -259,41 +170,6 @@ function delete($table,$id) {
 	}
         
 }
-
-/*
- * deleteAll - Delete multiple fields by multiple conditions
- * $table - Tablename
- * $conditions - conditions
- */
-function deleteAll($table,$conditions){
-    $sql = "DELETE FROM ".$table;
-    try {
-            if(!empty($conditions))
-            {
-                $sql .= " WHERE ";
-                foreach($conditions as $key=>$condition)
-                {
-                    $sql .= "$key=:$key ";
-                }
-            }
-            $db = getConnection();
-            $stmt = $db->prepare($sql);  
-            
-            if(!empty($conditions))
-            {
-                foreach($conditions as $key=>$condition)
-                {
-                    $stmt->bindParam($key, $condition);
-                }
-            }
-            $stmt->execute();
-            $db = null;
-            return '{"success":{"text":"Deleted successfully"}}';
-    } catch(PDOException $e) {
-            return '{"error":{"text":'. $e->getMessage() .'}}'; 
-    }
-}
-
 
 /*function getlist($table,$conditions) {
         $sql = "select * FROM ".$table." where order_id=:order_id ORDER BY id desc";

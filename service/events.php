@@ -35,21 +35,31 @@ function addEvent()
         //var_dump($cat_details);
         //exit;
         if(!empty($cat_details)){	
+            /*if(!empty($body->typedata))
+            {
+                foreach($body->typedata as $typedata)
+                {
+                    $temp['save_data'] = array('event_id' => $cat_details->id,'image' => $typedata->image);
+                    add(json_encode($temp['save_data']),'event_images');
+                }
+            }*/
+		
             if(!empty($body->typedata))
             {
                 foreach($body->typedata as $typedata)
                 {
+                    //print_r($typedata);
                     $temp['save_data'] = array('event_id' => $cat_details->id,'category_id' => $typedata->id);
-                    add(json_encode($temp['save_data']),'event_category_map');
+                    $s = add(json_encode($temp),'event_category_map');
+                    //var_dump
                 }
             }
-            
             if(!empty($body->areadata))
             {
                 foreach($body->areadata as $areadata)
                 {
-                    $temp['save_data'] = array('event_id' => $cat_details->id,'category_id' => $areadata->id);
-                    add(json_encode($temp['save_data']),'event_location_map');
+                    $temp['save_data'] = array('event_id' => $cat_details->id,'location_id' => $areadata->id);
+                    add(json_encode($temp),'event_location_map');
                 }
             }
 	    $result = '{"type":"success","message":"Added Succesfully"}'; 
@@ -62,6 +72,76 @@ function addEvent()
     }
     
     
+function updateEvent($id) {
+	$request = Slim::getInstance()->request();
+	
+	$body = $request->getBody();
+	$body = json_decode($body);
+       
+        $user_id = $id;
+		
+        if(!empty($body->eventdata->from_date))
+        {
+            $body->eventdata->from_date = date('Y-m-d',strtotime($body->eventdata->from_date));
+        }
+        
+        if(!empty($body->eventdata->to_date))
+        {
+            $body->eventdata->to_date = date('Y-m-d',strtotime($body->eventdata->to_date));
+        }
+        
+        if(isset($body->eventdata->id))
+            unset($body->eventdata->id);
+        
+        //print_r($body);
+        //exit;
+        if(empty($body->eventdata->image))
+            unset($body->eventdata->image);
+        
+        if(isset($body->eventdata->imageurl))
+            unset($body->eventdata->imageurl);
+        
+	$allinfo['save_data'] = $body->eventdata;
+        //print_r($allinfo);
+        //exit;
+	$result = edit(json_encode($allinfo),'events',$id);
+        if($result)
+        {
+            deleteAll('event_location_map',array('event_id' => $id));
+            if(!empty($body->areadata))
+            {
+                foreach($body->areadata as $areadata)
+                {
+                    $temp['save_data'] = array('event_id' => $id,'location_id' => $areadata->id);
+                    add(json_encode($temp),'event_location_map');
+                }
+            }
+            
+            deleteAll('event_category_map',array('event_id' => $id));
+            if(!empty($body->typedata))
+            {
+                foreach($body->typedata as $typedata)
+                {
+                    //print_r($typedata);
+                    $temp['save_data'] = array('event_id' => $id,'category_id' => $typedata->id);
+                    $s = add(json_encode($temp),'event_category_map');
+                    //var_dump
+                }
+            }
+            
+            
+            
+        }
+	/*if(!empty($user_details)){
+	        $result = '{"type":"success","message":"Updated Succesfully"}'; 
+	}else{
+	        $result = '{"type":"error","message":"Try Again"}'; 
+	}*/
+	$result = '{"type":"success","message":"Updated Succesfully"}';
+	echo $result;
+	
+}
+    
 function getEventsByUser($user_id)  
     {
         $rarray = array();
@@ -73,7 +153,29 @@ function getEventsByUser($user_id)
             $stmt->bindParam("user_id", $user_id);
             $stmt->execute();
             $points = $stmt->fetchAll(PDO::FETCH_OBJ);
-            /*if(!empty($points))
+            
+			$count = $stmt->rowCount();
+		
+			for($i=0;$i<$count;$i++){
+				$created_on = date('m/d/Y', strtotime($points[$i]->created_on));
+				$points[$i]->created_on = $created_on;
+				$from_date = date('m/d/Y', strtotime($points[$i]->from_date));
+				$points[$i]->from_date = $from_date;
+				$to_date = date('m/d/Y', strtotime($points[$i]->to_date));
+				$points[$i]->to_date = $to_date;
+                                if(!empty($points[$i]->image))
+                                    $points[$i]->image_url = SITEURL.'event_images/'.$points[$i]->image;
+                                    
+                                if($points[$i]->status == 'O')
+                                    $points[$i]->status = 'Open';
+                                else if($points[$i]->status == 'E')
+                                    $points[$i]->status = 'Expired';
+                                else
+                                    $points[$i]->status = 'Completed';
+                                $points[$i]->categories = json_decode(findByCondition(array('event_id'=>$points[$i]->id),'event_category_map'));
+                                $points[$i]->locations = json_decode(findByCondition(array('event_id'=>$points[$i]->id),'event_location_map'));
+			}	
+			/*if(!empty($points))
             {
                 $points = array_map(function($t,$k){
                     $t->sl = $k+1;
@@ -100,5 +202,74 @@ function eventFilesUpload()
         echo json_encode($_FILES['files']['name']['0']);
         exit;
     }
+}
+
+function getEvenDetails($id) 
+{
+    $event_details = findById($id,'events');
+    $event_details = json_decode($event_details);
+    if(!empty($event_details))
+    {
+        $event_details->from_date = date('m/d/Y', strtotime($event_details->from_date));
+        $event_details->to_date = date('m/d/Y', strtotime($event_details->to_date));
+        if(!empty($event_details->image))
+            $event_details->image = SITEURL.'event_images/'.$event_details->image;
+        
+        if($event_details->status == 'O')
+            $event_details->status = 'Open';
+        else if($event_details->status == 'E')
+            $event_details->status = 'Expired';
+        else
+            $event_details->status = 'Completed';
+        echo json_encode(array('status' => 'success','data' =>$event_details));
+    }
+    else
+    {
+        echo json_encode(array('status' => 'error','message' => 'No data found'));
+    }
+    //echo $event_details;
+    exit;
+}
+
+function getImagesByEvent($id)
+{
+    $condition = array('event_id' => $id);
+    $result = findByCondition($condition,'event_images');
+    $result = json_decode($result);
+    if(!empty($result))
+    {
+        $result = array_map(function($t){
+            $t->image_url = SITEURL.'event_images/'.$t->image;
+            return $t;
+        },$result);
+        echo json_encode(array('status' => 'success','data' =>$result));
+    }
+    else
+    {
+        echo json_encode(array('status' => 'error','message' => 'No data found'));
+    }
+}
+
+function addEventImage()
+{
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $allinfo['save_data'] = $body;
+	   
+    //$allinfo['unique_data'] = $unique_field;
+    $location_details  = add(json_encode($allinfo),'event_images');
+    //var_dump($location_details);
+    //exit;
+    if(!empty($location_details)){
+      /* $user_details = add(json_encode($allinfo),'coupons');
+      $user_details = json_decode($user_details);*/
+
+      $result = '{"type":"success","message":"Added Succesfully"}'; 
+    }
+    else{
+         $result = '{"type":"error","message":"Not Added"}'; 
+    }
+    echo $result;
+    exit;
 }
 ?>

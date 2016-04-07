@@ -77,7 +77,31 @@ function getResturantByCategory($cid) {
 	echo $result;
 }
 
-
+function getAllRestaurantWithUser() {
+     $sql = "SELECT *,R.id as id  FROM restaurants as R,users as U where R.user_id=U.id";
+    
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);  
+        //$stmt->bindParam("id", $id);
+        $stmt->execute();			
+        $location = $stmt->fetchAll(PDO::FETCH_OBJ);		
+        $db = null;
+        if(!empty($location)){
+                $location = array_map(function($t){
+                    if(!empty($t->logo))
+                        $t->logo_url = SITEURL."restaurant_images/".$t->logo;
+                        
+                   return $t;
+                },$location);
+                echo '{"type":"success","restaurant": ' . json_encode($location) . '}'; 
+        }else{
+                echo '{"type":"error","message":"No record found"}'; 
+        }
+    } catch(PDOException $e) {
+            return '{"error":{"text":'. $e->getMessage() .'}}'; 
+    }
+}
 /**/
 
 

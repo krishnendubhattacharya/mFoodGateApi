@@ -28,6 +28,7 @@ $app->get('/wines/search/:query', 'findByName');
 $app->post('/wines', 'addWine');
 $app->put('/wines/:id', 'updateWine');
 $app->delete('/wines/:id','deleteWine');
+/***************** Users ************/
 $app->post('/users', 'addUser');
 $app->post('/users/login', 'getlogin');
 $app->post('/users/forgotPass', 'getforgetPass');
@@ -38,6 +39,7 @@ $app->get('/users', 'getAllUsers');
 $app->get('/user/:id',	'getUser');
 $app->post('/users/logout', 'getlogout');
 $app->delete('/users/:id','deleteUser');
+$app->get('/getAllMerchants','getAllMerchants');
 $app->post('/fbloginuser', 'fbLoginUser');
 $app->post('/profileimageupload', 'profileImageUpload');
 $app->get('/testmail', 'testMail');
@@ -90,6 +92,8 @@ $app->get('/getExpireSoonPromoList',  'getExpireSoonPromoList');
 /***********Restuarant Call***********/
 $app->get('/getFeaturedResturantHome', 'getFeaturedResturantHome');
 $app->get('/getResturantByCategory/:cid', 'getResturantByCategory');
+$app->get('/getAllRestaurantWithUser', 'getAllRestaurantWithUser');
+
 /***********News Call***********/
 $app->post('/addNews', 'addNews');
 $app->get('/getNewsListAll', 'getNewsListAll');
@@ -130,7 +134,25 @@ $app->delete('/deleteMenu/:menu_id', 'deleteMenu');
 $app->post('/eventFilesUpload',  'eventFilesUpload');
 $app->get('/getEventsByUser/:user_id',  'getEventsByUser');
 $app->post('/addEvent',  'addEvent');
+$app->put('/updateEvent/:id', 'updateEvent');
+$app->get('/getEvenDetails/:id', 'getEvenDetails');
+$app->get('/getImagesByEvent/:id', 'getImagesByEvent');
+$app->post('/addEventImage',  'addEventImage');
 
+/**************** Locations **************/
+$app->get('/getAllLocations',  'getAllLocations');
+$app->post('/addLocation',  'addLocation');
+$app->put('/updateLocation/:id',  'updateLocation');
+$app->delete('/deleteLocation/:id',  'deleteLocation');
+$app->get('/getCountries',  'getCountries');
+$app->get('/getLocationsWithCountry',  'getLocationsWithCountry'); 
+
+
+
+/*********************** Admin ************************/
+/******************** Users *************************/
+$app->post('/users/adminlogin', 'adminlogin');
+/*********************** Admin ************************/
 $app->response()->header("Content-Type", "application/json");
 //$app->response()->header("Access-Control-Allow-Origin : * ");
 //$app->response()->header("Access-Control-Allow-Methods : POST, GET, OPTIONS, DELETE, PUT ");
