@@ -27,6 +27,54 @@ function findById($id,$table) {
 	}
 }
 
+function findByIdArray($id,$table) {
+    $rarray = array();
+    $sql = "SELECT * FROM ".$table." WHERE id=:id";
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);  
+        $stmt->bindParam("id", $id);
+        $stmt->execute();			
+        $rarray = $stmt->fetch(PDO::FETCH_ASSOC);
+        $db = null;
+        return $rarray; 
+    } catch(PDOException $e) {
+        return $rarray; 
+    }
+}
+
+function findByConditionArray($conditions,$table) {
+        $rarray = array();
+	$sql = "SELECT * FROM ".$table;
+	try {
+            if(!empty($conditions)) 
+            {
+                $sql .= " WHERE ";
+                foreach ($conditions as $key=>$condition)
+                {
+                    $sql .= "$key=:$key ";
+                }
+            }
+            $db = getConnection();
+            $stmt = $db->prepare($sql);  
+            if(!empty($conditions))
+            {
+                foreach ($conditions as $key=>$condition)
+                {
+                    $stmt->bindParam("$key", $condition);
+                    //$sql .= "$key=:$key ";
+                }
+            }
+
+            $stmt->execute();			
+            $rarray = $stmt->fetchAll();
+            $db = null;
+            return $rarray; 
+	} catch(PDOException $e) {
+		return $rarray; 
+	}
+}
+
 function findByCondition($conditions,$table) {
 	$sql = "SELECT * FROM ".$table;
 	try {

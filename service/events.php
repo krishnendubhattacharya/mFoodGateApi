@@ -214,6 +214,8 @@ function getEvenDetails($id)
         $event_details->to_date = date('m/d/Y', strtotime($event_details->to_date));
         if(!empty($event_details->image))
             $event_details->image = SITEURL.'event_images/'.$event_details->image;
+        else
+            $event_details->image = SITEURL.'event_images/default.png';
         
         if($event_details->status == 'O')
             $event_details->status = 'Open';
@@ -221,6 +223,22 @@ function getEvenDetails($id)
             $event_details->status = 'Expired';
         else
             $event_details->status = 'Completed';
+        
+        $event_details->user_details = findByIdArray($event_details->user_id,'users');
+        $event_details->locations = array();
+        $locations = findByConditionArray(array('event_id' => $id),'event_location_map');
+        foreach($locations as $cat)
+        {
+            $event_details->locations[] = findByIdArray($cat['location_id'],'locations');
+        }
+        
+        $event_details->categories = array();
+        $category = findByConditionArray(array('event_id' => $id),'event_category_map');
+        foreach($category as $cat)
+        {
+            $event_details->categories[] = findByIdArray($cat['category_id'],'category');
+        }
+        
         echo json_encode(array('status' => 'success','data' =>$event_details));
     }
     else
@@ -264,12 +282,84 @@ function addEventImage()
       /* $user_details = add(json_encode($allinfo),'coupons');
       $user_details = json_decode($user_details);*/
 
-      $result = '{"type":"success","message":"Added Succesfully"}'; 
+      $result = '{type:"success",message:"Added Succesfully"}'; 
     }
     else{
-         $result = '{"type":"error","message":"Not Added"}'; 
+         $result = '{type:"error",message:"Not Added"}'; 
     }
     echo $result;
     exit;
 }
+
+function getActiveEvents()
+{
+    $rarray = array();
+    try
+    {
+        $sql = "SELECT * FROM events WHERE status='O' ORDER BY id DESC";
+        $db = getConnection();
+        $stmt = $db->prepare($sql); 
+        //$stmt->bindParam("user_id", $user_id);
+        $stmt->execute();
+        $points = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+                    $count = $stmt->rowCount();
+
+                    for($i=0;$i<$count;$i++){
+                            $created_on = date('m/d/Y', strtotime($points[$i]->created_on));
+                            $points[$i]->created_on = $created_on;
+                            $from_date = date('m/d/Y', strtotime($points[$i]->from_date));
+                            $points[$i]->from_date = $from_date;
+                            $to_date = date('m/d/Y', strtotime($points[$i]->to_date));
+                            $points[$i]->to_date = $to_date;
+                            if(!empty($points[$i]->image))
+                                $points[$i]->image_url = SITEURL.'event_images/'.$points[$i]->image;
+
+                            if($points[$i]->status == 'O')
+                                $points[$i]->status = 'Open';
+                            else if($points[$i]->status == 'E')
+                                $points[$i]->status = 'Expired';
+                            else
+                                $points[$i]->status = 'Completed';
+                            $points[$i]->categories = json_decode(findByCondition(array('event_id'=>$points[$i]->id),'event_category_map'));
+                            $points[$i]->locations = json_decode(findByCondition(array('event_id'=>$points[$i]->id),'event_location_map'));
+                    }	
+                    /*if(!empty($points))
+        {
+            $points = array_map(function($t,$k){
+                $t->sl = $k+1;
+                //$t->type = ($t->type=='C'?'Credit':'Debit');
+                                $t->date = date('m/d/Y',  strtotime($t->date));
+                $t->expire_date = date('m/d/Y',  strtotime($t->expire_date));
+                return $t;
+            }, $points,  array_keys($points));
+        }*/
+        $rarray = array('status' => 'success','data' => $points);
+    }
+    catch(PDOException $e) {
+        $rarray = array('status' => 'error','error' => array('text' => $e->getMessage()));
+    } 
+    echo json_encode($rarray);
+    exit;
+}
+
+//function 
+
+/*function getMerchantsRelatedEvents($merchant_id)
+{
+    $rarray = array();
+    if($merchant_id)
+    {
+        $merchant_details = findByIdArray($merchant_id,'users');
+        if(!empty($merchant_details))
+        {
+            
+        }
+        else
+        {
+            $rarray = array('type' => 'error', 'message' => 'Merchant not found.');
+        }
+    }
+    echo json_encode($rarray);
+}*/
 ?>

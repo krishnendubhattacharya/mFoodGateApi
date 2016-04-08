@@ -19,6 +19,8 @@ require 'service/paypal.php';
 require 'service/swap.php';
 require 'service/menus.php';
 require 'service/events.php';
+require 'service/event_bids.php';
+require 'service/outlets.php';
  
 $app = new Slim();
 $app->config('debug', true);
@@ -93,6 +95,15 @@ $app->get('/getExpireSoonPromoList',  'getExpireSoonPromoList');
 $app->get('/getFeaturedResturantHome', 'getFeaturedResturantHome');
 $app->get('/getResturantByCategory/:cid', 'getResturantByCategory');
 $app->get('/getAllRestaurantWithUser', 'getAllRestaurantWithUser');
+$app->post('/addResturant', 'addResturant');
+$app->post('/restaurantLogoUpload', 'restaurantLogoUpload');
+$app->get('/getRestaurantDetails/:id', 'getRestaurantDetails');
+$app->put('/updateResturant/:id', 'updateResturant');
+$app->delete('/deleteResturant/:id', 'deleteResturant');
+
+/**************** Outlets *************/
+$app->get('/getOutletsByRestaurant/:id', 'getOutletsByRestaurant');
+$app->post('/addOutlet', 'addOutlet');
 
 /***********News Call***********/
 $app->post('/addNews', 'addNews');
@@ -138,6 +149,11 @@ $app->put('/updateEvent/:id', 'updateEvent');
 $app->get('/getEvenDetails/:id', 'getEvenDetails');
 $app->get('/getImagesByEvent/:id', 'getImagesByEvent');
 $app->post('/addEventImage',  'addEventImage');
+$app->get('/getActiveEvents',  'getActiveEvents');
+
+/*************** Event Bids ****************/
+$app->get('/getEventBidsWithUser/:event_id', 'getEventBidsWithUser');
+$app->get('/acceptEventBid/:event_id/:bid_id', 'acceptEventBid');
 
 /**************** Locations **************/
 $app->get('/getAllLocations',  'getAllLocations');
