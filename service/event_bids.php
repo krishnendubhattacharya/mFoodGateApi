@@ -3,12 +3,12 @@ function addEventBid()
 {
     $request = Slim::getInstance()->request();
     $body = json_decode($request->getBody());
-    echo 12;
-    exit;
+    
     $event_id = $body->event_id;
     $user_id = $body->user_id;
     
     $sql = "SELECT * FROM event_bids WHERE event_id=:event_id and user_id=:userid";
+    $db = getConnection();
     $stmt = $db->prepare($sql);  
     $stmt->bindParam("event_id", $event_id);
     $stmt->bindParam("userid", $user_id);
@@ -16,7 +16,8 @@ function addEventBid()
     $bid_count = $stmt->rowCount();
     $stmt=null;
     $db=null;
-    if$bid_count != 0){
+    
+    if($bid_count != 0){
         $result = '{"type":"error","message":"You have already bidded this event"}';
     }
     else {

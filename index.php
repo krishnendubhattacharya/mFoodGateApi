@@ -22,6 +22,8 @@ require 'service/events.php';
 require 'service/event_bids.php';
 require 'service/outlets.php';
 require 'service/search.php';
+require 'service/offer_types.php';
+require 'service/offers.php';
  
 $app = new Slim();
 $app->config('debug', true);
@@ -92,6 +94,7 @@ $app->get('/getLocations',  'getAllActiveLocation');
 $app->post('/giftVoucher', 'giftVoucher');
 $app->get('/getPromoList',  'getPromoList');
 $app->get('/getExpireSoonPromoList',  'getExpireSoonPromoList');
+$app->post('/addMerchant',  'addMerchant');
 /***********Restuarant Call***********/
 $app->get('/getFeaturedResturantHome', 'getFeaturedResturantHome');
 $app->get('/getResturantByCategory/:cid', 'getResturantByCategory');
@@ -170,7 +173,17 @@ $app->get('/getCountries',  'getCountries');
 $app->get('/getLocationsWithCountry',  'getLocationsWithCountry'); 
 
 /****************** Search **************/
-$app->get('/getSiteSearch/:keyword/:category',  'getSiteSearch');
+$app->get('/getSiteSearch',  'getSiteSearch');
+
+/****************** Offers ***************/
+$app->post('/addNewOffer',  'addNewOffer');
+$app->post('/updateOffer',  'updateOffer');
+$app->delete('/deleteOffer',  'deleteOffer');
+$app->get('/getOffersByRestaurant/:id',  'getOffersByRestaurant');
+
+
+/****************** Offer Types ***********/
+$app->get('/getAllActiveOfferType',  'getAllActiveOfferType');
 
 /*********************** Admin ************************/
 /******************** Users *************************/

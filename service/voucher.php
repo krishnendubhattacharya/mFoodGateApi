@@ -1643,37 +1643,40 @@ function getPromoDetails($id) {
 		$count = $stmt->rowCount();
 		if($count>0)
 		{
-			$offer->created_on = date('m-d-Y',strtotime($offer->created_on));
-			$offer->offer_from_date = date('m-d-Y',strtotime($offer->offer_from_date));
-			$offer->offer_to_date = date('m-d-Y',strtotime($offer->offer_to_date));
-				if(empty($offer->image)){
-					$img = $site_path.'voucher_images/default.jpg';
-					$offer->image = $img;
-				}
-				else{                            
-					$img = $site_path."voucher_images/".$offer->image;
-					$offer->image = $img;                            
-				}
-			$rid = 	$offer->restaurant_id;
-			$sql = "SELECT * from restaurants where restaurants.id=:rid";	
-			$db = getConnection();
-			$stmt = $db->prepare($sql);	
-			$stmt->bindParam("rid", $rid);
-			$stmt->execute();
-			$restaurants = $stmt->fetchObject();
-				if(empty($restaurants->logo)){
-					$img = $site_path.'restaurant_images/default.jpg';
-					$restaurants->logo = $img;
-				}
-				else{                            
-					$img = $site_path."restaurant_images/".$restaurants->logo;
-					$restaurants->logo = $img;                            
-				}
-			$db = null;
-			//echo '<pre>';print_r($offer);print_r($restaurants);exit;
-			$offer = json_encode($offer);
-			$restaurants = json_encode($restaurants);
-			$result = '{"type":"success","offer":'.$offer.',"restaurants":'.$restaurants.',"count":'.$count.'}';
+                    $offer->created_on = date('m-d-Y',strtotime($offer->created_on));
+                    $offer->offer_from_date = date('m-d-Y',strtotime($offer->offer_from_date));
+                    $offer->offer_to_date = date('m-d-Y',strtotime($offer->offer_to_date));
+                            if(empty($offer->image)){
+                                    $img = $site_path.'voucher_images/default.jpg';
+                                    $offer->image = $img;
+                            }
+                            else{                            
+                                    $img = $site_path."voucher_images/".$offer->image;
+                                    $offer->image = $img;                            
+                            }
+                    $rid = 	$offer->restaurant_id;
+                    $sql = "SELECT * from restaurants where restaurants.id=:rid";	
+                    $db = getConnection();
+                    $stmt = $db->prepare($sql);	
+                    $stmt->bindParam("rid", $rid);
+                    $stmt->execute();
+                    $restaurants = $stmt->fetchObject();
+                            if(empty($restaurants->logo)){
+                                    $img = $site_path.'restaurant_images/default.jpg';
+                                    $restaurants->logo = $img;
+                            }
+                            else{                            
+                                    $img = $site_path."restaurant_images/".$restaurants->logo;
+                                    $restaurants->logo = $img;                            
+                            }
+                    $db = null;
+                    //echo '<pre>';print_r($offer);print_r($restaurants);exit;
+                    $offer = json_encode($offer);
+                    $restaurants = json_encode($restaurants);
+                    $categories = findByConditionArray(array('offer_id' => $id),'offer_category_map');
+                    $outlets = findByConditionArray(array('offer_id' => $id),'offer_outlet_map');
+
+                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.$restaurants.',"count":'.$count.',"categories" : '.json_encode($categories).',"outlets" : '.json_encode($outlets).'}';
 		}else{
 			$result =  '{"type":"error","message":"Sorry no promo found"}'; 
 		}

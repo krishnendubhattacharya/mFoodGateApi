@@ -108,6 +108,77 @@ function addUser() {
 	
 }
 
+function addMerchant() {	
+	
+	$request = Slim::getInstance()->request();
+	$user = json_decode($request->getBody());
+	//print_r($user);
+	//exit;
+	if(isset($user->id)){
+	        unset($user->id);
+	}
+	$unique_field = array();
+	$unique_field['email']=$user->email;
+	//$unique_field['username']=$user->username;
+	$rowCount = rowCount(json_encode($unique_field),'users');
+	if($rowCount == 0){
+            $unique_code = time().rand(100000,1000000);
+	    $pass = $user->password;
+	    $user->txt_pwd = $pass;
+	    $user->unique_code = $unique_code;
+	    $user->password = md5($user->password);
+	    /*if($user->user_type_id == 'Merchant'){
+	        $user->user_type_id = 3;
+	    }else{
+	        $user->user_type_id = 2;
+	    }*/
+	    $user->user_type_id = 2;
+	    //$user->user_type_id = '2';
+	    $user->registration_date = date('Y-m-d h:m:s');
+	    $activation_link = $user->activation_url;
+	    
+	    unset($user->activation_url);
+	    $allinfo['save_data'] = $user;
+	    //$allinfo['unique_data'] = $unique_field;
+	    $user_details = add(json_encode($allinfo),'users');
+	     if(!empty($user_details)){
+	    $user_details = json_decode($user_details);
+	    //echo  $user_details->email; exit;
+	  //  print_r($user_details);exit;
+	    $from = ADMINEMAIL;
+	    $to = $user_details->email;
+	    $subject ='User Registration';
+	    $body ='<html><body><p>Dear User,</p>
+
+		    <p>Thank You for signing up with mFoodGate.<br />
+		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Your Account Details:</span><br />
+		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"><strong>Email: '.$to.'</strong></span><br />
+		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"><strong>Password: '.$pass.'</strong></span></p>
+
+		    <p><span style="color:rgb(77, 76, 76); font-family:helvetica,arial">Please <a href="'.$activation_link.'/'.$unique_code.'">Click Here</a> </span><span style="color:rgb(77, 76, 76); font-family:helvetica,arial">&nbsp;to verify your account.</span><br />
+		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
+		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Thanks again for signing up with the site</span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
+
+		    <p>Thanks,<br />
+		    mFood&nbsp;Team</p>
+
+		    <p>&nbsp;</p></body></html>
+		    ';
+		    //$body = "Hello";
+	    sendMail($to,$subject,$body);
+	    $result = '{"type":"success","message":"Added Succesfully"}'; 
+	    }
+	    else{
+		 $result = '{"type":"error","message":"Try Again"}'; 
+	    }
+	}
+	else if($rowCount > 0){
+	   $result = '{"type":"error","message":"already exist"}'; 
+	}
+	echo $result;
+	
+}
+
 function updateUser($id) {
 	$request = Slim::getInstance()->request();
 	
