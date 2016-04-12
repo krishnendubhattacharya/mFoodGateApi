@@ -21,6 +21,7 @@ require 'service/menus.php';
 require 'service/events.php';
 require 'service/event_bids.php';
 require 'service/outlets.php';
+require 'service/search.php';
  
 $app = new Slim();
 $app->config('debug', true);
@@ -104,6 +105,9 @@ $app->delete('/deleteResturant/:id', 'deleteResturant');
 /**************** Outlets *************/
 $app->get('/getOutletsByRestaurant/:id', 'getOutletsByRestaurant');
 $app->post('/addOutlet', 'addOutlet');
+$app->post('/updateOutlet', 'updateOutlet');
+$app->delete('/deleteOutlet/:id', 'deleteOutlet');
+$app->get('/getOutletDetails/:id', 'getOutletDetails');
 
 /***********News Call***********/
 $app->post('/addNews', 'addNews');
@@ -150,10 +154,12 @@ $app->get('/getEvenDetails/:id', 'getEvenDetails');
 $app->get('/getImagesByEvent/:id', 'getImagesByEvent');
 $app->post('/addEventImage',  'addEventImage');
 $app->get('/getActiveEvents',  'getActiveEvents');
+$app->get('/getMerchantsRelatedEvents/:id',  'getMerchantsRelatedEvents'); 
 
 /*************** Event Bids ****************/
 $app->get('/getEventBidsWithUser/:event_id', 'getEventBidsWithUser');
 $app->get('/acceptEventBid/:event_id/:bid_id', 'acceptEventBid');
+$app->post('/addEventBid', 'addEventBid');
 
 /**************** Locations **************/
 $app->get('/getAllLocations',  'getAllLocations');
@@ -163,7 +169,8 @@ $app->delete('/deleteLocation/:id',  'deleteLocation');
 $app->get('/getCountries',  'getCountries');
 $app->get('/getLocationsWithCountry',  'getLocationsWithCountry'); 
 
-
+/****************** Search **************/
+$app->get('/getSiteSearch/:keyword/:category',  'getSiteSearch');
 
 /*********************** Admin ************************/
 /******************** Users *************************/

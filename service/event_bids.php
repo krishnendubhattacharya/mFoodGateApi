@@ -3,19 +3,36 @@ function addEventBid()
 {
     $request = Slim::getInstance()->request();
     $body = json_decode($request->getBody());
+    echo 12;
+    exit;
+    $event_id = $body->event_id;
+    $user_id = $body->user_id;
+    
+    $sql = "SELECT * FROM event_bids WHERE event_id=:event_id and user_id=:userid";
+    $stmt = $db->prepare($sql);  
+    $stmt->bindParam("event_id", $event_id);
+    $stmt->bindParam("userid", $user_id);
+    $stmt->execute();
+    $bid_count = $stmt->rowCount();
+    $stmt=null;
+    $db=null;
+    if$bid_count != 0){
+        $result = '{"type":"error","message":"You have already bidded this event"}';
+    }
+    else {
+            $allinfo['save_data'] = $body;
+            //print_r($allinfo);
 
-    $allinfo['save_data'] = $body;
-    //print_r($allinfo);
-
-    //$allinfo['unique_data'] = $unique_field;
-    $cat_details  = add(json_encode($allinfo),'event_bids');
-    //echo $cat_details;
-    //exit;
-    if(!empty($cat_details)){	
-        $result = '{"type":"success","message":"Added Succesfully"}'; 
-      }
-      else{
-           $result = '{"type":"error","message":"Not Added"}'; 
+            //$allinfo['unique_data'] = $unique_field;
+            $cat_details  = add(json_encode($allinfo),'event_bids');
+            //echo $cat_details;
+            //exit;
+            if(!empty($cat_details)){	
+                $result = '{"type":"success","message":"You have bidded Succesfully"}'; 
+              }
+              else{
+                   $result = '{"type":"error","message":"Not Added"}'; 
+              }
       }
       echo $result;
       exit;

@@ -360,4 +360,19 @@ function deleteAll($table,$conditions){
 	}
 }*/
 
+function array_column($arr,$field)
+{
+    $temp = array();
+    if(!empty($arr))
+    {
+       foreach($arr as $t)
+       {
+           if(!empty($t[$field]))
+            $temp[] = $t[$field];
+       }
+    }
+    
+    return $temp;
+}
+
 ?>

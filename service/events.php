@@ -345,15 +345,128 @@ function getActiveEvents()
 
 //function 
 
-/*function getMerchantsRelatedEvents($merchant_id)
+function getMerchantsRelatedEvents($id)
 {
     $rarray = array();
-    if($merchant_id)
+    $events = array();
+    $loc_events = array();
+    $cat_events = array();
+    if($id)
     {
+        $merchant_id = $id;
         $merchant_details = findByIdArray($merchant_id,'users');
+        //print_r($merchant_details);
+        $outlet_categories = array();
         if(!empty($merchant_details))
         {
-            
+            $merchant_outlets = findByConditionArray(array('user_id' => $merchant_id),'outlets');
+            if(!empty($merchant_outlets))   
+            { 
+                $outlet_ids = array_column($merchant_outlets, 'id');
+                $outlet_locations = array_column($merchant_outlets, 'location_id');
+                foreach($outlet_ids as $oid)
+                {
+                    $categories = findByConditionArray(array('outlet_id' => $oid),'outlet_category_map');
+                    foreach($categories as $cat)
+                    {
+                        array_push($outlet_categories,$cat['category_id']);
+                    }
+                   // $outlet_categories.push
+                }
+                //$categories = findByConditionArray(array('outlet_id' => 'IN (1,2)'),'outlet_category_map');
+                //$outlet_categories = array_unique(array_column($categories, 'category_id'));
+                $db = getConnection(); 
+                $in  = str_repeat('?,', count($outlet_locations) - 1) . '?';
+                $sql = "SELECT * FROM event_location_map WHERE location_id IN ($in)";
+                $stm = $db->prepare($sql);
+                $stm->execute($outlet_locations);
+                $data = $stm->fetchAll();
+                if(!empty($data))
+                {
+                    $events = array_column($data, 'event_id');
+                }
+                
+                $in  = str_repeat('?,', count($outlet_categories) - 1) . '?';
+                $sql = "SELECT * FROM event_category_map WHERE category_id IN ($in)";
+                $stm = $db->prepare($sql);
+                $stm->execute($outlet_categories);
+                $cat_data = $stm->fetchAll();
+                //print_r($events);
+                if(!empty($cat_data))
+                {
+                    $cat_events = array_column($cat_data, 'event_id');
+                    if(!empty($cat_events))
+                    {
+                        foreach($cat_events as $ta)
+                        {
+                            $events[] = $ta;
+                        }
+                    }
+                }
+                //print_r($loc_events);
+                //print_r($cat_events); 
+                //array_push($events, $loc_events, $cat_events);
+                
+                $events = array_values(array_unique($events));
+                if(!empty($events))
+                {
+                    try
+                    {
+                        $event_in  = str_repeat('?,', count($events) - 1) . '?';
+                        $sql = "SELECT * FROM events WHERE id IN ($event_in)";
+                        //$db = getConnection();
+                        $stmt = $db->prepare($sql); 
+                        //$stmt->bindParam("user_id", $user_id);
+                        $stmt->execute($events);
+                        $points = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+                                    $count = $stmt->rowCount();
+
+                                    for($i=0;$i<$count;$i++){
+                                            $created_on = date('m/d/Y', strtotime($points[$i]->created_on));
+                                            $points[$i]->created_on = $created_on;
+                                            $from_date = date('m/d/Y', strtotime($points[$i]->from_date));
+                                            $points[$i]->from_date = $from_date;
+                                            $to_date = date('m/d/Y', strtotime($points[$i]->to_date));
+                                            $points[$i]->to_date = $to_date;
+                                            if(!empty($points[$i]->image))
+                                                $points[$i]->image_url = SITEURL.'event_images/'.$points[$i]->image;
+
+                                            if($points[$i]->status == 'O')
+                                                $points[$i]->status = 'Open';
+                                            else if($points[$i]->status == 'E')
+                                                $points[$i]->status = 'Expired';
+                                            else
+                                                $points[$i]->status = 'Completed';
+                                            $points[$i]->categories = json_decode(findByCondition(array('event_id'=>$points[$i]->id),'event_category_map'));
+                                            $points[$i]->locations = json_decode(findByCondition(array('event_id'=>$points[$i]->id),'event_location_map'));
+                                    }	
+                                    /*if(!empty($points))
+                        {
+                            $points = array_map(function($t,$k){
+                                $t->sl = $k+1;
+                                //$t->type = ($t->type=='C'?'Credit':'Debit');
+                                                $t->date = date('m/d/Y',  strtotime($t->date));
+                                $t->expire_date = date('m/d/Y',  strtotime($t->expire_date));
+                                return $t;
+                            }, $points,  array_keys($points));
+                        }*/
+                        $rarray = array('status' => 'success','data' => $points);
+                    }
+                    catch(PDOException $e) {
+                        $rarray = array('status' => 'error','error' => array('text' => $e->getMessage()));
+                    } 
+                }
+                else
+                {
+                    $rarray = array('type' => 'error', 'message' => 'No events found.');
+                }
+               
+            }
+            else
+            {
+                $rarray = array('type' => 'error', 'message' => 'No outlet found');
+            }
         }
         else
         {
@@ -361,5 +474,5 @@ function getActiveEvents()
         }
     }
     echo json_encode($rarray);
-}*/
+}
 ?>
