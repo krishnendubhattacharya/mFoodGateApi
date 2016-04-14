@@ -24,6 +24,16 @@ function getAllCustomers() {
 	    //echo $count;exit;
 	    $user = $stmt->fetchObject();
             
+            if(!empty($t['image']))
+            {
+                $t['image'] = SITEURL . "user_images/" . $t['image'];
+            }
+            
+            if(!empty($t['registration_date']))
+            {
+                $t['registration_date'] = date('m/d/Y',  strtotime($t['registration_date']));
+            }
+            
             if(!empty($user->points))
             {
                 $t['points'] = $user->points;
@@ -83,6 +93,23 @@ function getCustomer($id) {
 	    else{
 		$bb = $site_path . "user_images/default-profile.png";
 	    }
+             $sql = "SELECT sum(remaining_points) as points FROM points WHERE user_id=".$id." and expire_date>=NOW()";
+            //echo $sql;
+            //exit;
+            $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->execute();
+	    //echo $count;exit;
+	    $user = $stmt->fetchObject();
+            if(!empty($user->points))
+            {
+                $body->points = $user->points;
+            }
+            else
+            {
+                $body->points = 0;
+            }
+            
 	    $body->image =$bb;
             $body->locations = json_decode(findByCondition(array('user_id'=>$id),'merchant_location_map'));
            // print_r($body->locations);
