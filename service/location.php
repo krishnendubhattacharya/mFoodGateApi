@@ -98,7 +98,7 @@ function updateLocation($id) {
 	        unset($coupon->id);
 	}	
 	$allinfo['save_data'] = $coupon;
-        $allinfo['country_id'] = $body->country;
+        $allinfo['country_id'] = $coupon->country_id;
 	$location_details = edit(json_encode($allinfo),'locations',$id);
 	if(!empty($location_details)){
 	    $result = '{"type":"success","message":"Changed Succesfully"}'; 

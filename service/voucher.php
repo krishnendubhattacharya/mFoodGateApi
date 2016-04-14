@@ -2063,6 +2063,353 @@ function getSpecialMembership() {
 
 
 
+function getLaunchTodayMenuPromo() {     
+
+        $is_active = 1;  
+	$lastdate = date('Y-m-d');
+	$todayDate = date('Y-m-d');
+	$site_path = SITEURL;
+	//$newdate = "2016-03-08";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.offer_to_date >=:lastdate and offers.created_on =:todayDate and offers.is_active=1 and offers.offer_type_id=1";
+        
+        //echo $sql;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("lastdate", $lastdate);
+		$stmt->bindParam("todayDate", $todayDate);
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = $todate;
+		    if(empty($vouchers[$i]->image)){
+                            $img = $site_path.'voucher_images/default.jpg';
+                            $vouchers[$i]->image = $img;
+                        }
+                        else{                            
+	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
+	                        $vouchers[$i]->image = $img;                            
+                        }
+		    
+		}
+		$db = null;
+		//echo  json_encode($vouchers);
+		$vouchers = json_encode($vouchers);
+	    $result = '{"type":"success","todayPromo":'.$vouchers.',"count":'.$count.'}';
+		
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
+
+function getLastdayMenuPromo() {     
+
+        $is_active = 1;  
+	$newdate = date('Y-m-d');
+	$site_path = SITEURL;
+	//$newdate = "2016-03-08";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and offers.offer_to_date =:newdate and offers.offer_type_id=1";
+        
+        //echo $sql;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("newdate", $newdate);
+		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = $todate;
+		    if(empty($vouchers[$i]->image)){
+                            $img = $site_path.'voucher_images/default.jpg';
+                            $vouchers[$i]->image = $img;
+                        }
+                        else{                            
+	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
+	                        $vouchers[$i]->image = $img;                            
+                        }
+		    
+		}
+		$db = null;
+		$vouchers = json_encode($vouchers);
+	    $result = '{"type":"success","lastdayPromo":'.$vouchers.',"count":'.$count.'}';
+		
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
+function getHotSellingMenuPromo() {     
+
+        $is_active = 1;  
+	$lastdate = date('Y-m-d');
+	//$newdate = "2016-03-08";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id=1 order by buy_count desc limit 2";
+        
+        //echo $sql;
+        $site_path = SITEURL;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("lastdate", $lastdate);
+		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = $todate;
+		    if(empty($vouchers[$i]->image)){
+                            $img = $site_path.'voucher_images/default.jpg';
+                            $vouchers[$i]->image = $img;
+                        }
+                        else{                            
+	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
+	                        $vouchers[$i]->image = $img;                            
+                        }
+		    
+		}
+		$db = null;
+		$vouchers = json_encode($vouchers);
+	    $result = '{"type":"success","getHotSellingPromo":'.$vouchers.',"count":'.$count.'}';
+		
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
+function getSpecialMenuPromo() {     
+
+        $is_active = 1;  
+	$lastdate = date('Y-m-d');
+	//$newdate = "2016-03-08";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.is_special=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id=1 order by rand()";
+        
+        //echo $sql;
+        $site_path = SITEURL;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("lastdate", $lastdate);
+		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = $todate;
+		    if(empty($vouchers[$i]->image)){
+                            $img = $site_path.'voucher_images/default.jpg';
+                            $vouchers[$i]->image = $img;
+                        }
+                        else{                            
+	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
+	                        $vouchers[$i]->image = $img;                            
+                        }
+		    
+		}
+		$db = null;
+		$vouchers = json_encode($vouchers);
+	    $result = '{"type":"success","getSpecialPromo":'.$vouchers.',"count":'.$count.'}';
+		
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
+
+function getLaunchTodayPaymentPromo() {     
+
+        $is_active = 1;  
+	$lastdate = date('Y-m-d');
+	$todayDate = date('Y-m-d');
+	$site_path = SITEURL;
+	//$newdate = "2016-03-08";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.offer_to_date >=:lastdate and offers.created_on =:todayDate and offers.is_active=1 and offers.offer_type_id=2";
+        
+        //echo $sql;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("lastdate", $lastdate);
+		$stmt->bindParam("todayDate", $todayDate);
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = $todate;
+		    if(empty($vouchers[$i]->image)){
+                            $img = $site_path.'voucher_images/default.jpg';
+                            $vouchers[$i]->image = $img;
+                        }
+                        else{                            
+	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
+	                        $vouchers[$i]->image = $img;                            
+                        }
+		    
+		}
+		$db = null;
+		//echo  json_encode($vouchers);
+		$vouchers = json_encode($vouchers);
+	    $result = '{"type":"success","todayPromo":'.$vouchers.',"count":'.$count.'}';
+		
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
+
+function getLastdayPaymentPromo() {     
+
+        $is_active = 1;  
+	$newdate = date('Y-m-d');
+	$site_path = SITEURL;
+	//$newdate = "2016-03-08";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and offers.offer_to_date =:newdate and offers.offer_type_id=2";
+        
+        //echo $sql;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("newdate", $newdate);
+		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = $todate;
+		    if(empty($vouchers[$i]->image)){
+                            $img = $site_path.'voucher_images/default.jpg';
+                            $vouchers[$i]->image = $img;
+                        }
+                        else{                            
+	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
+	                        $vouchers[$i]->image = $img;                            
+                        }
+		    
+		}
+		$db = null;
+		$vouchers = json_encode($vouchers);
+	    $result = '{"type":"success","lastdayPromo":'.$vouchers.',"count":'.$count.'}';
+		
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
+function getHotSellingPaymentPromo() {     
+
+        $is_active = 1;  
+	$lastdate = date('Y-m-d');
+	//$newdate = "2016-03-08";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id=2 order by buy_count desc limit 2";
+        
+        //echo $sql;
+        $site_path = SITEURL;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("lastdate", $lastdate);
+		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = $todate;
+		    if(empty($vouchers[$i]->image)){
+                            $img = $site_path.'voucher_images/default.jpg';
+                            $vouchers[$i]->image = $img;
+                        }
+                        else{                            
+	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
+	                        $vouchers[$i]->image = $img;                            
+                        }
+		    
+		}
+		$db = null;
+		$vouchers = json_encode($vouchers);
+	    $result = '{"type":"success","getHotSellingPromo":'.$vouchers.',"count":'.$count.'}';
+		
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
+function getSpecialPaymentPromo() {     
+
+        $is_active = 1;  
+	$lastdate = date('Y-m-d');
+	//$newdate = "2016-03-08";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.is_special=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id=2 order by rand()";
+        
+        //echo $sql;
+        $site_path = SITEURL;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("lastdate", $lastdate);
+		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = $todate;
+		    if(empty($vouchers[$i]->image)){
+                            $img = $site_path.'voucher_images/default.jpg';
+                            $vouchers[$i]->image = $img;
+                        }
+                        else{                            
+	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
+	                        $vouchers[$i]->image = $img;                            
+                        }
+		    
+		}
+		$db = null;
+		$vouchers = json_encode($vouchers);
+	    $result = '{"type":"success","getSpecialPromo":'.$vouchers.',"count":'.$count.'}';
+		
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
+
+
+
 
 
 
