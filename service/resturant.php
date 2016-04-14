@@ -39,16 +39,18 @@ function getFeaturedResturantHome() {
 
 function getResturantByCategory($cid) {     
 
+        $category_details = findByIdArray($cid,'category');
+        $restaurants = findByConditionArray(array('category_id' => $cid),'resturant_category_map');
+        $res_ids = array_column($restaurants, 'restaurant_id');
         $is_active = 1;  
-	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo FROM restaurants where restaurants.category_id=:cid order by restaurants.title DESC";
+	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo FROM restaurants where restaurants.id IN(".implode(',',$res_ids).") order by restaurants.title DESC";
         
-        //echo $sql;
         $site_path = SITEURL;
         
 	try {
 		$db = getConnection();
 		$stmt = $db->prepare($sql);	
-		$stmt->bindParam("cid", $cid);
+		#$stmt->bindParam("cid", $cid);
 		
 		$stmt->execute();
 		$restaurants = $stmt->fetchAll(PDO::FETCH_OBJ);  
@@ -68,7 +70,7 @@ function getResturantByCategory($cid) {
 		}
 		$db = null;
 		$restaurants = json_encode($restaurants);
-	    $result = '{"type":"success","restaurants":'.$restaurants.',"count":'.$count.'}';
+	    $result = '{"type":"success","restaurants":'.$restaurants.',"count":'.$count.',"category":'.  json_encode($category_details).'}';
 		
 	} catch(PDOException $e) {
 		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 

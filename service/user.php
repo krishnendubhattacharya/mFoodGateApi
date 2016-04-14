@@ -9,7 +9,65 @@ function getAllMerchants() {
 	echo $result;
 }
 
+function getAllCustomers() {
+    $result = findByConditionArray(array('user_type_id' => 2),'users');
+    if(!empty($result))
+    {
+        
+        $result = array_map(function($t){
+            $sql = "SELECT sum(remaining_points) as points FROM points WHERE user_id=".$t['id']." and expire_date>=NOW()";
+            //echo $sql;
+            //exit;
+            $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->execute();
+	    //echo $count;exit;
+	    $user = $stmt->fetchObject();
+            
+            if(!empty($user->points))
+            {
+                $t['points'] = $user->points;
+            }
+            else
+            {
+                $t['points'] = 0;
+            }
+        return $t;
+        }, $result);
+	    
+    }
+    echo json_encode($result);
+}
+
 function getUser($id) {
+        $request = findById($id,'users');
+	$body = json_decode($request);
+	//print_r($body);exit;
+	if(!empty($body)){
+	    $site_path = SITEURL;
+	    $aa = date("d M, Y", strtotime($body->registration_date));
+	    $body->registration_date=$aa;
+	    $ab = date("d M, Y", strtotime($body->last_login));
+	    $body->last_login=$ab;
+	    if(!empty($body->image)){
+		$bb = $site_path . "user_images/" . $body->image;
+	    }
+	    else{
+		$bb = $site_path . "user_images/default-profile.png";
+	    }
+	    $body->image =$bb;
+            $body->locations = json_decode(findByCondition(array('user_id'=>$id),'merchant_location_map'));
+           // print_r($body->locations);
+           // exit;
+            $body->categories = json_decode(findByCondition(array('user_id'=>$id),'merchant_category_map'));
+	    $user_details = json_encode($body);
+	    $result = '{"type":"success","user_details":'.$user_details.'}';
+	}
+	
+	echo $result;
+}
+
+function getCustomer($id) {
         $request = findById($id,'users');
 	$body = json_decode($request);
 	//print_r($body);exit;

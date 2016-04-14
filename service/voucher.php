@@ -1340,7 +1340,8 @@ function getMerchantPromo() {
 	echo $result;
 }
 
-function getResturantPromo($rid) {     
+function getResturantPromo($rid) {  
+    $restaurant_details = findByIdArray($rid,'restaurants');
     $is_active = 1;  
 	$lastdate = date('Y-m-d');
 	$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and offers.restaurant_id=:rid order by title DESC";
@@ -1372,7 +1373,7 @@ function getResturantPromo($rid) {
 		}
 		$db = null;
 		$vouchers = json_encode($vouchers);
-	    $result = '{"type":"success","getMerchantPromo":'.$vouchers.',"count":'.$count.'}';
+	    $result = '{"type":"success","getMerchantPromo":'.$vouchers.',"count":'.$count.',"restaurant" :'.  json_encode($restaurant_details).'}';
 		
 	} catch(PDOException $e) {
 		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 

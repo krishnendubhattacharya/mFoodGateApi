@@ -64,7 +64,7 @@ function addSwap(){
 function swaplist() {     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, swap.id, swap.voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1";
 	
 	try {
 		$db = getConnection();
@@ -76,6 +76,10 @@ function swaplist() {
 		for($i=0;$i<$count;$i++){
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
+                    if(!empty($vouchers[$i]->image))
+                    {
+                        $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
+                    }
 		    
 		}
 		$db = null;

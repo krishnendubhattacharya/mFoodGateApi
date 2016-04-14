@@ -45,6 +45,9 @@ $app->get('/user/:id',	'getUser');
 $app->post('/users/logout', 'getlogout');
 $app->delete('/users/:id','deleteUser');
 $app->get('/getAllMerchants','getAllMerchants');
+$app->get('/getCustomer/:id','getCustomer');
+$app->get('/getAllCustomers','getAllCustomers');
+
 $app->post('/fbloginuser', 'fbLoginUser');
 $app->post('/profileimageupload', 'profileImageUpload');
 $app->get('/testmail', 'testMail');
