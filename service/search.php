@@ -1,7 +1,7 @@
 <?php
 /*
  * $keyword : Search Keywords
- * $category :-
+ * $category :-(Default = promo)
  *      event - Search from events table
  *      promo - Search from Offers table
  *      news - Search from news table
@@ -15,13 +15,14 @@
 function getSiteSearch()//$keyword,$category,$page=1
 {
     $keyword = (!empty($_GET['keyword'])?$_GET['keyword']:'');
-    $category = (!empty($_GET['category'])?$_GET['category']:'promo');
+    $category = (!empty($_GET['category']) && $_GET['category']!='undefined'?$_GET['category']:'promo');
     $page = (!empty($_GET['page'])?$_GET['page']:1);
     $lines = (!empty($_GET['lines'])?$_GET['lines']:20);
     $sort = (!empty($_GET['sort'])?$_GET['sort']:'id');
     $sort_by = (!empty($_GET['sort_by'])?$_GET['sort_by']:'DESC');
     if(!empty($keyword) && !empty($category))
     {       
+        $keyword = addslashes($keyword);
         $num_rec_per_page = $lines;
         $start_from = ($page-1) * $num_rec_per_page; 
         $limit = " LIMIT $start_from, $num_rec_per_page";

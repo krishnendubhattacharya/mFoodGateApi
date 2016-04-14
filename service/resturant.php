@@ -184,6 +184,35 @@ function getRestaurantDetails($id)
     exit;
 }
 
+function getRestaurantByMerchant($id)
+{
+    $rarray = array();
+    if(!empty($id))
+    {
+        $restaurants = findByConditionArray(array('user_id' => $id),'restaurants');
+//        print_r($restaurants);
+//        exit;
+        if(!empty($restaurants))
+        {
+            $restaurants = array_map(function($t){
+                if(!empty($t['logo']))
+                {
+                    $t['logo_url'] = SITEURL."restaurant_images/".$t['logo'];
+                }
+                $t['categories'] = findByConditionArray(array('restaurant_id' => $t['id']),'resturant_category_map');
+//                $t['loaction'] = findByIdArray($t['location_id'],'locations');
+                return $t;
+            },$restaurants);
+            $rarray = array('type' => 'success','restaurants' => $restaurants);
+        }
+        else
+        {
+            $rarray = array('type' => 'error','message' => 'No restaurant found.');
+        }
+    }
+    echo json_encode($rarray);
+}
+
 function updateResturant($id) {	
 	
 	$request = Slim::getInstance()->request();

@@ -112,8 +112,7 @@ function addMerchant() {
 	
 	$request = Slim::getInstance()->request();
 	$user = json_decode($request->getBody());
-	//print_r($user);
-	//exit;
+	
 	if(isset($user->id)){
 	        unset($user->id);
 	}
@@ -123,24 +122,33 @@ function addMerchant() {
 	$rowCount = rowCount(json_encode($unique_field),'users');
 	if($rowCount == 0){
             $unique_code = time().rand(100000,1000000);
-	    $pass = $user->password;
+	    $pass = rand(100000,1000000);
+            $user->password = $pass;
 	    $user->txt_pwd = $pass;
 	    $user->unique_code = $unique_code;
 	    $user->password = md5($user->password);
+            $user->is_active = 1;
 	    /*if($user->user_type_id == 'Merchant'){
 	        $user->user_type_id = 3;
 	    }else{
 	        $user->user_type_id = 2;
 	    }*/
-	    $user->user_type_id = 2;
+	    #$user->user_type_id = 2;
 	    //$user->user_type_id = '2';
 	    $user->registration_date = date('Y-m-d h:m:s');
-	    $activation_link = $user->activation_url;
+	    #$activation_link = $user->activation_url;
 	    
-	    unset($user->activation_url);
-	    $allinfo['save_data'] = $user;
+	    #unset($user->activation_url);
+            if(!empty($user->image))
+            {
+                file_put_contents('./user_images/'.$user->image->filename,  base64_decode($user->image->base64));
+                $user->image = $user->image->filename;
+            }
+	    $allinfo['save_data'] = (array)$user;
 	    //$allinfo['unique_data'] = $unique_field;
 	    $user_details = add(json_encode($allinfo),'users');
+            //var_dump($user_details);
+            //exit;
 	     if(!empty($user_details)){
 	    $user_details = json_decode($user_details);
 	    //echo  $user_details->email; exit;
@@ -155,7 +163,7 @@ function addMerchant() {
 		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"><strong>Email: '.$to.'</strong></span><br />
 		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"><strong>Password: '.$pass.'</strong></span></p>
 
-		    <p><span style="color:rgb(77, 76, 76); font-family:helvetica,arial">Please <a href="'.$activation_link.'/'.$unique_code.'">Click Here</a> </span><span style="color:rgb(77, 76, 76); font-family:helvetica,arial">&nbsp;to verify your account.</span><br />
+		    <p>
 		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
 		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Thanks again for signing up with the site</span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
 
@@ -173,7 +181,7 @@ function addMerchant() {
 	    }
 	}
 	else if($rowCount > 0){
-	   $result = '{"type":"error","message":"already exist"}'; 
+	   $result = '{"type":"error","message":"Email already exist"}'; 
 	}
 	echo $result;
 	
@@ -193,31 +201,42 @@ function updateUser($id) {
         {
             $user->dob = date("Y-m-d", strtotime($user->dob));
         }
-        $arealist = $user->areaList;
-        unset($user->areaList);
         
-        $typelist = $user->typeList;
-        unset($user->typeList);
+//        
+//        $arealist = $user->areaList;
+//        unset($user->areaList);
+//       
+        $typelist = array();
+        if(!empty($user->typeList))
+        {
+            $typelist = $user->typeList;
+            unset($user->typeList);
+        }
+        
+        if(!empty($user->image))
+        {
+            file_put_contents('./user_images/'.$user->image->filename,  base64_decode($user->image->base64));
+            $user->image = $user->image->filename;
+        }
         
 	$allinfo['save_data'] = $user;
-        //print_r($allinfo);
-        //exit;
+       
 	$result = edit(json_encode($allinfo),'users',$id);
         if($result)
         {
-            deleteAll('merchant_location_map',array('user_id' => $user_id));
-            if(!empty($arealist))
-            {
-                foreach($arealist as $area)
-                {
-                    $temp = array();
-                    $temp['user_id'] = $user_id;
-                    $temp['location_id'] = $area->id;
-                    add(json_encode(array('save_data'=>$temp)),'merchant_location_map');
-                }
-            }
-            
-            deleteAll('merchant_category_map',array('user_id' => $user_id));
+//            deleteAll('merchant_location_map',array('user_id' => $user_id));
+//            if(!empty($arealist))
+//            {
+//                foreach($arealist as $area)
+//                {
+//                    $temp = array();
+//                    $temp['user_id'] = $user_id;
+//                    $temp['location_id'] = $area->id;
+//                    add(json_encode(array('save_data'=>$temp)),'merchant_location_map');
+//                }
+//            }
+//            
+            deleteAll('merchant_category_map',array('user_id' => $id));
             if(!empty($typelist))
             {
                 foreach($typelist as $type)
@@ -228,6 +247,7 @@ function updateUser($id) {
                     add(json_encode(array('save_data'=>$temp)),'merchant_category_map');
                 }
             }
+        //var_dump($typelist);
         }
 	/*if(!empty($user_details)){
 	        $result = '{"type":"success","message":"Updated Succesfully"}'; 
@@ -241,6 +261,8 @@ function updateUser($id) {
 
 function deleteUser($id) {
        $result =  delete('users',$id);
+       deleteAll('merchant_location_map',array('user_id' => $id));
+       deleteAll('merchant_category_map',array('user_id' => $id));
        echo $result;	
 }
 
