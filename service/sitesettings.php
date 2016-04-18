@@ -2,7 +2,7 @@
 function getSiteSetting() {	
 	
 	$is_active = 1;  
-	$sql = "SELECT site_settings.id,site_settings.facebook_url,site_settings.twitter_url,site_settings.youtube_url,site_settings.pininterest_url,site_settings.google_store_link,site_settings.app_store_link FROM site_settings where site_settings.id=1";
+	$sql = "SELECT *,site_settings.id,site_settings.facebook_url,site_settings.twitter_url,site_settings.youtube_url,site_settings.pininterest_url,site_settings.google_store_link,site_settings.app_store_link FROM site_settings where site_settings.id=1";
 	
 	//echo $sql;exit;
 	$site_path = SITEURL;
@@ -28,6 +28,24 @@ function getSiteSetting() {
 	}
 	echo $result;
 	
+}
+
+function updateSiteSettings()
+{
+    $request = Slim::getInstance()->request();
+
+    $body = $request->getBody();
+    $user = json_decode($body);
+
+    $user->id = 1;
+    unset($user->id);
+
+    $allinfo['save_data'] = $user;
+
+    $result = edit(json_encode($allinfo),'site_settings',1);
+    
+    $result = '{"type":"success","message":"Updated Succesfully"}';
+    echo $result;
 }
 
 /**/

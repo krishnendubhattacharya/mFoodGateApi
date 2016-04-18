@@ -64,15 +64,21 @@ $app->get('/getLaunchTodayPromo',  'getLaunchTodayPromo');
 $app->get('/getLastdayPromo',  'getLastdayPromo');
 $app->get('/getHotSellingPromo',  'getHotSellingPromo');
 $app->get('/getSpecialPromo',  'getSpecialPromo');
+
+$app->get('/getActiveMembershipPromo',  'getActiveMembershipPromo');
 $app->get('/getLaunchTodayMembership',  'getLaunchTodayMembership');
 $app->get('/getLastdayMembership',  'getLastdayMembership');
 $app->get('/getHotSellingMembership',  'getHotSellingMembership');
 $app->get('/getSpecialMembership',  'getSpecialMembership');
+
+$app->get('/getActiveMenuPromo',  'getActiveMenuPromo');
 $app->get('/getLaunchTodayMenuPromo',  'getLaunchTodayMenuPromo');
 $app->get('/getLastdayMenuPromo',  'getLastdayMenuPromo');
 $app->get('/getHotSellingMenuPromo',  'getHotSellingMenuPromo');
 $app->get('/getSpecialMenuPromo',  'getSpecialMenuPromo');
 $app->get('/getLaunchTodayPaymentPromo',  'getLaunchTodayPaymentPromo');
+
+$app->get('/getActivePaymentPromo',  'getActivePaymentPromo');
 $app->get('/getLastdayPaymentPromo',  'getLastdayPaymentPromo');
 $app->get('/getHotSellingPaymentPromo',  'getHotSellingPaymentPromo');
 $app->get('/getSpecialPaymentPromo',  'getSpecialPaymentPromo');
@@ -144,6 +150,7 @@ $app->delete('/deleteNews/:news_id', 'deleteNews');
 $app->get('/getContent/:page_header', 'getContent');
 /***********SiteSettings Call***********/
 $app->get('/getSiteSetting', 'getSiteSetting');
+$app->post('/updateSiteSettings', 'updateSiteSettings');
 /***********Paypal Call***********/
 $app->post('/cart_checkout', 'cart_checkout');
 $app->post('/success_payment', 'success_payment');
