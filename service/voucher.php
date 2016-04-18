@@ -3,7 +3,7 @@ function getAllActiveVoucher($user_id) {
         $is_active = 1;  
         $site_path = SITEURL;
 	$newdate = date('Y-m-d');
-        $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and vouchers.to_date >=:date and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
+        $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) >=:date and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
 	try {
 		$db = getConnection();
 		$stmt = $db->prepare($sql);
@@ -48,7 +48,7 @@ function getExpireSoonVoucher($user_id) {
         $is_active = 1;
         $current_date = date('Y-m-d');
         $newDate = date('Y-m-d',strtotime('+7 days'));
-        $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and vouchers.to_date BETWEEN :start and :end and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
+        $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) BETWEEN :start and :end and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
 		//$sql = "SELECT * FROM vouchers INNER JOIN offers ON vouchers.offer_id=offers.id WHERE vouchers.is_active=:is_active and vouchers.user_id=:user_id and vouchers.to_date BETWEEN :start and :end";
         try {
 		$db = getConnection();
@@ -357,6 +357,7 @@ function getMyMembership($user_id){
 	for($i=0;$i<$count;$i++){
 		$todate = date('d M, Y', strtotime($vouchers[$i]->to_date));
 		$vouchers[$i]->expire_date = $todate;
+                $vouchers[$i]->purchased_date = date('d M, Y', strtotime($vouchers[$i]->purchased_date));
 		$sql1 = "SELECT * FROM voucher_resales WHERE voucher_id=:voucher_id and user_id =:user_id and is_sold=0 ";
 		$stmt1 = $db->prepare($sql1);  
 		$stmt1->bindParam("voucher_id", $vouchers[$i]->voucher_id);
@@ -365,6 +366,48 @@ function getMyMembership($user_id){
 		//$resales = $stmt->fetchObject(); 
 		$resale_count = $stmt1->rowCount();
 		$vouchers[$i]->resale = $resale_count;
+                $vouchers[$i]->restaurant = findByIdArray($vouchers[$i]->restaurant_id,'restaurants');
+	}
+	$db = null;
+	$vouchers = json_encode($vouchers);
+		$result = '{"type":"success","membership":'.$vouchers.'}';
+	} catch(PDOException $e) {
+		$result =  '{"error":{"message":'. $e->getMessage() .'}}'; 
+	}
+	echo  $result;
+	//echo $current_date;
+	//echo $newDate;
+	//$result = findById($id,'vouchers');
+	//echo $result;
+}
+
+function getMyExpiredMembership($user_id){
+	$is_active = 1;
+	$lastdate = date('Y-m-d');
+	$sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and vouchers.to_date <:lastdate and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id=3";
+	
+	try {
+	$db = getConnection();
+	$stmt = $db->prepare($sql); 
+	$stmt->bindParam("is_active", $is_active); 
+	$stmt->bindParam("lastdate", $lastdate);
+	$stmt->bindParam("user_id", $user_id);
+	$stmt->execute();			
+	$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ); 
+	$count = $stmt->rowCount();
+	for($i=0;$i<$count;$i++){
+		$todate = date('d M, Y', strtotime($vouchers[$i]->to_date));
+		$vouchers[$i]->expire_date = $todate;
+                $vouchers[$i]->purchased_date = date('d M, Y', strtotime($vouchers[$i]->purchased_date));
+		$sql1 = "SELECT * FROM voucher_resales WHERE voucher_id=:voucher_id and user_id =:user_id and is_sold=0 ";
+		$stmt1 = $db->prepare($sql1);  
+		$stmt1->bindParam("voucher_id", $vouchers[$i]->voucher_id);
+		$stmt1->bindParam("user_id", $user_id);
+		$stmt1->execute();
+		//$resales = $stmt->fetchObject(); 
+		$resale_count = $stmt1->rowCount();
+		$vouchers[$i]->resale = $resale_count;
+                $vouchers[$i]->restaurant = findByIdArray($vouchers[$i]->restaurant_id,'restaurants');
 	}
 	$db = null;
 	$vouchers = json_encode($vouchers);
@@ -419,7 +462,7 @@ function getMyMembershipExpireSoon($user_id){
 function getResellListPostOwn($userid){
 	 $current_date = date('Y-m-d');
 	 $resales = array();
-	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id=:user_id";
+	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.to_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id=:user_id";
 	   	
 	   
     try {
@@ -454,7 +497,7 @@ function getResellListPostOwn($userid){
 function getResellListPostOthers($userid){
 	$current_date = date('Y-m-d');
 	 $resales = array();
-	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price  FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";   	
+	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price  FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.to_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";   	
 	   	 //$sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price, max(voucher_bids.bid_price) as max_bid_price FROM offers, voucher_resales,voucher_bids, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and voucher_bids.voucher_resale_id = voucher_resales.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";
 	   
     try {
@@ -920,7 +963,7 @@ function getAllFeaturedCats() {
 	$newdate = date('Y-m-d');
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.offer_to_date >=:newdate and offers.is_featured =1 and offers.is_active=1 and offers.offer_type_id!=3";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.offer_to_date >=:newdate and offers.is_featured =1 and offers.is_active=1 and offers.offer_type_id!=3 ORDER BY offers.offer_from_date ASC";
         
         //echo $sql;
         
@@ -944,6 +987,7 @@ function getAllFeaturedCats() {
 	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
 	                        $vouchers[$i]->image = $img;                            
                         }
+                        //$vouchers[$i]->price = number_format($vouchers[$i]->price,2,'.',',');
 		    
 		}
 		$db = null;
@@ -964,15 +1008,15 @@ function getLaunchTodayPromo() {
 	$todayDate = date('Y-m-d');
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.offer_to_date >=:lastdate and offers.created_on =:todayDate and offers.is_active=1 and offers.offer_type_id!=3";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where DATE(offers.offer_to_date) >=CURDATE() and DATE(offers.offer_from_date) =CURDATE() and offers.is_active=1 and offers.offer_type_id!=3";
         
         //echo $sql;
         
 	try {
 		$db = getConnection();
 		$stmt = $db->prepare($sql);		
-		$stmt->bindParam("lastdate", $lastdate);
-		$stmt->bindParam("todayDate", $todayDate);
+		#$stmt->bindParam("lastdate", $lastdate);
+		#$stmt->bindParam("todayDate", $todayDate);
 		$stmt->execute();
 		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
 		$count = $stmt->rowCount();
@@ -1008,7 +1052,7 @@ function getLastdayPromo() {
 	$newdate = date('Y-m-d');
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and offers.offer_to_date =:newdate and offers.offer_type_id!=3";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and DATE(offers.offer_to_date) =:newdate and offers.offer_type_id!=3";
         
         //echo $sql;
         
@@ -1134,7 +1178,7 @@ function getPromoList() {
 	$lastdate = date('Y-m-d');
 	$offer_type_id = 3;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id !=:offer_type_id order by offers.title";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and DATE(offers.offer_to_date) >=:lastdate and offers.offer_type_id !=:offer_type_id order by offers.title";
         
         //echo $sql;
         $site_path = SITEURL;
@@ -2070,7 +2114,7 @@ function getLaunchTodayMenuPromo() {
 	$todayDate = date('Y-m-d');
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.offer_to_date >=:lastdate and offers.created_on =:todayDate and offers.is_active=1 and offers.offer_type_id=1";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where DATE(offers.offer_to_date) >=:lastdate and DATE(offers.offer_from_date) =:todayDate and offers.is_active=1 and offers.offer_type_id=1";
         
         //echo $sql;
         
@@ -2114,7 +2158,7 @@ function getLastdayMenuPromo() {
 	$newdate = date('Y-m-d');
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and offers.offer_to_date =:newdate and offers.offer_type_id=1";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and DATE(offers.offer_to_date) =:newdate and offers.offer_type_id=1";
         
         //echo $sql;
         
@@ -2155,7 +2199,7 @@ function getHotSellingMenuPromo() {
         $is_active = 1;  
 	$lastdate = date('Y-m-d');
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id=1 order by buy_count desc limit 2";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and DATE(offers.offer_to_date) >=:lastdate and offers.offer_type_id=1 order by buy_count desc limit 2";
         
         //echo $sql;
         $site_path = SITEURL;
@@ -2198,7 +2242,7 @@ function getSpecialMenuPromo() {
         $is_active = 1;  
 	$lastdate = date('Y-m-d');
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.is_special=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id=1 order by rand()";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.is_special=1 and DATE(offers.offer_to_date) >=:lastdate and offers.offer_type_id=1 order by rand()";
         
         //echo $sql;
         $site_path = SITEURL;
@@ -2243,7 +2287,7 @@ function getLaunchTodayPaymentPromo() {
 	$todayDate = date('Y-m-d');
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.offer_to_date >=:lastdate and offers.created_on =:todayDate and offers.is_active=1 and offers.offer_type_id=2";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where DATE(offers.offer_to_date) >=:lastdate and DATE(offers.created_on) =:todayDate and offers.is_active=1 and offers.offer_type_id=2";
         
         //echo $sql;
         
@@ -2287,7 +2331,7 @@ function getLastdayPaymentPromo() {
 	$newdate = date('Y-m-d');
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and offers.offer_to_date =:newdate and offers.offer_type_id=2";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and DATE(offers.offer_to_date) =:newdate and offers.offer_type_id=2";
         
         //echo $sql;
         
@@ -2328,7 +2372,7 @@ function getHotSellingPaymentPromo() {
         $is_active = 1;  
 	$lastdate = date('Y-m-d');
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id=2 order by buy_count desc limit 2";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and DATE(offers.offer_to_date) >=:lastdate and offers.offer_type_id=2 order by buy_count desc limit 2";
         
         //echo $sql;
         $site_path = SITEURL;
@@ -2370,7 +2414,7 @@ function getSpecialPaymentPromo() {
         $is_active = 1;  
 	$lastdate = date('Y-m-d');
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.is_special=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id=2 order by rand()";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.is_special=1 and DATE(offers.offer_to_date) >=:lastdate and offers.offer_type_id=2 order by rand()";
         
         //echo $sql;
         $site_path = SITEURL;
