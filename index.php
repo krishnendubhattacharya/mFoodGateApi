@@ -24,6 +24,7 @@ require 'service/outlets.php';
 require 'service/search.php';
 require 'service/offer_types.php';
 require 'service/offers.php';
+require 'service/membership.php';
  
 $app = new Slim();
 $app->config('debug', true);
@@ -205,6 +206,9 @@ $app->post('/addNewOffer',  'addNewOffer');
 $app->post('/updateOffer',  'updateOffer');
 $app->delete('/deleteOffer',  'deleteOffer');
 $app->get('/getOffersByRestaurant/:id',  'getOffersByRestaurant');
+
+/***************** Membership *************/
+$app->post('/addNewMembership',  'addNewMembership'); 
 
 
 /****************** Offer Types ***********/

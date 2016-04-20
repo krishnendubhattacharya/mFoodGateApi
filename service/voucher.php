@@ -68,6 +68,10 @@ function getExpireSoonVoucher($user_id) {
 		    $stmt1->bindParam("voucher_id", $vouchers[$i]->voucher_id);
 			$stmt1->bindParam("user_id", $user_id);
 		    $stmt1->execute();
+                    if($vouchers[$i]->image)
+                    {
+                        $vouchers[$i]->image = SITEURL.'voucher_images/'.$vouchers[$i]->image;
+                    }
 		    //$resales = $stmt->fetchObject(); 
 		    $resale_count = $stmt1->rowCount();
 		    $vouchers[$i]->resale = $resale_count;
@@ -295,6 +299,110 @@ function resellVoucherDetail($vid,$resellid){
 
 	echo  $result;
 }
+function resaleCancel(){
+	$request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $vid = $body->id;
+    $resale_details = array();
+    //echo $vid;exit;
+    $sql = "SELECT * FROM voucher_resales WHERE id=:id and is_sold=1";
+    try {
+	    $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("id", $vid);
+	    $stmt->execute();
+	    //$resales = $stmt->fetchObject(); 
+	    $resale_count = $stmt->rowCount();
+	    $stmt=null;
+	    $db=null;
+	    if($resale_count==0){
+			$body->is_active = 0;
+			$allinfo['save_data'] = $body;
+			$resale_details = edit(json_encode($allinfo),'voucher_resales',$vid);
+			if(!empty($resale_details)){
+				$resale_details = json_decode($resale_details);
+				$result = '{"type":"success","message":"Your have successfully cancel reselling Voucher." }'; 
+			}
+			else{
+				$result = '{"type":"error","message":"Sorry! Please Try Again..."}'; 
+			}
+	    }
+	    else if($resale_count > 0){
+		$result = '{"type":"error","message":"You have already Re-selled the voucher so cannot cancel it anymore."}';
+	    }
+       } catch(PDOException $e) {
+	    $result = '{"type":"error","message":'. $e->getMessage() .'}';
+	}
+	echo  $result;
+}
+
+function getDetailsVoucherBid($vid){
+    $sql = "SELECT * FROM voucher_bids WHERE voucher_bids.id=:id";
+    $bid_details = array();
+    $site_path = SITEURL;
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);  
+		$stmt->bindParam("id", $vid);
+		$stmt->execute();
+		$vouchers = $stmt->fetchObject(); 
+		if(!empty($vouchers)){
+			$bid_details = json_encode($vouchers); 
+			//$restaurant_details = json_encode($restaurant_details);
+			$result = '{"type":"success","bid_details":'.$bid_details.'}';
+		}
+		else if(empty($vouchers)){
+			$result = '{"type":"error","message":"Not found Bid Id"}';
+		}
+	} catch(PDOException $e) {
+		$result =  '{"error":{"message":'. $e->getMessage() .'}}'; 
+	}
+	echo  $result;
+}
+
+function updateVoucherBid(){
+	$request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $vid = $body->id;
+	$userid = $body->userid;
+    $resale_details = array();
+    //echo $vid;exit;
+    $sql = "SELECT * FROM voucher_bids WHERE id=:id and user_id=:userid";
+    try {
+	    $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("id", $vid);
+		$stmt->bindParam("userid", $userid);
+	    $stmt->execute();
+	    $resales = $stmt->fetchObject(); 
+	    $resale_count = $stmt->rowCount();
+	    $stmt=null;
+	    $db=null;
+	    if($resale_count>0){
+			if($resales->user_id==$userid)
+			{
+				$allinfo['save_data']['bid_price'] = $body->bid_price;
+				$allinfo['save_data']['m_points'] = $body->m_points;
+				$resale_details = edit(json_encode($allinfo),'voucher_bids',$vid);
+				if(!empty($resale_details)){
+					$resale_details = json_decode($resale_details);
+					$result = '{"type":"success","message":"Your have successfully updated the Bid." }'; 
+				}
+				else{
+					$result = '{"type":"error","message":"Sorry! Please Try Again..."}'; 
+				}
+			}else{
+				$result = '{"type":"error","message":"Sorry you do not have permission to edit the bid."}';
+			}
+	    }
+	    else if($resale_count == 0){
+			$result = '{"type":"error","message":"Sorry no bid found."}';
+	    }
+       } catch(PDOException $e) {
+	    $result = '{"type":"error","message":'. $e->getMessage() .'}';
+	}
+	echo  $result;
+}
 
 function addResale(){
     $request = Slim::getInstance()->request();
@@ -315,21 +423,21 @@ function addResale(){
 	    $stmt=null;
 	    $db=null;
 	    if($resale_count==0){
-		$body->created_on = date('Y-m-d h:m:s');
-		$body->is_sold = 0;
-		$body->is_active = 1;
-		$allinfo['save_data'] = $body;
-		$resale_details = add(json_encode($allinfo),'voucher_resales');
-		if(!empty($resale_details)){
-		    $resale_details = json_decode($resale_details);
-		    $dd = date('d M, Y',strtotime($resale_details->created_on));
-		    $resale_details->created_on = $dd;
-		    $resale_details = json_encode($resale_details);
-		    $result = '{"type":"success","message":"Your Voucher is posted for resale Successfully","resale_details":'.$resale_details.' }'; 
-		}
-		else{
-		    $result = '{"type":"error","message":"Try Again!","resale_details":'.$resale_details.'}'; 
-		}
+			$body->created_on = date('Y-m-d h:m:s');
+			$body->is_sold = 0;
+			$body->is_active = 1;
+			$allinfo['save_data'] = $body;
+			$resale_details = add(json_encode($allinfo),'voucher_resales');
+			if(!empty($resale_details)){
+				$resale_details = json_decode($resale_details);
+				$dd = date('d M, Y',strtotime($resale_details->created_on));
+				$resale_details->created_on = $dd;
+				$resale_details = json_encode($resale_details);
+				$result = '{"type":"success","message":"Your Voucher is posted for resale Successfully","resale_details":'.$resale_details.' }'; 
+			}
+			else{
+				$result = '{"type":"error","message":"Try Again!","resale_details":'.$resale_details.'}'; 
+			}
 	    }
 	    else if($resale_count > 0){
 		$result = '{"type":"error","message":"You have already posted this voucher for resell"}';
@@ -463,7 +571,7 @@ function getResellListPostOwn($userid){
             $current_date = date('Y-m-d');
             $resales = array();
             $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.to_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id=:user_id";
-            
+	   	
 	   
         try {
 	    $db = getConnection();
@@ -480,7 +588,25 @@ function getResellListPostOwn($userid){
 			for($i=0;$i<$list_count;$i++){
 			    $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
 			    $resales[$i]->expire_date = $todate;
-                            
+				$rid = $resales[$i]->voucher_resale_id;
+				$sql = "SELECT max(voucher_bids.bid_price) as high_bid,min(voucher_bids.bid_price) as low_bid FROM voucher_bids where voucher_bids.voucher_resale_id =:rid";
+				$db = getConnection();
+				$stmt = $db->prepare($sql);  
+				$stmt->bindParam("rid", $rid);
+				$stmt->execute();
+				$resalesBid = $stmt->fetchObject();
+				//print_r($resalesBid);
+				if($resalesBid->high_bid!='' && $resalesBid->low_bid!='')
+				{
+					$resales[$i]->high_bid = $resalesBid->high_bid;
+					$resales[$i]->low_bid = $resalesBid->low_bid;
+				}else{
+					$resales[$i]->high_bid = 0;
+					$resales[$i]->low_bid = 0;
+				}
+				//print_r($resales[$i]);exit;
+			    
+                        
 			}
 	    		$resales = json_encode($resales);
 	    	     $result = '{"type":"success","resale_details":'.$resales.' }';
@@ -498,7 +624,7 @@ function getResellListPostOwn($userid){
 function getResellListPostOthers($userid){
 	$current_date = date('Y-m-d');
 	 $resales = array();
-	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price  FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.to_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";   	
+	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price  FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.to_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";   	
 	   	 //$sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price, max(voucher_bids.bid_price) as max_bid_price FROM offers, voucher_resales,voucher_bids, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and voucher_bids.voucher_resale_id = voucher_resales.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";
 	   
     try {
@@ -526,6 +652,55 @@ function getResellListPostOthers($userid){
        } 
        catch(PDOException $e) {
 	    $result =  '{"error":{"message":'. $e->getMessage() .'}}'; 
+	}
+	echo  $result;
+}
+
+function getResellListBidOwn($userid){
+	$current_date = date('Y-m-d');
+	 $resales = array();
+	   	 //$sql = "SELECT voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price FROM voucher_resales, vouchers WHERE voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and vouchers.user_id=:user_id";
+	   	 
+	   	 $sql = "SELECT voucher_bids.id as bid_id,voucher_bids.voucher_id,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points as bid_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price,vouchers.to_date as expire_date, offers.title FROM voucher_bids, voucher_resales, vouchers, offers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and offers.id = vouchers.offer_id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_bids.user_id=:user_id";
+	   	
+	   
+	   
+    try {
+	    $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("user_id", $userid);
+	    $stmt->bindParam("current_date", $current_date);
+	    $stmt->execute();
+	    $resales = $stmt->fetchAll(PDO::FETCH_OBJ);  
+	    //print_r($resales);exit;
+	    $resale_count = $stmt->rowCount();
+	    $stmt=null;
+	    $db=null;
+	    //print_r($resales);
+	    if(!empty($resales)){
+	                for($i=0;$i<$resale_count;$i++){
+			    $todate = date('d M, Y', strtotime($resales[$i]->to_date));
+			    $resales[$i]->to_date = $todate;
+				$expire_date = date('d M, Y', strtotime($resales[$i]->expire_date));
+			    $resales[$i]->expire_date = $expire_date;
+			    if(($resales[$i]->is_accepted == 1) && ($resales[$i]->is_sold == 1)){
+			        $resales[$i]->Status = 'Accepted';
+			    }else if(($resales[$i]->is_accepted == 0) && ($resales[$i]->is_sold == 1)){
+			        $resales[$i]->Status = 'Not Accepted';
+			    }else{
+			        $resales[$i]->Status = 'Pending';
+			    }
+			}
+	    		$resales = json_encode($resales);
+	    		
+	    	     $result = '{"type":"success","bid_details":'.$resales.'}';
+	    }
+	    else if(empty($resales)){
+		    $result = '{"type":"error","message":"No Records Found"}'; 
+		}
+       } 
+       catch(PDOException $e) {
+	    $result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
 	}
 	echo  $result;
 }
@@ -650,52 +825,7 @@ function addBid(){
 }
 
 
-function getResellListBidOwn($userid){
-	$current_date = date('Y-m-d');
-	 $resales = array();
-	   	 //$sql = "SELECT voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price FROM voucher_resales, vouchers WHERE voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and vouchers.user_id=:user_id";
-	   	 
-	   	 $sql = "SELECT voucher_bids.voucher_id,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points as bid_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price,offers.title FROM voucher_bids, voucher_resales, vouchers, offers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and offers.id = vouchers.offer_id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_bids.user_id=:user_id";
-	   	
-	   
-	   
-    try {
-	    $db = getConnection();
-	    $stmt = $db->prepare($sql);  
-	    $stmt->bindParam("user_id", $userid);
-	    $stmt->bindParam("current_date", $current_date);
-	    $stmt->execute();
-	    $resales = $stmt->fetchAll(PDO::FETCH_OBJ);  
-	    //print_r($resales);exit;
-	    $resale_count = $stmt->rowCount();
-	    $stmt=null;
-	    $db=null;
-	    //print_r($resales);
-	    if(!empty($resales)){
-	                for($i=0;$i<$resale_count;$i++){
-			    $todate = date('d M, Y', strtotime($resales[$i]->to_date));
-			    $resales[$i]->to_date = $todate;
-			    if(($resales[$i]->is_accepted == 1) && ($resales[$i]->is_sold == 1)){
-			        $resales[$i]->Status = 'Accepted';
-			    }else if(($resales[$i]->is_accepted == 0) && ($resales[$i]->is_sold == 1)){
-			        $resales[$i]->Status = 'Not Accepted';
-			    }else{
-			        $resales[$i]->Status = 'Pending';
-			    }
-			}
-	    		$resales = json_encode($resales);
-	    		
-	    	     $result = '{"type":"success","bid_details":'.$resales.'}';
-	    }
-	    else if(empty($resales)){
-		    $result = '{"type":"error","message":"No Records Found"}'; 
-		}
-       } 
-       catch(PDOException $e) {
-	    $result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
-	}
-	echo  $result;
-}
+
 
 function saveVoucherResale(){
 	$request = Slim::getInstance()->request();
@@ -1018,7 +1148,7 @@ function getLaunchTodayPromo() {
         
         
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and offers.is_active=1";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.buy_count,offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and DATE(offers.offer_to_date)>=CURDATE() and offers.is_active=1";
         
         //echo $sql; and offers.offer_type_id!=3
         
@@ -1035,13 +1165,16 @@ function getLaunchTodayPromo() {
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
-                            $img = $site_path.'voucher_images/default.jpg';
-                            $vouchers[$i]->image = $img;
-                        }
-                        else{                            
-	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
-	                        $vouchers[$i]->image = $img;                            
-                        }
+                        $img = $site_path.'voucher_images/default.jpg';
+                        $vouchers[$i]->image = $img;
+                    }
+                    else{                            
+                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
+                        $vouchers[$i]->image = $img;                            
+                    }
+                    $vouchers[$i]->end_time = strtotime($vouchers[$i]->offer_to_date)*1000;
+                    if(empty($vouchers[$i]->buy_count))
+                        $vouchers[$i]->buy_count = "0";
 		    
 		}
 		$db = null;
@@ -1163,7 +1296,7 @@ function getSpecialPromo() {
         $is_active = 1;  
 	$lastdate = date('Y-m-d');
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.is_special=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id!=3 order by rand()";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and offers.is_special=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id!=3 order by rand()";
         
         //echo $sql;
         $site_path = SITEURL;
@@ -1188,6 +1321,7 @@ function getSpecialPromo() {
 	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
 	                        $vouchers[$i]->image = $img;                            
                         }
+                        $vouchers[$i]->end_time = strtotime($vouchers[$i]->offer_to_date);
 		    
 		}
 		$db = null;
@@ -1657,7 +1791,7 @@ function getAllResellList(){
 	    $stmt=null;
 	    $db=null;
 	    if(!empty($resales)){
-	    		for($i=0;$i<$list_count;$i++){
+	    	for($i=0;$i<$list_count;$i++){
 				$rid = $resales[$i]->voucher_resale_id;
 				$sql = "SELECT max(voucher_bids.bid_price) as high_bid,min(voucher_bids.bid_price) as low_bid FROM voucher_bids where voucher_bids.voucher_resale_id =:rid";
 				$db = getConnection();

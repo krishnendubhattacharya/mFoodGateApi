@@ -53,18 +53,22 @@ function findByConditionArray($conditions,$table) {
                 foreach ($conditions as $key=>$condition)
                 {
                     $sql .= "$key=:$key ";
+                    $$key = $condition;
                 }
             }
             $db = getConnection();
-            $stmt = $db->prepare($sql);  
-            if(!empty($conditions))
+            $stmt = $db->prepare($sql);
+            $s = json_decode(json_encode($conditions));
+            if(!empty($s))
             {
-                foreach ($conditions as $key=>$condition)
+                foreach ($s as $key => $t) 
                 {
-                    $stmt->bindParam("$key", $condition);
+                    //echo $t.$key;
+                    $stmt->bindValue($key, $s->$key);
                     //$sql .= "$key=:$key ";
                 }
             }
+            //exit;
 
             $stmt->execute();			
             $rarray = $stmt->fetchAll();
@@ -73,6 +77,29 @@ function findByConditionArray($conditions,$table) {
 	} catch(PDOException $e) {
 		return $rarray; 
 	}
+}
+
+/*
+ * $sql : Sql query with conditions
+ * $type : all - find multiple row
+ *         one - find one row
+ */
+function findByQuery($sql,$type='all')
+{
+    $rarray = array();
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->execute();	
+        if($type=='one')
+            $rarray = $stmt->fetch(PDO::FETCH_ASSOC);
+        else
+            $rarray = $stmt->fetchAll();
+        $db = null;
+        return $rarray; 
+    } catch(PDOException $e) {
+	return $rarray; 
+    }
 }
 
 function findByCondition($conditions,$table) {
