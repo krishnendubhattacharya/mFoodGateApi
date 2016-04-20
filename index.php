@@ -96,6 +96,9 @@ $app->get('/expiresoonvoucher/:user_id', 'getExpireSoonVoucher');
 $app->get('/vourcherdetail/:id', 'getVoucherUserMerchentDetail');
 $app->get('/resellVoucherDetail/:vid/:resellid', 'resellVoucherDetail');
 $app->post('/resale', 'addResale');
+$app->post('/resaleCancel', 'resaleCancel');
+$app->get('/getDetailsVoucherBid/:id', 'getDetailsVoucherBid');
+$app->post('/updateVoucherBid', 'updateVoucherBid');
 $app->get('/ownresellList/:id','getResellListPostOwn');
 $app->get('/othersresellList/:id','getResellListPostOthers');
 $app->get('/bidders/:id/:userid','getBidderList');
@@ -157,7 +160,16 @@ $app->post('/cart_checkout', 'cart_checkout');
 $app->post('/success_payment', 'success_payment');
 /*************Swap Call***********/
 $app->post('/swap', 'addSwap');
+$app->get('/mySwapList/:id', 'mySwapList');
+$app->get('/otherSwapList/:id', 'otherSwapList');
+$app->get('/myBidSwapList/:id', 'myBidSwapList');
+$app->get('/interestedSwapList/:id', 'interestedSwapList');
+$app->post('/swapCancel', 'swapCancel');
+$app->post('/updateSwapBid', 'updateSwapBid');
+$app->get('/getDetailsSwapBid/:id', 'getDetailsSwapBid');
 $app->get('/swaplist', 'swaplist');
+
+$app->get('/interestedSwapList/:id', 'interestedSwapList');
 $app->get('/swapdetails/:sid', 'swapdetails'); 
 $app->post('/swapinterest', 'swapinterest');
 /**********points Call*********/
@@ -209,6 +221,8 @@ $app->get('/getOffersByRestaurant/:id',  'getOffersByRestaurant');
 
 /***************** Membership *************/
 $app->post('/addNewMembership',  'addNewMembership'); 
+$app->get('/deleteMembership/:id',  'deleteMembership'); 
+$app->get('/getMembershipByMerchant/:id',  'getMembershipByMerchant'); 
 
 
 /****************** Offer Types ***********/

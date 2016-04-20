@@ -261,7 +261,8 @@ function edit($data,$table,$id) {
                         }                        
                 }
                 $sql .= $updatequery." WHERE id=:id";
-                try {
+        
+			   try {
 		        $db = getConnection();
 		        $stmt = $db->prepare($sql); 
 		        foreach($data->save_data as $key=>$value){

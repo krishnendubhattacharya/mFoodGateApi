@@ -91,6 +91,132 @@ function swaplist() {
 	echo  $result;
 }
 
+function mySwapList($uid) {     
+        $is_active = 1;  
+	$newdate = date('Y-m-d');
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id=:uid";
+	
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);
+        $stmt->bindParam("uid", $uid);		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->expire_date = $todate;
+                    if(!empty($vouchers[$i]->image))
+                    {
+                        $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
+                    }
+		    
+		}
+		$db = null;
+		$vouchers =  json_encode($vouchers); 
+		$result = '{"type":"success","data":'.$vouchers.',"count":'.$count.'}'; 
+	} catch(PDOException $e) {
+		$result = '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo  $result;
+}
+
+function otherSwapList($uid) {     
+        $is_active = 1;  
+	$newdate = date('Y-m-d');
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id !=:uid";
+	
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);
+        $stmt->bindParam("uid", $uid);		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->expire_date = $todate;
+                    if(!empty($vouchers[$i]->image))
+                    {
+                        $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
+                    }
+		    
+		}
+		$db = null;
+		$vouchers =  json_encode($vouchers); 
+		$result = '{"type":"success","data":'.$vouchers.',"count":'.$count.'}'; 
+	} catch(PDOException $e) {
+		$result = '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo  $result;
+}
+
+function myBidSwapList($uid) {     
+        $is_active = 1;  
+	$newdate = date('Y-m-d');
+		
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers, interested_swap where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.user_id=:uid";
+	
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);
+        $stmt->bindParam("uid", $uid);		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->expire_date = $todate;
+                    if(!empty($vouchers[$i]->image))
+                    {
+                        $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
+                    }
+		    
+		}
+		$db = null;
+		$vouchers =  json_encode($vouchers); 
+		$result = '{"type":"success","data":'.$vouchers.',"count":'.$count.'}'; 
+	} catch(PDOException $e) {
+		$result = '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo  $result;
+}
+
+function interestedSwapList($uid) {     
+        $is_active = 1;  
+	$newdate = date('Y-m-d');
+		
+        $sql = "SELECT offers.title,users.first_name, users.last_name, users.email, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers, interested_swap, users where users.id=interested_swap.user_id and interested_swap.voucher_id=vouchers.id and offers.id=vouchers.offer_id and interested_swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.swap_id=:uid";
+	
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);
+        $stmt->bindParam("uid", $uid);		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->expire_date = $todate;
+                    if(!empty($vouchers[$i]->image))
+                    {
+                        $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
+                    }
+		    
+		}
+		$db = null;
+		$vouchers =  json_encode($vouchers); 
+		$result = '{"type":"success","data":'.$vouchers.',"count":'.$count.'}'; 
+	} catch(PDOException $e) {
+		$result = '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo  $result;
+}
+
 function swapdetails($sid) {     
         $sql = "SELECT vouchers.offer_id, swap.id as sid, swap.voucher_id, swap.offer_id, swap.user_id, vouchers.view_id, vouchers.price, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id FROM vouchers , offers, swap WHERE vouchers.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.id=:sid";
     $offerId ='';
@@ -195,6 +321,118 @@ function swapdetails($sid) {
 	}
 
 
+	echo  $result;
+}
+
+function swapCancel(){
+	$request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $vid = $body->id;
+    $resale_details = array();
+    //echo $vid;exit;
+    $sql = "SELECT * FROM swap WHERE id=:id and is_active=1";
+    try {
+	    $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("id", $vid);
+	    $stmt->execute();
+	    //$resales = $stmt->fetchObject(); 
+	    $resale_count = $stmt->rowCount();
+	    $stmt=null;
+	    $db=null;
+	    if($resale_count==0){
+			$body->is_active = 0;
+			$allinfo['save_data'] = $body;
+			$resale_details = edit(json_encode($allinfo),'swap',$vid);
+			if(!empty($resale_details)){
+				$resale_details = json_decode($resale_details);
+				$result = '{"type":"success","message":"Your have successfully cancel swap Voucher." }'; 
+			}
+			else{
+				$result = '{"type":"error","message":"Sorry! Please Try Again..."}'; 
+			}
+	    }
+	    else if($resale_count > 0){
+		$result = '{"type":"error","message":"Sorry you cannot cancel the swap."}';
+	    }
+       } catch(PDOException $e) {
+	    $result = '{"type":"error","message":'. $e->getMessage() .'}';
+	}
+	echo  $result;
+}
+
+function updateSwapBid(){
+	$request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $vid = $body->id;
+	$userid = $body->userid;
+    $resale_details = array();
+    //echo $vid;exit;
+    $sql = "SELECT * FROM interested_swap WHERE id=:id and user_id=:userid";
+    try {
+	    $db = getConnection();
+	    $stmt = $db->prepare($sql);  
+	    $stmt->bindParam("id", $vid);
+		$stmt->bindParam("userid", $userid);
+	    $stmt->execute();
+	    $resales = $stmt->fetchObject(); 
+	    $resale_count = $stmt->rowCount();
+	    $stmt=null;
+	    $db=null;
+	    if($resale_count>0){
+			if($resales->user_id==$userid)
+			{
+				$voucher_url = $body->voucher_url;
+				$url = explode('/',$voucher_url);
+				$countUrl = count($url);
+				$voucher_id = $url[$countUrl-1];
+				
+				$allinfo['save_data']['voucher_url'] = $body->voucher_url;
+				$allinfo['save_data']['voucher_id'] = $voucher_id;
+				$allinfo['save_data']['subject'] = $body->subject;
+				$allinfo['save_data']['comment'] = $body->comment;
+				$resale_details = edit(json_encode($allinfo),'interested_swap',$vid);
+				if(!empty($resale_details)){
+					$resale_details = json_decode($resale_details);
+					$result = '{"type":"success","message":"Your have successfully updated the Bid for swap." }'; 
+				}
+				else{
+					$result = '{"type":"error","message":"Sorry! Please Try Again..."}'; 
+				}
+			}else{
+				$result = '{"type":"error","message":"Sorry you do not have permission to edit the bid for swap."}';
+			}
+	    }
+	    else if($resale_count == 0){
+			$result = '{"type":"error","message":"Sorry no bid found."}';
+	    }
+       } catch(PDOException $e) {
+	    $result = '{"type":"error","message":'. $e->getMessage() .'}';
+	}
+	echo  $result;
+}
+
+function getDetailsSwapBid($vid){
+    $sql = "SELECT * FROM interested_swap WHERE interested_swap.id=:id";
+    $bid_details = array();
+    $site_path = SITEURL;
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);  
+		$stmt->bindParam("id", $vid);
+		$stmt->execute();
+		$vouchers = $stmt->fetchObject(); 
+		if(!empty($vouchers)){
+			$bid_details = json_encode($vouchers); 
+			//$restaurant_details = json_encode($restaurant_details);
+			$result = '{"type":"success","bid_details":'.$bid_details.'}';
+		}
+		else if(empty($vouchers)){
+			$result = '{"type":"error","message":"Not found Bid Id"}';
+		}
+	} catch(PDOException $e) {
+		$result =  '{"error":{"message":'. $e->getMessage() .'}}'; 
+	}
 	echo  $result;
 }
 

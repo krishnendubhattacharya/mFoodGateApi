@@ -788,6 +788,7 @@ function changePassword(){
 }
 
 function testMail(){
+
         $to = "nits.anup@gmail.com";
         $subject = "hello";
         //$body = "Hi Anup";
@@ -795,26 +796,7 @@ function testMail(){
         $pass = "123";
         $unique_code = "123";
         $from = "abc";
-        $body ='<html><body><p>Dear User,</p>
-
-		    <p>Thank You for signing up with mFoodGate.<br />
-
-		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Your Account Details:</span><br />
-		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"><strong>Email: '.$to.'</strong></span><br />
-		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"><strong>Password: '.$pass.'</strong></span></p>
-
-
-		    <p><span style="color:rgb(77, 76, 76); font-family:helvetica,arial">Please <a href="'.$activation_link.'/'.$unique_code.'">Click Here</a> </span><span style="color:rgb(77, 76, 76); font-family:helvetica,arial">&nbsp;to verify your account.</span><br />
-
-		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
-		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Thanks again for signing up with the site</span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
-
-		    <p>Thanks,<br />
-
-		    mFood&nbsp;Team</p>
-
-		    <p>&nbsp;</p></body></html>
-		    ';
+        $body ='abcde';
         sendMail($to,$subject,$body);
         $result = '{"type":"success","message":"Send Succesfully"}';
         echo $result;

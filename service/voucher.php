@@ -427,6 +427,7 @@ function addResale(){
 			$body->is_sold = 0;
 			$body->is_active = 1;
 			$allinfo['save_data'] = $body;
+			$allinfo['save_data']['status'] = 'resale';
 			$resale_details = add(json_encode($allinfo),'voucher_resales');
 			if(!empty($resale_details)){
 				$resale_details = json_decode($resale_details);
@@ -570,7 +571,7 @@ function getMyMembershipExpireSoon($user_id){
 function getResellListPostOwn($userid){
             $current_date = date('Y-m-d');
             $resales = array();
-            $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.to_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id=:user_id";
+            $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.status, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.to_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id=:user_id";
 	   	
 	   
         try {
@@ -588,6 +589,14 @@ function getResellListPostOwn($userid){
 			for($i=0;$i<$list_count;$i++){
 			    $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
 			    $resales[$i]->expire_date = $todate;
+				if($resales[$i]->is_sold=='1')
+				{
+					$resales[$i]->status = 'Closed';
+				}else if($resales[$i]->status==''){
+					$resales[$i]->status = 'Resell';
+				}else{
+					$resales[$i]->status = 'Resell';
+				}
 				$rid = $resales[$i]->voucher_resale_id;
 				$sql = "SELECT max(voucher_bids.bid_price) as high_bid,min(voucher_bids.bid_price) as low_bid FROM voucher_bids where voucher_bids.voucher_resale_id =:rid";
 				$db = getConnection();
@@ -661,7 +670,7 @@ function getResellListBidOwn($userid){
 	 $resales = array();
 	   	 //$sql = "SELECT voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price FROM voucher_resales, vouchers WHERE voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and vouchers.user_id=:user_id";
 	   	 
-	   	 $sql = "SELECT voucher_bids.id as bid_id,voucher_bids.voucher_id,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points as bid_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price,vouchers.to_date as expire_date, offers.title FROM voucher_bids, voucher_resales, vouchers, offers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and offers.id = vouchers.offer_id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_bids.user_id=:user_id";
+	   	 $sql = "SELECT voucher_bids.id as bid_id,voucher_bids.voucher_id,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points as bid_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, voucher_resales.status, vouchers.to_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price,vouchers.to_date as expire_date, offers.title FROM voucher_bids, voucher_resales, vouchers, offers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and offers.id = vouchers.offer_id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_bids.user_id=:user_id";
 	   	
 	   
 	   
@@ -686,9 +695,9 @@ function getResellListBidOwn($userid){
 			    if(($resales[$i]->is_accepted == 1) && ($resales[$i]->is_sold == 1)){
 			        $resales[$i]->Status = 'Accepted';
 			    }else if(($resales[$i]->is_accepted == 0) && ($resales[$i]->is_sold == 1)){
-			        $resales[$i]->Status = 'Not Accepted';
+			        $resales[$i]->Status = 'Closed';
 			    }else{
-			        $resales[$i]->Status = 'Pending';
+			        $resales[$i]->Status = 'Resell';
 			    }
 			}
 	    		$resales = json_encode($resales);
@@ -1172,6 +1181,16 @@ function getLaunchTodayPromo() {
                         $img = $site_path."voucher_images/".$vouchers[$i]->image;
                         $vouchers[$i]->image = $img;                            
                     }
+					/*$now = time(); // or your date as well
+					$last_date = strtotime($vouchers[$i]->offer_to_dat);
+					$datediff = $last_date - $now;
+					if($datediff<0)
+					{
+						$vouchers[$i]->end_time = 0
+					}else{
+						$vouchers[$i]->end_time = floor($datediff/(60*60*24));
+					}*/
+					
                     $vouchers[$i]->end_time = strtotime($vouchers[$i]->offer_to_date)*1000;
                     if(empty($vouchers[$i]->buy_count))
                         $vouchers[$i]->buy_count = "0";

@@ -294,11 +294,13 @@ function addEventImage()
 function getActiveEvents()
 {
     $rarray = array();
+    $lastdate = date('Y-m-d');
     try
     {
-        $sql = "SELECT * FROM events WHERE status='O' ORDER BY id DESC";
+        $sql = "SELECT * FROM events WHERE status='O' and to_date >=:lastdate ORDER BY id DESC";
         $db = getConnection();
-        $stmt = $db->prepare($sql); 
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("lastdate", $lastdate); 
         //$stmt->bindParam("user_id", $user_id);
         $stmt->execute();
         $points = $stmt->fetchAll(PDO::FETCH_OBJ);

@@ -35,7 +35,7 @@ function addNewMembership()
     $rarray = array();   
     if(!empty($_POST))
     {
-        if(!empty($_POST['membership_name']) && !empty($_POST['membership_id']) && !empty($_POST['merchant_id']) && !empty($_POST['promo_id']) && !empty($_POST['start_date']) && !empty($_POST['expire_date']))
+        if(!empty($_POST['membership_name']) && !empty($_POST['membership_id']) && !empty($_POST['merchant_id']) && !empty($_POST['promo_id']) && !empty($_POST['start_date']) && !empty($_POST['expire_date']) && !empty($_POST['email']))
         {
             $membership_name = $_POST['membership_name'];
             $membership_id = $_POST['membership_id'];
@@ -43,7 +43,49 @@ function addNewMembership()
             $promo_id = $_POST['promo_id'];
             $start_date = $_POST['start_date'];
             $expire_date = $_POST['expire_date'];
-            $conditions = array('membership_id' => $membership_id, 'merchant_id' => $merchant_id);  
+            $email = $_POST['email'];
+            $sql = "select * from members where email='$email'";
+            $member_details = findByQuery($sql,'one');
+            if(!empty($member_details))
+            {
+                $upinfo = array();
+                $upinfo['save_data']['membership_name'] = $membership_name;
+                $upinfo['save_data']['membership_id'] = $membership_id;
+                $upinfo['save_data']['merchant_id'] = $merchant_id;
+                $upinfo['save_data']['member_id'] = $member_details['id'];
+                $upinfo['save_data']['promo_id'] = $promo_id;
+                $upinfo['save_data']['start_date'] = date('Y-m-d H:i:s',strtotime($start_date));
+                $upinfo['save_data']['expire_date'] = date('Y-m-d H:i:s',strtotime($expire_date));
+                $upinfo['save_data']['created_on'] = date('Y-m-d H:i:s');
+                $s = add(json_encode($upinfo),'membership_map');
+                $rarray = array('status' => 'success', 'message' => 'Membership updated successfully','data' => json_decode($s));
+            }
+            else
+            {
+                $member_data = array();
+                $member_data['save_data']['email'] = $email;
+                $add_det = add(json_encode($member_data),'members');
+                $add_det = json_decode($add_det);
+                if(!empty($add_det->id))
+                {
+                   $allinfo = array();
+                   $allinfo['save_data']['membership_name'] = $membership_name;
+                   $allinfo['save_data']['membership_id'] = $membership_id;
+                   $allinfo['save_data']['merchant_id'] = $merchant_id;
+                   $allinfo['save_data']['promo_id'] = $promo_id;
+                   $allinfo['save_data']['start_date'] = date('Y-m-d H:i:s',strtotime($start_date));
+                   $allinfo['save_data']['expire_date'] = date('Y-m-d H:i:s',strtotime($expire_date));
+                   $allinfo['save_data']['created_on'] = date('Y-m-d H:i:s');
+                   $allinfo['save_data']['member_id'] = $add_det->id;
+                   $s = add(json_encode($allinfo),'membership_map');
+                   $rarray = array('status' => 'success', 'message' => 'Membership saved successfully','data'=>json_decode($s));
+                }
+                else
+                {
+                    $rarray = array('status' => 'error', 'message' => 'Internal error. Please try again later.');
+                }
+            }
+            /*$conditions = array('membership_id' => $membership_id, 'merchant_id' => $merchant_id);  
             $sql = "SELECT * FROM membership_map where membership_id='$membership_id' and merchant_id='$merchant_id' and promo_id='$promo_id'";
             $exist = findByQuery($sql,'one');
             
@@ -62,18 +104,9 @@ function addNewMembership()
                 $rarray = array('status' => 'success', 'message' => 'Membership updated successfully','data' => json_decode($s));
             }
             else
-            {
-                $allinfo = array();
-                $allinfo['save_data']['membership_name'] = $membership_name;
-                $allinfo['save_data']['membership_id'] = $membership_id;
-                $allinfo['save_data']['merchant_id'] = $merchant_id;
-                $allinfo['save_data']['promo_id'] = $promo_id;
-                $allinfo['save_data']['start_date'] = date('Y-m-d H:i:s',strtotime($start_date));
-                $allinfo['save_data']['expire_date'] = date('Y-m-d H:i:s',strtotime($expire_date));
-                $allinfo['save_data']['created_on'] = date('Y-m-d H:i:s');
-                $s = add(json_encode($allinfo),'membership_map');
-                $rarray = array('status' => 'success', 'message' => 'Membership saved successfully','data'=>json_decode($s));
-            }
+            {*/
+               
+            //}
         }
         else
         {
