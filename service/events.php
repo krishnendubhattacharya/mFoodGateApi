@@ -297,7 +297,7 @@ function getActiveEvents()
     $lastdate = date('Y-m-d');
     try
     {
-        $sql = "SELECT * FROM events WHERE status='O' and to_date >=:lastdate ORDER BY id DESC";
+        $sql = "SELECT * FROM events WHERE status='O' and to_date >=:lastdate and is_active=1 ORDER BY id DESC";
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("lastdate", $lastdate); 

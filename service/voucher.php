@@ -1117,7 +1117,8 @@ function getAllFeaturedCats() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -1171,7 +1172,8 @@ function getLaunchTodayPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                         $img = $site_path.'voucher_images/default.jpg';
@@ -1190,8 +1192,8 @@ function getLaunchTodayPromo() {
 					}else{
 						$vouchers[$i]->end_time = floor($datediff/(60*60*24));
 					}*/
-					
-                    $vouchers[$i]->end_time = strtotime($vouchers[$i]->offer_to_date)*1000;
+                    $datediff = strtotime($vouchers[$i]->offer_to_date) - time();                    ;
+                    $vouchers[$i]->end_time = ceil($datediff/(60*60*24));
                     if(empty($vouchers[$i]->buy_count))
                         $vouchers[$i]->buy_count = "0";
 		    
@@ -1237,7 +1239,8 @@ function getLastdayPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -1273,7 +1276,7 @@ function getHotSellingPromo() {
         {
             $perc = 0;
         }
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and ((offers.buy_count/offers.quantity)*100)>=$perc order by buy_count";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and ((offers.buy_count/offers.quantity)*100)>=$perc order by buy_count";
         
         //echo $sql;desc limit 2 and offers.offer_type_id!=3
         $site_path = SITEURL;
@@ -1288,7 +1291,8 @@ function getHotSellingPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -1298,7 +1302,10 @@ function getHotSellingPromo() {
 	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
 	                        $vouchers[$i]->image = $img;                            
                         }
-		    
+		    $datediff = strtotime($vouchers[$i]->offer_to_date) - time();                    ;
+                    $vouchers[$i]->end_time = ceil($datediff/(60*60*24));
+                    if(empty($vouchers[$i]->buy_count))
+                        $vouchers[$i]->buy_count = "0";
 		}
 		$db = null;
 		$vouchers = json_encode($vouchers);
@@ -1330,7 +1337,7 @@ function getSpecialPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -1374,7 +1381,8 @@ function getPromoList() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -1417,7 +1425,8 @@ function getExpireSoonPromoList() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -1459,7 +1468,8 @@ function getMenuPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -1501,7 +1511,8 @@ function getPaymentPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -1543,7 +1554,8 @@ function getMerchantPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -1584,7 +1596,8 @@ function getResturantPromo($rid) {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2131,7 +2144,7 @@ function getLaunchTodayMembership() {
 	//$lastdate = date('Y-m-d');
 	$todayDate = date('Y-m-d');
 	$site_path = SITEURL;	
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and offers.is_active=1 and offers.offer_type_id=3";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.buy_count,offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and offers.is_active=1 and offers.offer_type_id=3";
         
         //echo $sql;
         
@@ -2145,7 +2158,8 @@ function getLaunchTodayMembership() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2155,7 +2169,10 @@ function getLaunchTodayMembership() {
 	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
 	                        $vouchers[$i]->image = $img;                            
                         }
-		    
+		    $datediff = strtotime($vouchers[$i]->offer_to_date) - time();                    ;
+                    $vouchers[$i]->end_time = ceil($datediff/(60*60*24));
+                    if(empty($vouchers[$i]->buy_count))
+                        $vouchers[$i]->buy_count = "0";
 		}
 		$db = null;
 		//echo  json_encode($vouchers);
@@ -2190,7 +2207,8 @@ function getActiveMembershipPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2243,7 +2261,8 @@ function getLastdayMembership() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2294,7 +2313,8 @@ function getHotSellingMembership() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2336,7 +2356,8 @@ function getSpecialMembership() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2375,7 +2396,7 @@ function getLaunchTodayMenuPromo() {
 	$todayDate = date('Y-m-d');
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and offers.is_active=1 and offers.offer_type_id=1";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.buy_count,offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and offers.is_active=1 and offers.offer_type_id=1";
         
         //echo $sql;
         
@@ -2389,7 +2410,8 @@ function getLaunchTodayMenuPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2399,6 +2421,10 @@ function getLaunchTodayMenuPromo() {
 	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
 	                        $vouchers[$i]->image = $img;                            
                         }
+                        $datediff = strtotime($vouchers[$i]->offer_to_date) - time();                    ;
+                    $vouchers[$i]->end_time = ceil($datediff/(60*60*24));
+                    if(empty($vouchers[$i]->buy_count))
+                        $vouchers[$i]->buy_count = "0";
 		    
 		}
 		$db = null;
@@ -2435,7 +2461,8 @@ function getActiveMenuPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2489,7 +2516,8 @@ function getLastdayMenuPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2541,7 +2569,8 @@ function getHotSellingMenuPromo() {
 		
 		for($i=0;$i<$count;$i++){
 
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2583,7 +2612,8 @@ function getSpecialMenuPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2619,7 +2649,7 @@ function getLaunchTodayPaymentPromo() {
 	$todayDate = date('Y-m-d');
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and offers.is_active=1 and offers.offer_type_id=2";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.buy_count,offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and offers.is_active=1 and offers.offer_type_id=2";
         
         //echo $sql;
         
@@ -2633,7 +2663,8 @@ function getLaunchTodayPaymentPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2643,6 +2674,10 @@ function getLaunchTodayPaymentPromo() {
 	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
 	                        $vouchers[$i]->image = $img;                            
                         }
+                         $datediff = strtotime($vouchers[$i]->offer_to_date) - time();                    ;
+                    $vouchers[$i]->end_time = ceil($datediff/(60*60*24));
+                    if(empty($vouchers[$i]->buy_count))
+                        $vouchers[$i]->buy_count = "0";
 		    
 		}
 		$db = null;
@@ -2677,7 +2712,8 @@ function getActivePaymentPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2730,7 +2766,8 @@ function getLastdayPaymentPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2766,7 +2803,7 @@ function getHotSellingPaymentPromo() {
         {
             $perc = 0;
         }
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where offers.is_active=1 and DATE(offers.offer_to_date) >=:lastdate and offers.offer_type_id=2 and ((offers.buy_count/offers.quantity)*100)>=$perc order by buy_count desc";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and DATE(offers.offer_to_date) >=:lastdate and offers.offer_type_id=2 and ((offers.buy_count/offers.quantity)*100)>=$perc order by buy_count desc";
         
         //echo $sql;
         $site_path = SITEURL;
@@ -2781,7 +2818,8 @@ function getHotSellingPaymentPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';
@@ -2791,6 +2829,11 @@ function getHotSellingPaymentPromo() {
 	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
 	                        $vouchers[$i]->image = $img;                            
                         }
+                        
+                        $datediff = strtotime($vouchers[$i]->offer_to_date) - time();                    ;
+                    $vouchers[$i]->end_time = ceil($datediff/(60*60*24));
+                    if(empty($vouchers[$i]->buy_count))
+                        $vouchers[$i]->buy_count = "0";
 		    
 		}
 		$db = null;
@@ -2823,7 +2866,8 @@ function getSpecialPaymentPromo() {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->offer_to_date = $todate;
 		    if(empty($vouchers[$i]->image)){
                             $img = $site_path.'voucher_images/default.jpg';

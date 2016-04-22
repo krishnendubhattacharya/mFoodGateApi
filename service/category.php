@@ -9,7 +9,7 @@ function getCat($id) {
 }
 
 function getAllActiveCats() {        
-	$sql = "SELECT * FROM category WHERE is_active=1";
+	$sql = "SELECT * FROM category WHERE is_active=1 ORDER BY seq ASC";
 	try {
 		$db = getConnection();
 		$stmt = $db->prepare($sql);  

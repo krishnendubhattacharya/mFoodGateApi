@@ -59,7 +59,10 @@ function updateOffer() {
             unset($body->outlet_id);
         }
         
+	$body->offer_to_date = $body->offer_to_date.' 23:59:59'; 
 	$allinfo['save_data'] = $body;
+	//$allinfo['save_data']['offer_to_date'] = $body->offer_to_date.' 23:59:59'; 
+	//$allinfo['save_data']['offer_to_date'] = date('Y-m-d H:i:s', strtotime($allinfo['save_data']['offer_to_date'].' 23:59:59')); 
 	$coupon_details = edit(json_encode($allinfo),'offers',$id);
         
 	if(!empty($coupon_details)){
@@ -129,8 +132,9 @@ function addNewOffer() {
         $outlets = $body->outlet_id;
         unset($body->outlet_id);
     }
-    
+    $body->offer_to_date = $body->offer_to_date.' 23:59:59'; 
     $allinfo['save_data'] = $body; 
+	//$allinfo['save_data']['offer_to_date'] = $body->offer_to_date.' 23:59:59';
     if(!empty($restaurant_details))
     {
         $body->merchant_id = $restaurant_details['user_id'];
@@ -145,6 +149,7 @@ function addNewOffer() {
                     $temp = array();
                     $temp['offer_id'] = $offers->id;
                     $temp['category_id'] = $category->id;
+					
                     add(json_encode(array('save_data' => $temp)),'offer_category_map');
                 }
             }

@@ -292,7 +292,7 @@ function updateUser($id) {
 //        unset($user->areaList);
 //       
         $typelist = array();
-        if(!empty($user->typeList))
+        if(isset($user->typeList))
         {
             $typelist = $user->typeList;
             unset($user->typeList);

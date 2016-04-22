@@ -33,7 +33,11 @@ function addSwap(){
 				if(empty($isswap))
 				{
 					$body->is_active = 1;
+					$body->voucher_price = $vouchers->price;
+					$body->voucher_expire_date = $vouchers->to_date;
+					$body->posted_on = date('Y-m-d H:i:s');
 					$allinfo['save_data'] = $body;
+					
 					//echo '<pre>';print_r($allinfo);
 					$swap = add(json_encode($allinfo),'swap');
 					if(!empty($swap)){
@@ -94,7 +98,7 @@ function swaplist() {
 function mySwapList($uid) {     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id, swap.posted_on  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id=:uid";
 	
 	try {
 		$db = getConnection();
@@ -107,10 +111,28 @@ function mySwapList($uid) {
 		for($i=0;$i<$count;$i++){
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
-                    if(!empty($vouchers[$i]->image))
-                    {
-                        $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
-                    }
+			
+			$posted_on = date('d M, Y', strtotime($vouchers[$i]->posted_on));
+		    $vouchers[$i]->posted_on = $posted_on;
+			
+			if(!empty($vouchers[$i]->image))
+			{
+				$vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
+			}
+			$rid = $vouchers[$i]->id;
+			$sql = "SELECT max(interested_swap.voucher_price) as high_bid FROM interested_swap where interested_swap.swap_id =:rid";
+			$db = getConnection();
+			$stmt = $db->prepare($sql);  
+			$stmt->bindParam("rid", $rid);
+			$stmt->execute();
+			$swapBid = $stmt->fetchObject();
+			//print_r($resalesBid);
+			if($swapBid->high_bid!='')
+			{
+				$vouchers[$i]->high_bid = $swapBid->high_bid;
+			}else{
+				$vouchers[$i]->high_bid = 0;
+			}
 		    
 		}
 		$db = null;
@@ -125,7 +147,7 @@ function mySwapList($uid) {
 function otherSwapList($uid) {     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id !=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id,swap.posted_on   FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id !=:uid";
 	
 	try {
 		$db = getConnection();
@@ -138,6 +160,7 @@ function otherSwapList($uid) {
 		for($i=0;$i<$count;$i++){
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
+			$vouchers[$i]->posted_on = date('d M,Y',strtotime($vouchers[$i]->posted_on));
                     if(!empty($vouchers[$i]->image))
                     {
                         $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
@@ -157,7 +180,7 @@ function myBidSwapList($uid) {
         $is_active = 1;  
 	$newdate = date('Y-m-d');
 		
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers, interested_swap where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.user_id=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.voucher_id  FROM vouchers, swap, offers, interested_swap where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.user_id=:uid";
 	
 	try {
 		$db = getConnection();
@@ -170,6 +193,12 @@ function myBidSwapList($uid) {
 		for($i=0;$i<$count;$i++){
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
+			$vouchers[$i]->posted_on = date('d M, Y',strtotime($vouchers[$i]->posted_on));
+			$vouchers[$i]->swap_voucher = findByIdArray($vouchers[$i]->voucher_id,'vouchers');
+			$vouchers[$i]->swap_offer = findByIdArray($vouchers[$i]->swap_voucher['offer_id'],'offers');
+			$vouchers[$i]->my_voucher = findByIdArray($vouchers[$i]->my_voucher_id,'vouchers');
+			$vouchers[$i]->my_offer = findByIdArray($vouchers[$i]->my_voucher['offer_id'],'offers');
+			
                     if(!empty($vouchers[$i]->image))
                     {
                         $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
@@ -382,15 +411,24 @@ function updateSwapBid(){
 	    if($resale_count>0){
 			if($resales->user_id==$userid)
 			{
-				$voucher_url = $body->voucher_url;
-				$url = explode('/',$voucher_url);
-				$countUrl = count($url);
-				$voucher_id = $url[$countUrl-1];
+				$voucher_id = $body->voucher_id;
+				$body->voucher_url = WEBSITEURL.'voucherdetail/'.$voucher_id;
 				
+				$db = getConnection();
+				$sql = "SELECT * FROM vouchers WHERE vouchers.id=:vid";
+				$stmt = $db->prepare($sql);  
+				$stmt->bindParam("vid", $voucher_id);
+				$stmt->execute();
+				$voucher = $stmt->fetchObject();
+				 
 				$allinfo['save_data']['voucher_url'] = $body->voucher_url;
 				$allinfo['save_data']['voucher_id'] = $voucher_id;
 				$allinfo['save_data']['subject'] = $body->subject;
 				$allinfo['save_data']['comment'] = $body->comment;
+				$allinfo['save_data']['voucher_price'] = $voucher->price;
+				$allinfo['save_data']['voucher_expire_date'] = $voucher->to_date;
+				//$arr['posted_on'] = date('Y-m-d H:i:s');
+				
 				$resale_details = edit(json_encode($allinfo),'interested_swap',$vid);
 				if(!empty($resale_details)){
 					$resale_details = json_decode($resale_details);
@@ -439,12 +477,10 @@ function getDetailsSwapBid($vid){
 function swapinterest(){
     $request = Slim::getInstance()->request();
     $body = json_decode($request->getBody());
-    
-	$voucher_url = $body->voucher_url;
+    $webUrl = WEBSITEURL;
+	$voucher_id = $body->voucher_id;
 	$user_id = $body->user_id;
-	$url = explode('/',$voucher_url);
-	$countUrl = count($url);
-	$voucher_id = $url[$countUrl-1]; 
+	$body->voucher_url = WEBSITEURL.'voucherdetail/'.$voucher_id;
 	$sid = $body->swap_id;
 	
 	$sql = "SELECT * from users where users.id=:userid";
@@ -490,6 +526,12 @@ function swapinterest(){
 					$to_user = $stmt->fetchObject();
 					if($to_user->id!=$user_id)
 					{
+						$sql = "SELECT * FROM vouchers WHERE vouchers.id=:vid";
+						$stmt = $db->prepare($sql);  
+						$stmt->bindParam("vid", $voucher_id);
+						$stmt->execute();
+						$voucher = $stmt->fetchObject();
+						
 						$arr = array();
 						$arr['user_id'] = $user_id;
 						$arr['swap_id'] = $body->swap_id;
@@ -499,6 +541,10 @@ function swapinterest(){
 						$arr['is_active'] = 1;
 						$arr['subject'] = $body->subject;
 						$arr['comment'] = $body->comment;
+						$arr['voucher_price'] = $voucher->price;
+						$arr['voucher_expire_date'] = $voucher->to_date;
+						$arr['posted_on'] = date('Y-m-d H:i:s');
+						
 						$allinfo['save_data'] = $arr;
 						$interestedSwapDetails = add(json_encode($allinfo),'interested_swap');
 						if($interestedSwapDetails){
