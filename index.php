@@ -25,6 +25,13 @@ require 'service/search.php';
 require 'service/offer_types.php';
 require 'service/offers.php';
 require 'service/membership.php';
+require 'service/email_templates.php';
+require 'service/sms.php';
+require 'service/bank_details.php';
+require 'service/banner.php';
+require 'service/advertisement.php';
+require 'service/point_master.php';
+require 'service/blogs.php';
  
 $app = new Slim();
 $app->config('debug', true);
@@ -48,6 +55,10 @@ $app->delete('/users/:id','deleteUser');
 $app->get('/getAllMerchants','getAllMerchants');
 $app->get('/getCustomer/:id','getCustomer');
 $app->get('/getAllCustomers','getAllCustomers');
+$app->get('/getUserSettings/:id','getUserSettings');
+$app->put('/updateUserSettings/:id','updateUserSettings');
+$app->get('/getActiveMerchants','getActiveMerchants');
+$app->get('/getUserByEmail/:email','getUserByEmail');
 
 $app->post('/fbloginuser', 'fbLoginUser');
 $app->post('/profileimageupload', 'profileImageUpload');
@@ -65,6 +76,12 @@ $app->get('/getLaunchTodayPromo',  'getLaunchTodayPromo');
 $app->get('/getLastdayPromo',  'getLastdayPromo');
 $app->get('/getHotSellingPromo',  'getHotSellingPromo');
 $app->get('/getSpecialPromo',  'getSpecialPromo');
+
+/************* Vouchers ****************/
+$app->get('/getResturantLaunchTodayPromo/:id',  'getResturantLaunchTodayPromo');
+$app->get('/getResturantHotSellingPromo/:id',  'getResturantHotSellingPromo');
+$app->get('/getResturantLastDayPromo/:id',  'getResturantLastDayPromo');
+$app->get('/getResturantSpecialPromo/:id',  'getResturantSpecialPromo');
 
 $app->get('/getActiveMembershipPromo',  'getActiveMembershipPromo');
 $app->get('/getLaunchTodayMembership',  'getLaunchTodayMembership');
@@ -119,6 +136,8 @@ $app->get('/getAllActiveMembership/:userid','getAllActiveMembership');
 $app->post('/merchantSaveMember','merchantSaveMember');
 $app->get('/getLocations',  'getAllActiveLocation'); 
 $app->post('/giftVoucher', 'giftVoucher');
+$app->get('/getGiftedToMe/:userid', 'getGiftedToMe');
+$app->get('/getGiftedByMe/:userid', 'getGiftedByMe');
 $app->get('/getPromoList',  'getPromoList');
 $app->get('/getExpireSoonPromoList',  'getExpireSoonPromoList');
 $app->post('/addMerchant',  'addMerchant');
@@ -132,6 +151,8 @@ $app->get('/getRestaurantDetails/:id', 'getRestaurantDetails');
 $app->put('/updateResturant/:id', 'updateResturant');
 $app->delete('/deleteResturant/:id', 'deleteResturant');
 $app->get('/getRestaurantByMerchant/:id', 'getRestaurantByMerchant');
+$app->get('/getActiveRestaurants', 'getActiveRestaurants');
+$app->get('/getResturantByMerchant/:uid', 'getResturantByMerchant');
 
 /**************** Outlets *************/
 $app->get('/getOutletsByRestaurant/:id', 'getOutletsByRestaurant');
@@ -218,6 +239,18 @@ $app->post('/addNewOffer',  'addNewOffer');
 $app->post('/updateOffer',  'updateOffer');
 $app->delete('/deleteOffer',  'deleteOffer');
 $app->get('/getOffersByRestaurant/:id',  'getOffersByRestaurant');
+$app->get('/getAllOffers',  'getAllOffers');
+$app->post('/checkExpiredOffers',  'checkExpiredOffers');
+
+/***************** Point Master ************/
+$app->get('/getAllPointMaster',  'getAllPointMaster');
+$app->post('/addNewPointMaster',  'addNewPointMaster');
+$app->post('/updatePointMaster',  'updatePointMaster');
+$app->delete('/deletePointMaster/:id',  'deletePointMaster');
+
+/**************** Blogs *******************/
+$app->get('/getAllBlogs',  'getAllBlogs');
+$app->post('/addNewBlog',  'addNewBlog');
 
 /***************** Membership *************/
 $app->post('/addNewMembership',  'addNewMembership'); 
@@ -227,6 +260,42 @@ $app->get('/getMembershipByMerchant/:id',  'getMembershipByMerchant');
 
 /****************** Offer Types ***********/
 $app->get('/getAllActiveOfferType',  'getAllActiveOfferType');
+
+/************************ Email Templates ********************/
+$app->post('/addEmailTemplate',  'addEmailTemplate'); 
+$app->get('/getAllEmailTemplates',  'getAllEmailTemplates');
+$app->post('/updateEmailTemplate',  'updateEmailTemplate');
+$app->delete('/deleteEmailTemplate/:id',  'deleteEmailTemplate');
+
+/*********************** SMS *********************************/
+$app->post('/addSms',  'addSms'); 
+$app->get('/getAllSms',  'getAllSms');
+$app->post('/updateSms',  'updateSms');
+$app->delete('/deleteSms/:id',  'deleteSms');
+
+/***************** Bank Details ************************/
+$app->post('/addBankDetails',  'addBankDetails');
+$app->get('/getBankDetailsByUser/:id',  'getBankDetailsByUser');
+$app->post('/updateBankDetails',  'updateBankDetails');
+
+/********************Banner***********************/
+$app->post('/addBanner', 'addBanner');
+$app->get('/getAllBanner', 'getAllBanner');
+$app->get('/getBannerDetails/:id', 'getBannerDetails');
+$app->put('/updateBanner/:id', 'updateBanner');
+$app->delete('/deleteBanner/:id', 'deleteBanner');
+$app->get('/getActiveBanner', 'getActiveBanner');
+$app->get('/getActiveBannerOther/:id', 'getActiveBannerOther');
+$app->get('/getUpdateBannerOther/:id', 'getUpdateBannerOther');
+
+/********************Advertisement***********************/
+$app->post('/addAds', 'addAds');
+$app->get('/getAllAds', 'getAllAds');
+$app->get('/getAdsDetails/:id', 'getAdsDetails');
+$app->put('/updateAds/:id', 'updateAds');
+$app->delete('/deleteAds/:id', 'deleteAds');
+$app->get('/getAllAdsLocation', 'getAllAdsLocation');
+$app->get('/getActiveAdsByLocation/:id', 'getActiveAdsByLocation');
 
 /*********************** Admin ************************/
 /******************** Users *************************/

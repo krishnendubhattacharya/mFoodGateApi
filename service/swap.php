@@ -68,17 +68,19 @@ function addSwap(){
 function swaplist() {     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and offers.offer_to_date >=:date and swap.is_active=1 ORDER BY swap.posted_on DESC";
 	
 	try {
 		$db = getConnection();
-		$stmt = $db->prepare($sql);  
+		$stmt = $db->prepare($sql);
+		$stmt->bindParam("date", $newdate);  
 		$stmt->execute();
 		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
-		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('d M, Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
                     if(!empty($vouchers[$i]->image))
                     {

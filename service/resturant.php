@@ -1,8 +1,24 @@
 <?php
+function getActiveRestaurants()
+{
+    
+    $rarray = array();
+    $restaturants = findByConditionArray(array('is_active' => 1),'restaurants');
+    if(!empty($restaturants))
+    {
+        $rarray = array('type' => 'success','restaurants' => $restaturants);
+    }
+    else
+    {
+        $rarray = array('type' => 'error','message' => 'No restaurants found.');
+    }
+    echo json_encode($rarray);
+}
+
 function getFeaturedResturantHome() {     
 
         $is_active = 1;  
-	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo FROM restaurants where restaurants.is_featured=1 order by rand() limit 3";
+	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo,restaurants.sub_title FROM restaurants where restaurants.is_featured=1 order by restaurants.seq ASC";
         
         //echo $sql;
         $site_path = SITEURL;
@@ -43,7 +59,7 @@ function getResturantByCategory($cid) {
         $restaurants = findByConditionArray(array('category_id' => $cid),'resturant_category_map');
         $res_ids = array_column($restaurants, 'restaurant_id');
         $is_active = 1;  
-	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo FROM restaurants where restaurants.id IN(".implode(',',$res_ids).") order by restaurants.title DESC";
+	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo,restaurants.sub_title FROM restaurants where restaurants.id IN(".implode(',',$res_ids).") order by restaurants.seq ASC";
         
         $site_path = SITEURL;
         
@@ -71,6 +87,44 @@ function getResturantByCategory($cid) {
 		$db = null;
 		$restaurants = json_encode($restaurants);
 	    $result = '{"type":"success","restaurants":'.$restaurants.',"count":'.$count.',"category":'.  json_encode($category_details).'}';
+		
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
+function getResturantByMerchant($uid) {     
+
+         
+	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo FROM restaurants where restaurants.user_id =:uid order by restaurants.title";
+        
+        $site_path = SITEURL;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);	
+	    $stmt->bindParam("uid", $uid);
+		
+		$stmt->execute();
+		$restaurants = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    
+		    if(empty($restaurants[$i]->logo)){
+                            $img = $site_path.'restaurant_images/default.jpg';
+                            $restaurants[$i]->logo = $img;
+                        }
+                        else{                            
+	                        $img = $site_path."restaurant_images/".$restaurants[$i]->logo;
+	                        $restaurants[$i]->logo = $img;                            
+                        }
+		    
+		}
+		$db = null;
+		$restaurants = json_encode($restaurants);
+	    $result = '{"type":"success","restaurants":'.$restaurants.',"count":'.$count.'}';
 		
 	} catch(PDOException $e) {
 		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 

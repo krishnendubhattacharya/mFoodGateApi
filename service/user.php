@@ -1,4 +1,54 @@
 <?php
+function getUserSettings($user_id)
+{
+    $rarray = array();
+    $query = "select media_notification,expire_date_notification,promo_notification,news_letter_notification from users where id=$user_id";
+    $details = findByQuery($query,'one');
+    if(!empty($details))
+    {
+        $rarray = array('type' => 'success', 'data' => $details);
+    }
+    else 
+    {
+        $rarray = array('type' => 'error', 'message' => 'User details not found');
+    }
+    echo json_encode($rarray);
+    exit;
+}
+
+function updateUserSettings($id) {
+	$request = Slim::getInstance()->request();
+	
+	$body = $request->getBody();
+	$user = json_decode($body);
+       
+        $user_id = $id;
+	if(isset($user->id)){
+	        unset($user->id);
+	}	
+       
+        $data = array();
+        $data['media_notification'] = $user->media_notification;
+        $data['expire_date_notification'] = $user->expire_date_notification;
+        $data['promo_notification'] = $user->promo_notification;
+        $data['news_letter_notification'] = $user->news_letter_notification;
+       
+        
+	$allinfo['save_data'] = $data;
+       
+	$result = edit(json_encode($allinfo),'users',$id);
+        if($result)
+        {
+
+        //var_dump($typelist);
+        }
+	
+	$result = '{"type":"success","message":"Updated Succesfully"}';
+	echo $result;
+	
+}
+
+
 function getAllUsers() {
         $result = getAll('users');
 	echo $result;
@@ -7,6 +57,26 @@ function getAllUsers() {
 function getAllMerchants() {
         $result = findByCondition(array('user_type_id' => 3),'users');
 	echo $result;
+}
+
+function getActiveMerchants() {
+        $query = "SELECT * from users where user_type_id=3 and is_active=1";
+        $result = findByQuery($query);
+	echo json_encode($result); 
+}
+
+function getUserByEmail($email)
+{
+    $rarray = array();
+    $result = findByConditionArray(array('email' => $email),'users');
+    if(!empty($result))
+    {
+        $rarray = array("type" => "success", "data" => $result['0']);
+    }
+    else {
+        $rarray = array("type" => "error", "message" => "No data found.");
+    }
+    echo json_encode($rarray);
 }
 
 function getAllCustomers() {
@@ -208,7 +278,7 @@ function addMerchant() {
 	if($rowCount == 0){
             $unique_code = time().rand(100000,1000000);
 	    $pass = rand(100000,1000000);
-            $user->password = $pass;
+            //$user->password = $pass;
 	    $user->txt_pwd = $pass;
 	    $user->unique_code = $unique_code;
 	    $user->password = md5($user->password);
@@ -259,7 +329,7 @@ function addMerchant() {
 		    ';
 		    //$body = "Hello";
 	    sendMail($to,$subject,$body);
-	    $result = '{"type":"success","message":"Added Succesfully"}'; 
+	    $result = '{"type":"success","message":"Added Succesfully","data":'.json_encode($user_details).'}'; 
 	    }
 	    else{
 		 $result = '{"type":"error","message":"Try Again"}'; 
@@ -470,25 +540,30 @@ function activeProfile($unique_id){
 	//echo $email;exit;
 	//$pass = md5($body->password);
 	$result='';
+        
 	if(!empty($unique_id)){
-	    $db = getConnection();
-	    $sql = "SELECT * FROM users WHERE unique_code=:unique_code";
-	    $stmt = $db->prepare($sql);  
-	    $stmt->bindParam("unique_code", $unique_id);	    
-	    $stmt->execute();	
-	    $count = $stmt->rowCount();
-	    //echo $count;exit;
-	    $user = $stmt->fetchObject();
-	    $db = null;
-	    //print_r($user);exit;
+//	    $db = getConnection();
+//	    $sql = "SELECT * FROM users WHERE unique_code=:unique_code";
+//	    $stmt = $db->prepare($sql);  
+//	    $stmt->bindParam("unique_code", $unique_id);	    
+//	    $stmt->execute();	
+//	    $count = $stmt->rowCount();
+//	    //echo $count;exit;
+//	    $user = $stmt->fetchObject();
+//	    $db = null;
+            $user = json_decode(findByCondition(array('unique_code'=>$unique_id),'users'));
+            $count = count($user);
+	   
 	    if($count==0){
 		$result = '{"type":"error","message":"You are Not Valid User"}'; 
-	    }
+	    } 
 	    elseif($count==1){
 		//$result = json_encode($user); 
+                $user = $user['0'];
 		$logged_in = $user->is_logged_in;
 		
 		    $id = $user->id;
+		    $email = $user->email;
 		    //$arr['is_logged_in'] = 1;
 		    $arr['is_active'] = 1;
 		    $arr['last_login'] = date('Y-m-d h:m:s');
@@ -501,6 +576,91 @@ function activeProfile($unique_id){
 		    //$user->is_logged_in=1;
 		    $user->last_login=$arr['last_login'];
 		    $user_details = json_encode($user);
+		    
+		    $db = getConnection();
+	            $sql = "SELECT * FROM gift_voucher_non_user WHERE email=:email";
+	            $stmt = $db->prepare($sql);  
+	            $stmt->bindParam("email", $email);	    
+	            $stmt->execute();	
+	            $tempvouchercount = $stmt->rowCount();
+	            //echo $count;exit;
+	            $tempvoucher = $stmt->fetchObject();
+	            $db = null;
+                   
+		    if($tempvouchercount != 0){
+		        $to_user = $id;
+		        $from_user = $tempvoucher->user_id;
+		        $vid = $tempvoucher->voucher_id;
+		        $tempid = $tempvoucher->id;
+		        //$vid = $tempvoucher->voucher_id;
+                         
+		        if(!empty($to_user))
+		        {
+                                
+			        if(!empty($from_user))
+			        {
+                                        $db = getConnection();
+				        $sql = "SELECT voucher_owner.id, voucher_owner.is_active, vouchers.id as voucher_id, vouchers.offer_id, vouchers.view_id, vouchers.offer_price, vouchers.offer_percent, vouchers.price, users.first_name, users.last_name, users.email  FROM vouchers, voucher_owner, users WHERE voucher_owner.voucher_id = vouchers.id and voucher_owner.voucher_id=:vid and voucher_owner.is_active = '1' and voucher_owner.to_user_id=:userid";
+				        $stmt = $db->prepare($sql);  
+				        $stmt->bindParam("vid", $vid);
+				        $stmt->bindParam("userid", $from_user);
+				        $stmt->execute();
+				        $voucherowner = $stmt->fetchObject();
+				        if(!empty($voucherowner))
+				        {
+					        $ownerid = $voucherowner->id;
+					        $offerid = $voucherowner->offer_id;
+					        $viewid = $voucherowner->view_id;
+					        $offer_price = $voucherowner->offer_price;
+					        $offer_percent = $voucherowner->offer_percent;
+					        $price = $voucherowner->price;
+					        $vid = $voucherowner->voucher_id;
+					
+					        $arr = array();
+					        $arr['is_active'] = 0;
+					        //$arr['buy_price'] = $buy_price;
+					        $arr['sold_date'] = date('Y-m-d h:i:s');
+					        $allinfo['save_data'] = $arr;
+					        $old_owner_details = edit(json_encode($allinfo),'voucher_owner',$ownerid);
+					        if($old_owner_details){
+						        $data = array();
+						        $data['voucher_id'] = $vid;
+						        $data['offer_id'] = $offerid;
+						        $data['voucher_view_id'] = $viewid;
+						        $data['from_user_id'] = $from_user;
+						        $data['to_user_id'] = $to_user;
+						        $data['price'] = $price;
+						        $data['offer_price'] = $offer_price;
+						        $data['offer_percent'] = $offer_percent;
+						        $data['is_active'] = '1';
+						        $data['buy_price'] = '0.00';
+						        $data['purchased_date'] = date('Y-m-d h:i:s');
+						        $data['transfer_type'] = 'Gift';
+						        $newinfo['save_data'] = $data;
+						        $new_owner_details  = add(json_encode($newinfo),'voucher_owner');
+						        if(!empty($new_owner_details)){
+							        $new = json_decode($new_owner_details);
+						            $giveData['voucher_id'] = $vid;
+							        $giveData['offer_id'] = $offerid;
+							        $giveData['from_user_id'] = $from_user;
+							        $giveData['to_user_id'] = $to_user;
+							        $giveData['created_on'] = date('Y-m-d h:i:s');
+							        $giveData['is_active'] = 1;
+							        $newgiveData['save_data'] = $giveData;
+							        $new_owner_details  = add(json_encode($newgiveData),'give_voucher');
+							
+							        
+						          	
+						        }
+					        }
+					        
+					        
+				        }
+			        }
+		        }
+		        $deletetemptable = delete('gift_voucher_non_user',$tempid);
+		    }
+		    
 		    
 		    $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}'; 
 		    }else{

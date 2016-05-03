@@ -17,12 +17,12 @@ function addEvent()
         $body->eventdata->created_on = date('Y-m-d H:i:s');
         if(!empty($body->eventdata->from_date))
         {
-            $body->eventdata->from_date = date('Y-m-d',strtotime($body->eventdata->from_date));
+            $body->eventdata->from_date = date('Y-m-d H:i:s',strtotime($body->eventdata->from_date));
         }
         
         if(!empty($body->eventdata->to_date))
         {
-            $body->eventdata->to_date = date('Y-m-d',strtotime($body->eventdata->to_date));
+            $body->eventdata->to_date = date('Y-m-d H:i:s',strtotime($body->eventdata->to_date));
         }
         
         
@@ -82,12 +82,12 @@ function updateEvent($id) {
 		
         if(!empty($body->eventdata->from_date))
         {
-            $body->eventdata->from_date = date('Y-m-d',strtotime($body->eventdata->from_date));
+            $body->eventdata->from_date = date('Y-m-d H:i:s',strtotime($body->eventdata->from_date));
         }
         
         if(!empty($body->eventdata->to_date))
         {
-            $body->eventdata->to_date = date('Y-m-d',strtotime($body->eventdata->to_date));
+            $body->eventdata->to_date = date('Y-m-d H:i:s',strtotime($body->eventdata->to_date));
         }
         
         if(isset($body->eventdata->id))
@@ -159,9 +159,9 @@ function getEventsByUser($user_id)
 			for($i=0;$i<$count;$i++){
 				$created_on = date('m/d/Y', strtotime($points[$i]->created_on));
 				$points[$i]->created_on = $created_on;
-				$from_date = date('m/d/Y', strtotime($points[$i]->from_date));
+				$from_date = date('m/d/Y h:i a', strtotime($points[$i]->from_date));
 				$points[$i]->from_date = $from_date;
-				$to_date = date('m/d/Y', strtotime($points[$i]->to_date));
+				$to_date = date('m/d/Y h:i a', strtotime($points[$i]->to_date));
 				$points[$i]->to_date = $to_date;
                                 if(!empty($points[$i]->image))
                                     $points[$i]->image_url = SITEURL.'event_images/'.$points[$i]->image;
@@ -297,7 +297,7 @@ function getActiveEvents()
     $lastdate = date('Y-m-d');
     try
     {
-        $sql = "SELECT * FROM events WHERE status='O' and to_date >=:lastdate and is_active=1 ORDER BY id DESC";
+        $sql = "SELECT * FROM events WHERE status='O' and to_date >=:lastdate and is_active=1 ORDER BY from_date ASC";
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("lastdate", $lastdate); 
@@ -310,10 +310,12 @@ function getActiveEvents()
                     for($i=0;$i<$count;$i++){
                             $created_on = date('m/d/Y', strtotime($points[$i]->created_on));
                             $points[$i]->created_on = $created_on;
-                            $from_date = date('m/d/Y', strtotime($points[$i]->from_date));
+                            $from_date = date('m/d/Y h:i a', strtotime($points[$i]->from_date));
                             $points[$i]->from_date = $from_date;
-                            $to_date = date('m/d/Y', strtotime($points[$i]->to_date));
+							$points[$i]->expire_date = date('d M, Y H:i:s', strtotime($points[$i]->to_date));
+                            $to_date = date('m/d/Y h:i a', strtotime($points[$i]->to_date));
                             $points[$i]->to_date = $to_date;
+							
                             if(!empty($points[$i]->image))
                                 $points[$i]->image_url = SITEURL.'event_images/'.$points[$i]->image;
 
@@ -325,6 +327,11 @@ function getActiveEvents()
                                 $points[$i]->status = 'Completed';
                             $points[$i]->categories = json_decode(findByCondition(array('event_id'=>$points[$i]->id),'event_category_map'));
                             $points[$i]->locations = json_decode(findByCondition(array('event_id'=>$points[$i]->id),'event_location_map'));
+							foreach($points[$i]->locations as $k=>$loc)
+							{
+								$location = findByIdArray($loc->location_id,'locations');
+								$points[$i]->locations[$k]->location = $location['city'];
+							}
                     }	
                     /*if(!empty($points))
         {

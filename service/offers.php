@@ -1,4 +1,55 @@
 <?php
+function getAllOffers()
+{
+    $rarray = array();
+    $conditions = array();
+    
+    $restaurants = findByConditionArray(array(),'offers');
+    if(!empty($restaurants))
+    {
+        $restaurants = array_map(function($t){
+            $location = findByIdArray( $t['offer_type_id'],'offer_types');
+            $t['offer_type'] =  $location['name'];
+            $t['restaurant'] = findByIdArray( $t['restaurant_id'],'restaurants');
+            return $t;
+        }, $restaurants);
+        $rarray = array('type' => 'success', 'data' => $restaurants);
+    }
+    else
+    {
+        $rarray = array('type' => 'error', 'message' => 'No outlets found');
+    }
+    echo json_encode($rarray);
+}
+
+function checkExpiredOffers()
+{
+    $rarray = array();
+    $request = Slim::getInstance()->request();
+    $body = $request->getBody();
+
+    $body = json_decode($body);
+    $offer_ids = $body->offer_ids;
+    if(!empty($offer_ids))
+    {
+        $sql = "select * from offers where DATE(offer_to_date)<CURDATE() and id in(".implode(",",$offer_ids).")";
+        $results = findByQuery($sql);
+        if(!empty($results))
+        {
+            $rarray = array('type' => 'success','ids' => array_column($results,'id'));
+        }
+        else
+        {
+            $rarray = array('type' => 'error', 'message' => 'No offers found');
+        }
+    }
+    else
+    {
+        $rarray = array('type' => 'error', 'message' => 'No offers found');
+    }
+    echo json_encode($rarray);
+}
+
 function getOffersByRestaurant($restaurant_id)
 {
     $rarray = array();
@@ -115,6 +166,7 @@ function addNewOffer() {
     $news = array();
     
     $body->created_on = date('Y-m-d H:i:s');
+    $body->image->filename = time().$body->image->filename;
     file_put_contents('./voucher_images/'.$body->image->filename,  base64_decode($body->image->base64));
     $body->image = $body->image->filename;
     unset($body->image_url);

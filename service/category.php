@@ -1,7 +1,15 @@
 <?php
 function getAllCats() {
-        $result = getAll('category');
-	echo $result;
+        $result = json_decode(getAll('category'));
+        if(!empty($result->category))
+        {
+            $result->category = array_map(function($t){
+                if(!empty($t->icon))
+                    $t->icon_url = SITEURL.'category_icons/'.$t->icon;
+                return $t;
+            }, $result->category);
+        }
+	echo json_encode($result);
 }
 function getCat($id) {
         $result = findById($id,'category');
@@ -18,6 +26,11 @@ function getAllActiveCats() {
 		$category = $stmt->fetchAll(PDO::FETCH_OBJ); 
 		$db = null;
 		if(!empty($category)){
+                        $category = array_map(function($t){
+                            if(!empty($t->icon))
+                                $t->icon_url = SITEURL.'category_icons/'.$t->icon;
+                            return $t;
+                        },$category);
 		        echo '{"type":"success","category": ' . json_encode($category) . '}'; 
 		}else{
 		        echo '{"type":"error","message":"No record found"}'; 
@@ -41,7 +54,13 @@ function addCat() {
 	//echo $rowcount;exit;
 	if($rowcount==0){
 	   $allinfo['save_data'] = $body;
-	   
+	   if(!empty($body->icon))
+           {
+               $body->icon->filename = time().$body->icon->filename;
+               file_put_contents('category_icons/'.$body->icon->filename, base64_decode($body->icon->base64)); 
+               $body->icon = $body->icon->filename;
+           }
+               
 	    //$allinfo['unique_data'] = $unique_field;
 	  $cat_details  = add(json_encode($allinfo),'category');
 	  if(!empty($cat_details)){
@@ -68,6 +87,16 @@ function updateCat($id) {
 	if(isset($coupon->id)){
 	        unset($coupon->id);
 	}	
+        if(!empty($coupon->icon) && isset($coupon->icon->filename))
+        {
+            $coupon->icon->filename = time().$coupon->icon->filename;
+            file_put_contents('category_icons/'.$coupon->icon->filename, base64_decode($coupon->icon->base64)); 
+            $coupon->icon = $coupon->icon->filename;
+        }
+        else
+        {
+            unset($coupon->icon);
+        }
 	$allinfo['save_data'] = $coupon;
 	$coupon_details = edit(json_encode($allinfo),'category',$id);
 	if(!empty($coupon_details)){
