@@ -81,6 +81,28 @@ function findByConditionArray($conditions,$table) {
 
 /*
  * $sql : Sql query with conditions
+ */
+function updateByQuery($sql) {
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql); 
+        $data = $stmt->execute();
+        if($stmt->rowCount()>0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    catch(PDOException $e) {
+        return false; 
+    }
+}
+
+/*
+ * $sql : Sql query with conditions
  * $type : all - find multiple row
  *         one - find one row
  */

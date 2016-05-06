@@ -1,8 +1,9 @@
 <?php
 function getUserSettings($user_id)
 {
+    
     $rarray = array();
-    $query = "select media_notification,expire_date_notification,promo_notification,news_letter_notification from users where id=$user_id";
+    $query = "select media_notification,expire_date_notification,promo_notification,news_letter_notification,notification_wa,notification_email,notification_sms,remainder_days from users where id=$user_id";
     $details = findByQuery($query,'one');
     if(!empty($details))
     {
@@ -32,6 +33,10 @@ function updateUserSettings($id) {
         $data['expire_date_notification'] = $user->expire_date_notification;
         $data['promo_notification'] = $user->promo_notification;
         $data['news_letter_notification'] = $user->news_letter_notification;
+        $data['notification_wa'] = $user->notification_wa;
+        $data['notification_email'] = $user->notification_email;
+        $data['notification_sms'] = $user->notification_sms;
+        $data['remainder_days'] = $user->remainder_days;
        
         
 	$allinfo['save_data'] = $data;
@@ -190,6 +195,95 @@ function getCustomer($id) {
 	}
 	
 	echo $result;
+}
+
+function addSubUser(){
+    $rarray = array();
+    $request = Slim::getInstance()->request();
+    $user = json_decode($request->getBody());
+    $unique_field = array();
+    $unique_field['email']=$user->email;
+    //$unique_field['username']=$user->username;
+    $rowCount = rowCount(json_encode($unique_field),'users');
+    if($rowCount == 0){
+        $user->password = md5($user->password);
+        $user->user_type_id = 3;
+	$user->registration_date = date('Y-m-d h:m:s');
+        $allinfo['save_data'] = $user;
+        $user_details = add(json_encode($allinfo),'users');
+        $user_details = json_decode($user_details);
+        $rarray = array('type' => 'success', 'data' => $user_details);
+    }
+    else
+    {
+        $rarray = array("type" => "error", "message" => "Email already exist");
+    }
+    echo json_encode($rarray);
+}
+
+function updateSubUser(){
+    $rarray = array();
+    $request = Slim::getInstance()->request();
+    $user = json_decode($request->getBody());
+    if(isset($user->id)){
+        $user_id = $user->id;
+        unset($user->id);
+    }
+    $unique_field = array();
+    $email=$user->email;
+    $query = "SELECT * from users where email='$email' and id!='$user_id'";
+    //$unique_field['username']=$user->username;
+    $rowCount = findByQuery($query,'one');
+    if(empty($rowCount)){
+        if(!empty($user->password))
+        {
+            $user->password = md5($user->password);
+        }
+        else {
+            unset($user->password);
+        }
+        $allinfo['save_data'] = $user;
+        $user_details = edit(json_encode($allinfo),'users',$user_id);
+        $user_details = json_decode($user_details);
+        $rarray = array('type' => 'success', 'data' => $user_details);
+    }
+    else
+    {
+        $rarray = array("type" => "error", "message" => "Email already exist");
+    }
+    echo json_encode($rarray);
+}
+
+function getAllSubUserByUser($user_id)
+{
+    $rarray = array();
+    $subusers = findByConditionArray(array('parent_id' => $user_id),'users');
+    if(!empty($subusers))
+    {
+        $subusers = array_map(function($t){
+            if(!empty($t['roll']))
+            {
+                if($t['roll']==1)
+                {
+                    $t['roll_name'] = "Back Office";
+                }
+                else if($t['roll']==2){
+                    $t['roll_name'] = "Operational";
+                }
+                else if($t['roll']==3){
+                    $t['roll_name'] = "Admin";
+                }
+            }
+            return $t;
+        }, $subusers);
+        $rarray = array('type' => 'success', 'data' => $subusers);
+    }
+    else
+    {
+        $rarray = array('type' => 'error', 'message' => 'No Sub User Found');
+    }
+    echo json_encode($rarray);
+    
 }
 
 function addUser() {	
@@ -584,85 +678,105 @@ function activeProfile($unique_id){
 	            $stmt->execute();	
 	            $tempvouchercount = $stmt->rowCount();
 	            //echo $count;exit;
-	            $tempvoucher = $stmt->fetchObject();
+	            //$tempvoucher = $stmt->fetchObject();
+                    $tempvouchers = $stmt->fetchAll(PDO::FETCH_OBJ);
 	            $db = null;
-                   
+                    $expired_vouchers = 0;
 		    if($tempvouchercount != 0){
-		        $to_user = $id;
-		        $from_user = $tempvoucher->user_id;
-		        $vid = $tempvoucher->voucher_id;
-		        $tempid = $tempvoucher->id;
-		        //$vid = $tempvoucher->voucher_id;
-                         
-		        if(!empty($to_user))
-		        {
+                        foreach($tempvouchers as $tempvoucher)
+                        {
+                            $date1 = strtotime($tempvoucher->gift_date);
+                            $date2 = time();
+                            $interval = floor(($date2 - $date1)/(60*60*24));
+                            $tempid = $tempvoucher->id;
+                            if($interval<3)
+                            {
+                                $to_user = $id;
+                                $from_user = $tempvoucher->user_id;
+                                $vid = $tempvoucher->voucher_id;
                                 
-			        if(!empty($from_user))
-			        {
-                                        $db = getConnection();
-				        $sql = "SELECT voucher_owner.id, voucher_owner.is_active, vouchers.id as voucher_id, vouchers.offer_id, vouchers.view_id, vouchers.offer_price, vouchers.offer_percent, vouchers.price, users.first_name, users.last_name, users.email  FROM vouchers, voucher_owner, users WHERE voucher_owner.voucher_id = vouchers.id and voucher_owner.voucher_id=:vid and voucher_owner.is_active = '1' and voucher_owner.to_user_id=:userid";
-				        $stmt = $db->prepare($sql);  
-				        $stmt->bindParam("vid", $vid);
-				        $stmt->bindParam("userid", $from_user);
-				        $stmt->execute();
-				        $voucherowner = $stmt->fetchObject();
-				        if(!empty($voucherowner))
-				        {
-					        $ownerid = $voucherowner->id;
-					        $offerid = $voucherowner->offer_id;
-					        $viewid = $voucherowner->view_id;
-					        $offer_price = $voucherowner->offer_price;
-					        $offer_percent = $voucherowner->offer_percent;
-					        $price = $voucherowner->price;
-					        $vid = $voucherowner->voucher_id;
-					
-					        $arr = array();
-					        $arr['is_active'] = 0;
-					        //$arr['buy_price'] = $buy_price;
-					        $arr['sold_date'] = date('Y-m-d h:i:s');
-					        $allinfo['save_data'] = $arr;
-					        $old_owner_details = edit(json_encode($allinfo),'voucher_owner',$ownerid);
-					        if($old_owner_details){
-						        $data = array();
-						        $data['voucher_id'] = $vid;
-						        $data['offer_id'] = $offerid;
-						        $data['voucher_view_id'] = $viewid;
-						        $data['from_user_id'] = $from_user;
-						        $data['to_user_id'] = $to_user;
-						        $data['price'] = $price;
-						        $data['offer_price'] = $offer_price;
-						        $data['offer_percent'] = $offer_percent;
-						        $data['is_active'] = '1';
-						        $data['buy_price'] = '0.00';
-						        $data['purchased_date'] = date('Y-m-d h:i:s');
-						        $data['transfer_type'] = 'Gift';
-						        $newinfo['save_data'] = $data;
-						        $new_owner_details  = add(json_encode($newinfo),'voucher_owner');
-						        if(!empty($new_owner_details)){
-							        $new = json_decode($new_owner_details);
-						            $giveData['voucher_id'] = $vid;
-							        $giveData['offer_id'] = $offerid;
-							        $giveData['from_user_id'] = $from_user;
-							        $giveData['to_user_id'] = $to_user;
-							        $giveData['created_on'] = date('Y-m-d h:i:s');
-							        $giveData['is_active'] = 1;
-							        $newgiveData['save_data'] = $giveData;
-							        $new_owner_details  = add(json_encode($newgiveData),'give_voucher');
-							
-							        
-						          	
-						        }
-					        }
-					        
-					        
-				        }
-			        }
-		        }
-		        $deletetemptable = delete('gift_voucher_non_user',$tempid);
+                                //$vid = $tempvoucher->voucher_id;
+
+                                if(!empty($to_user))
+                                {
+
+                                        if(!empty($from_user))
+                                        {
+                                                $db = getConnection();
+                                                $sql = "SELECT voucher_owner.id, voucher_owner.is_active, vouchers.id as voucher_id, vouchers.offer_id, vouchers.view_id, vouchers.offer_price, vouchers.offer_percent, vouchers.price, users.first_name, users.last_name, users.email  FROM vouchers, voucher_owner, users WHERE voucher_owner.voucher_id = vouchers.id and voucher_owner.voucher_id=:vid and voucher_owner.is_active = '1' and voucher_owner.to_user_id=:userid";
+                                                $stmt = $db->prepare($sql);  
+                                                $stmt->bindParam("vid", $vid);
+                                                $stmt->bindParam("userid", $from_user);
+                                                $stmt->execute();
+                                                $voucherowner = $stmt->fetchObject();
+                                                if(!empty($voucherowner))
+                                                {
+                                                        $ownerid = $voucherowner->id;
+                                                        $offerid = $voucherowner->offer_id;
+                                                        $viewid = $voucherowner->view_id;
+                                                        $offer_price = $voucherowner->offer_price;
+                                                        $offer_percent = $voucherowner->offer_percent;
+                                                        $price = $voucherowner->price;
+                                                        $vid = $voucherowner->voucher_id;
+
+                                                        $arr = array();
+                                                        $arr['is_active'] = 0;
+                                                        //$arr['buy_price'] = $buy_price;
+                                                        $arr['sold_date'] = date('Y-m-d h:i:s');
+                                                        $allinfo['save_data'] = $arr;
+                                                        $old_owner_details = edit(json_encode($allinfo),'voucher_owner',$ownerid);
+                                                        if($old_owner_details){
+                                                                $data = array();
+                                                                $data['voucher_id'] = $vid;
+                                                                $data['offer_id'] = $offerid;
+                                                                $data['voucher_view_id'] = $viewid;
+                                                                $data['from_user_id'] = $from_user;
+                                                                $data['to_user_id'] = $to_user;
+                                                                $data['price'] = $price;
+                                                                $data['offer_price'] = $offer_price;
+                                                                $data['offer_percent'] = $offer_percent;
+                                                                $data['is_active'] = '1';
+                                                                $data['buy_price'] = '0.00';
+                                                                $data['purchased_date'] = date('Y-m-d h:i:s');
+                                                                $data['transfer_type'] = 'Gift';
+                                                                $newinfo['save_data'] = $data;
+                                                                $new_owner_details  = add(json_encode($newinfo),'voucher_owner');
+                                                                if(!empty($new_owner_details)){
+                                                                        $new = json_decode($new_owner_details);
+                                                                    $giveData['voucher_id'] = $vid;
+                                                                        $giveData['offer_id'] = $offerid;
+                                                                        $giveData['from_user_id'] = $from_user;
+                                                                        $giveData['to_user_id'] = $to_user;
+                                                                        $giveData['created_on'] = date('Y-m-d h:i:s');
+                                                                        $giveData['is_active'] = 1;
+                                                                        $newgiveData['save_data'] = $giveData;
+                                                                        $new_owner_details  = add(json_encode($newgiveData),'give_voucher');
+
+
+
+                                                                }
+                                                        }
+
+
+                                                }
+                                        }
+                                }
+                            }
+                            else {
+                                $expired_vouchers++;
+                            }
+                            $deletetemptable = delete('gift_voucher_non_user',$tempid);
+                        }
 		    }
 		    
+		    if(isset($expired_vouchers) && $expired_vouchers>0)
+                    {
+                        $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.',"voucher_message":"Your '.$expired_vouchers.' Promo has been expired."}'; 
+                    }
+                    else {
+                        $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}'; 
+                    }
 		    
-		    $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}'; 
 		    }else{
 		    $result = '{"type":"error","message":"Error occured"}';
 		    }

@@ -32,6 +32,7 @@ require 'service/banner.php';
 require 'service/advertisement.php';
 require 'service/point_master.php';
 require 'service/blogs.php';
+require 'service/cart.php';
  
 $app = new Slim();
 $app->config('debug', true);
@@ -59,6 +60,9 @@ $app->get('/getUserSettings/:id','getUserSettings');
 $app->put('/updateUserSettings/:id','updateUserSettings');
 $app->get('/getActiveMerchants','getActiveMerchants');
 $app->get('/getUserByEmail/:email','getUserByEmail');
+$app->post('/addSubUser','addSubUser');
+$app->get('/getAllSubUserByUser/:id','getAllSubUserByUser');
+$app->post('/updateSubUser','updateSubUser');
 
 $app->post('/fbloginuser', 'fbLoginUser');
 $app->post('/profileimageupload', 'profileImageUpload');
@@ -72,6 +76,7 @@ $app->post('/categories',  'addCat');
 $app->get('/categories',  'getAllCats');
 $app->get('/getCategories',  'getAllActiveCats');
 $app->get('/getFeaturedCategories',  'getAllFeaturedCats');
+$app->get('/getAllFeaturedPromoAds',  'getAllFeaturedPromoAds');
 $app->get('/getLaunchTodayPromo',  'getLaunchTodayPromo');
 $app->get('/getLastdayPromo',  'getLastdayPromo');
 $app->get('/getHotSellingPromo',  'getHotSellingPromo');
@@ -287,6 +292,8 @@ $app->delete('/deleteBanner/:id', 'deleteBanner');
 $app->get('/getActiveBanner', 'getActiveBanner');
 $app->get('/getActiveBannerOther/:id', 'getActiveBannerOther');
 $app->get('/getUpdateBannerOther/:id', 'getUpdateBannerOther');
+$app->get('/getHotBanner', 'getHotBanner');
+$app->get('/getBannersClicked/:banid/(:userid)', 'getBannersClicked');
 
 /********************Advertisement***********************/
 $app->post('/addAds', 'addAds');
@@ -295,7 +302,16 @@ $app->get('/getAdsDetails/:id', 'getAdsDetails');
 $app->put('/updateAds/:id', 'updateAds');
 $app->delete('/deleteAds/:id', 'deleteAds');
 $app->get('/getAllAdsLocation', 'getAllAdsLocation');
+$app->get('/getAdsClicked/:adid/(:userid)', 'getAdsClicked'); 
 $app->get('/getActiveAdsByLocation/:id', 'getActiveAdsByLocation');
+$app->get('/getHotAds', 'getHotAds');
+$app->get('/getUpdateAdvOther/:id', 'getUpdateAdvOther');
+$app->get('/getActiveAdvOther/:id', 'getActiveAdvOther');
+
+/****************** Cart ****************/
+$app->post('/addToCart', 'addToCart');
+$app->post('/deleteFromCart', 'deleteFromCart');
+$app->delete('/deleteCartByUser/:user_id', 'deleteCartByUser');
 
 /*********************** Admin ************************/
 /******************** Users *************************/

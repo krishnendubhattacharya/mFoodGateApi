@@ -1,4 +1,46 @@
 <?php  
+function getBannersClicked($banid,$userid=null)
+{
+    $rarray = array();
+    $update_qry = "UPDATE banners set number_of_click = number_of_click+1 where id=$banid";
+    if(updateByQuery($update_qry))
+    {
+        if(!empty($userid))
+        {
+            $add_details = findByIdArray($banid,'banners');
+            $already_exists_query = "SELECT * from points where type='B' and parent_id=".$add_details['id'];
+            $if_exist = findByQuery($already_exists_query);
+            if(!empty($add_details) && ($add_details['target_click']>=$add_details['number_of_click']) && empty($if_exist))
+            {
+                $temp = array();
+                $temp['user_id'] = $userid;
+                $temp['points'] = $add_details['mpoint_get_per_click'];
+                $temp['source'] = "earn from banner click";
+                $temp['type'] = 'B';
+                $temp['parent_id'] = $add_details['id'];
+                $temp['date'] = $add_details['start_date'];
+                $temp['expire_date'] = $add_details['end_date'];
+                $temp['redeemed_points'] = 0;
+                $temp['remaining_points'] = $add_details['mpoint_get_per_click'];
+                $t = add(json_encode(array('save_data' => $temp)),'points');
+                $rarray = array('type' => 'success', 'message' => 'Congratulation. You have got '.$add_details['mpoint_get_per_click'].' m-points.');
+            }
+            else {
+                //$rarray = array('type' => 'error', 'message' => 'Banners not found.');
+            } 
+        }
+        else
+        {
+            $rarray = array('type' => 'success', 'message' => 'Banners clicked successfully.');
+        }
+    }
+    else
+    {
+        $rarray = array('type' => 'error', 'message' => 'Internal error. Please try again later.');
+    }
+    echo json_encode($rarray);
+}
+
 function getAllBanner() {
    
 	$sql = "SELECT *,B.id as id,R.title as res_title,B.title as title  FROM banners as B,users as M ,restaurants as R where B.merchant_id=M.id and B.restaurant_id=R.id";
@@ -64,7 +106,7 @@ function getActiveBanner() {
 
 function getActiveBannerOther($id) {
    
-	$sql = "SELECT * from banners where banners.id !=:id and banners.is_active=1 and DATE(banners.start_date) <= CURDATE() and DATE(banners.end_date)>= CURDATE()";
+	$sql = "SELECT * from banners where banners.is_active=1 and DATE(banners.start_date) <= CURDATE() and DATE(banners.end_date)>= CURDATE()";
     
     try {
         $db = getConnection();
@@ -78,6 +120,42 @@ function getActiveBannerOther($id) {
                 /*$banners = array_map(function($t){
                     if(!empty($t->image))
                         $t->image_url = SITEURL."banner_images/".$t->image;
+                        
+                   return $t;
+                },$banners);*/
+                
+		
+		for($i=0;$i<$count;$i++){
+		        $img = SITEURL."banner_images/".$banners[$i]->image;
+                        $banners[$i]->image_url = $img; 
+		}
+                $result = '{"type":"success","banner": ' . json_encode($banners) . '}'; 
+        }else{
+                $result = '{"type":"error","message":"No record found"}'; 
+        }
+    } catch(PDOException $e) {
+            $result = '{"error":{"text":'. $e->getMessage() .'}}'; 
+    }
+	 echo $result;
+}
+
+function getHotBanner() {
+   
+	$sql = "SELECT * from banners where banners.is_active=1 and DATE(banners.start_date) <= CURDATE() and DATE(banners.end_date)>= CURDATE() order by banners.number_of_click DESC";
+    
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);  
+        //$stmt->bindParam("id", $id);
+        $stmt->execute();			
+        $banners = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $count = $stmt->rowCount();		
+        $db = null;
+        if(!empty($banners)){
+                /*$banners = array_map(function($t){
+                    if(!empty($t->image))
+                        $t->image_url = SITEURL."banner_images/".$t->image;
+
                         
                    return $t;
                 },$banners);*/
@@ -140,6 +218,12 @@ function addBanner() {
 	if(isset($body->id)){
 	        unset($body->id);
 	}
+	
+	if(isset($body->outlet_id))
+        {
+            $outlets = $body->outlet_id;
+        }
+	unset($body->outlet_id);
         
 	//unset($body->is_active); 
 	if(!empty($body->image))
@@ -160,6 +244,16 @@ function addBanner() {
 		/* $user_details = add(json_encode($allinfo),'coupons');
 		$user_details = json_decode($user_details);*/
 		$banner_details = json_decode($location_details);
+		
+                foreach($outlets as $outlet)
+                {
+                    $temp = array();
+                    $temp['banner_id'] = $banner_details->id;
+                    $temp['outlet_id']   = $outlet->id;
+                    $data = add(json_encode(array('save_data' => $temp)),'banners_outlet_map');
+                    //echo $data;
+                }
+		
 		$result = '{"type":"success","message":"Added Succesfully"}'; 
 	}
 	else{
@@ -184,7 +278,8 @@ function getBannerDetails($id)
         {
             $rarray['banner']['image_url'] = SITEURL."banner_images/".$restaurant['image'];
         }
-        $result = json_encode(array('type'=>"success",'data'=>$rarray));
+        $outlets = findByConditionArray(array('banner_id' => $id),'banners_outlet_map');
+        $result = json_encode(array('type'=>"success",'data'=>$rarray,'outlets'=>$outlets));
     }
     else
     {
@@ -203,6 +298,12 @@ function updateBanner($id) {
 	if(isset($body->id)){
 	        unset($body->id);
 	}
+	
+	if(isset($body->outlet_id))
+        {
+            $outlets = $body->outlet_id;
+        }
+	unset($body->outlet_id);
         
         if(isset($body->image_url))
             unset($body->image_url);
@@ -223,6 +324,16 @@ function updateBanner($id) {
            
           if(!empty($location_details)){
               $restaurant_details = json_decode($location_details);
+              
+              deleteAll('banners_outlet_map',array('banner_id' => $id));
+              foreach($outlets as $outlet)
+                {
+                    $temp = array();
+                    $temp['banner_id'] = $id;
+                    $temp['outlet_id']   = $outlet->id;
+                    $data = add(json_encode(array('save_data' => $temp)),'banners_outlet_map');
+                    //echo $data;
+                }
               //var_dump($location_details);
               //exit;
               

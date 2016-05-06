@@ -1305,6 +1305,51 @@ function getAllFeaturedCats() {
 	echo $result;
 }
 
+function getAllFeaturedPromoAds() {     
+
+        $is_active = 1;  
+	$newdate = date('Y-m-d');
+	$site_path = SITEURL;
+	//$newdate = "2016-03-08";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.offer_to_date >=:newdate and offers.is_featured =1 and offers.is_active=1 and offers.offer_type_id!=3 ORDER BY offers.created_on DESC";
+        
+        //echo $sql;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("newdate", $newdate);
+		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    //$todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $todate = date('M d,Y H:i:s', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->offer_to_date = $todate;
+		    if(empty($vouchers[$i]->image)){
+                            $img = $site_path.'voucher_images/default.jpg';
+                            $vouchers[$i]->image = $img;
+                        }
+                        else{                            
+	                        $img = $site_path."voucher_images/".$vouchers[$i]->image;
+	                        $vouchers[$i]->image = $img;                            
+                        }
+                        //$vouchers[$i]->price = number_format($vouchers[$i]->price,2,'.',',');
+		    
+		}
+		$db = null;
+		//echo  json_encode($vouchers);
+		$vouchers = json_encode($vouchers);
+	    $result = '{"type":"success","featuredcat":'.$vouchers.'}';
+		
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
 function getLaunchTodayPromo() {     
         $site_settings = findByIdArray('1','site_settings');
         $is_active = 1;  
