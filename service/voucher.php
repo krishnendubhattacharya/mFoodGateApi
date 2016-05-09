@@ -3,7 +3,16 @@ function getAllActiveVoucher($user_id) {
         $is_active = 1;  
         $site_path = SITEURL;
 	$newdate = date('Y-m-d');
-        $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) >=:date and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
+        $non_users = findByConditionArray(array('user_id' => $user_id),'gift_voucher_non_user');
+        $gift_vouchers = array_column($non_users, 'voucher_id');
+        if(!empty($gift_vouchers))
+        {
+            $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) >=:date and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3 and vouchers.id NOT in(".implode(",",$gift_vouchers).")";
+        }
+        else {
+            $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) >=:date and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
+        }
+        
 	try {
 		$db = getConnection();
 		$stmt = $db->prepare($sql);
@@ -48,7 +57,16 @@ function getExpireSoonVoucher($user_id) {
         $is_active = 1;
         $current_date = date('Y-m-d');
         $newDate = date('Y-m-d',strtotime('+7 days'));
-        $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) BETWEEN :start and :end and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
+        $non_users = findByConditionArray(array('user_id' => $user_id),'gift_voucher_non_user');
+        $gift_vouchers = array_column($non_users, 'voucher_id');
+        if(!empty($gift_vouchers))
+        {
+             $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) BETWEEN :start and :end and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3 and vouchers.id NOT IN(".implode(",",$gift_vouchers).")";
+        }
+        else
+        {
+            $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) BETWEEN :start and :end and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
+        }
 		//$sql = "SELECT * FROM vouchers INNER JOIN offers ON vouchers.offer_id=offers.id WHERE vouchers.is_active=:is_active and vouchers.user_id=:user_id and vouchers.to_date BETWEEN :start and :end";
         try {
 		$db = getConnection();
@@ -1121,7 +1139,14 @@ function getGiftedByMe($userid){
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
     $sql = "SELECT * from give_voucher where give_voucher.from_user_id =:userid ";
-	
+	$non_users = findByConditionArray(array('user_id' => $userid),'gift_voucher_non_user');
+        
+        $gifted_vouchers = array_column($non_users, 'voucher_id');
+        $gifted_users = array();
+        foreach($non_users as $t)
+        {
+            $gifted_users[$t['voucher_id']] = $t['email'];
+        }
 	try {
 		$db = getConnection();
 		$stmt = $db->prepare($sql);		
@@ -1164,6 +1189,28 @@ function getGiftedByMe($userid){
                         $gives[$i]->friend_email = $toUser->email;
 			
 		}
+                
+                if(!empty($gifted_vouchers))
+                {
+                    $vouchers_query = "SELECT * FROM vouchers where id IN(".implode(",",$gifted_vouchers).")";
+                    $vouchers = findByQuery($vouchers_query);
+                    //echo $vouchers_query;
+                    //print_r($vouchers);
+                    //exit;
+                    foreach($vouchers as $voucher)
+                    {
+                        $offer = findByIdArray($voucher['offer_id'],'offers');
+                        $restaurant = findByIdArray($offer['restaurant_id'],'restaurants');
+                        $temp = array();
+                        $temp['voucher_name'] = $offer['title'];
+                        $temp['resturant_name'] = $restaurant['title'];
+                        $temp['offer_to_date'] = date('M d,Y', strtotime($offer['offer_to_date']));
+                        $temp['price'] = number_format($offer['price'],2,'.',',');
+                        $temp['friend'] = '';
+                        $temp['friend_email'] = $gifted_users[$voucher['id']];
+                        $gives[] = json_decode(json_encode($temp));
+                    }
+                }
 		$db = null;
 		//echo  json_encode($vouchers);
 		$gifts = json_encode($gives);

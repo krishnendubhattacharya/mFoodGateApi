@@ -8,7 +8,7 @@ function getAdsClicked($adid,$userid=null)
         if(!empty($userid))
         {
             $add_details = findByIdArray($adid,'advertisements');
-            $already_exists_query = "SELECT * from points where type='A' and parent_id=".$add_details['id'];
+            $already_exists_query = "SELECT * from points where type='A' and parent_id=".$add_details['id']." and user_id=".$userid;
             $if_exist = findByQuery($already_exists_query);
             if(!empty($add_details) && ($add_details['target_click']>=$add_details['number_of_click']) && empty($if_exist))
             {

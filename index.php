@@ -2,6 +2,8 @@
 require 'Slim/Slim.php';
 require 'config.php';
 require 'class/class.phpmailer.php';
+require_once 'dompdf/vendor/autoload.php';
+require_once 'qrcode/qrlib.php';
 require 'sendmail.php';
 require 'service/crud.php';
 require 'service/service.php';
@@ -32,7 +34,9 @@ require 'service/banner.php';
 require 'service/advertisement.php';
 require 'service/point_master.php';
 require 'service/blogs.php';
-require 'service/cart.php';
+require 'service/cart.php'; 
+require_once 'service/voucher_pdf.php';
+
  
 $app = new Slim();
 $app->config('debug', true);
@@ -312,6 +316,9 @@ $app->get('/getActiveAdvOther/:id', 'getActiveAdvOther');
 $app->post('/addToCart', 'addToCart');
 $app->post('/deleteFromCart', 'deleteFromCart');
 $app->delete('/deleteCartByUser/:user_id', 'deleteCartByUser');
+
+/******************* Voucher Pdf *****************/
+$app->get('/downloadVoucherPdf/:vid', 'downloadVoucherPdf');
 
 /*********************** Admin ************************/
 /******************** Users *************************/

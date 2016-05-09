@@ -8,8 +8,12 @@ function getBannersClicked($banid,$userid=null)
         if(!empty($userid))
         {
             $add_details = findByIdArray($banid,'banners');
-            $already_exists_query = "SELECT * from points where type='B' and parent_id=".$add_details['id'];
+            $already_exists_query = "SELECT * from points where type='B' and parent_id=".$add_details['id']." and user_id=".$userid;
             $if_exist = findByQuery($already_exists_query);
+            //echo '<pre>';
+            //var_dump($add_details);
+            //var_dump($if_exist);
+            //var_dump($add_details);
             if(!empty($add_details) && ($add_details['target_click']>=$add_details['number_of_click']) && empty($if_exist))
             {
                 $temp = array();
@@ -26,6 +30,7 @@ function getBannersClicked($banid,$userid=null)
                 $rarray = array('type' => 'success', 'message' => 'Congratulation. You have got '.$add_details['mpoint_get_per_click'].' m-points.');
             }
             else {
+            //echo 'helllo';
                 //$rarray = array('type' => 'error', 'message' => 'Banners not found.');
             } 
         }
