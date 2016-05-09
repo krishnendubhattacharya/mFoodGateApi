@@ -71,7 +71,7 @@ function getAllBanner() {
 
 function getActiveBanner() {
    
-	$sql = "SELECT * from banners where banners.is_active=1 and DATE(banners.start_date) <= CURDATE() and DATE(banners.end_date)>= CURDATE()";
+	$sql = "SELECT * from banners where banners.is_active=1 and DATE(banners.start_date) <= CURDATE() and DATE(banners.end_date)>= CURDATE() order by banners.created_on DESC";
     
     try {
         $db = getConnection();

@@ -48,7 +48,7 @@ function getActiveAdsByLocation($location_id)
     if(!empty($locations))
     {
         $location_ids = array_column($locations,'advertisement_id');
-        $query = "select * from advertisements where DATE(start_date)<=CURDATE() and DATE(end_date)>=CURDATE() and is_active=1 and id in(".implode(",",$location_ids).")";
+        $query = "select * from advertisements where DATE(start_date)<=CURDATE() and DATE(end_date)>=CURDATE() and is_active=1 and id in(".implode(",",$location_ids).") order by advertisements.created_on DESC";
         $result = findByQuery($query);
         if(!empty($result))
         {

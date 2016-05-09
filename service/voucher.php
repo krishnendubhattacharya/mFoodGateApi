@@ -1161,6 +1161,7 @@ function getGiftedByMe($userid){
 			$gives[$i]->offer_to_date = $todate;
 			$gives[$i]->price = number_format($offer->price,2,'.',',');
 			$gives[$i]->friend = $toUser->first_name.' '.$toUser->last_name;
+                        $gives[$i]->friend_email = $toUser->email;
 			
 		}
 		$db = null;
@@ -1219,6 +1220,8 @@ function getGiftedToMe($userid){
 			$gives[$i]->offer_to_date = $todate;
 			$gives[$i]->price = number_format($offer->price,2,'.',',');
 			$gives[$i]->friend = $toUser->first_name.' '.$toUser->last_name;
+                        $gives[$i]->friend_email = $toUser->email;
+                        
 			
 		}
 		$db = null;

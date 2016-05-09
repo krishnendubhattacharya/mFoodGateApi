@@ -3,7 +3,7 @@ function getMyPoints($user_id){
     $rarray = array();
     try
     {
-        $sql = "SELECT * FROM points WHERE user_id=:user_id";
+        $sql = "SELECT * FROM points WHERE user_id=:user_id order by id DESC";
         $db = getConnection();
         $stmt = $db->prepare($sql); 
         $stmt->bindParam("user_id", $user_id);
@@ -16,6 +16,47 @@ function getMyPoints($user_id){
                 //$t->type = ($t->type=='C'?'Credit':'Debit');
 				$t->date = date('m/d/Y',  strtotime($t->date));
                 $t->expire_date = date('m/d/Y',  strtotime($t->expire_date));
+                if($t->type=='A')
+                {
+                    $advertisement = findByIdArray($t->parent_id,'advertisements');
+                    if($advertisement['mpoint_name']==1)
+                    {
+                        $t->mpoint_name = 'mPoints';
+                    }
+                    else if($advertisement['mpoint_name']==3)
+                    {
+                        $t->mpoint_name = 'DK Point';
+                    }
+                    else if($advertisement['mpoint_name']==4)
+                    {
+                        $t->mpoint_name = 'mCash';
+                    }
+                    else if($advertisement['mpoint_name']==5)
+                    {
+                        $t->mpoint_name = 'mrPoint';
+                    }
+                }
+                else if($t->type=='A')
+                {
+                    $advertisement = findByIdArray($t->parent_id,'banners');
+                    if($advertisement['mpoint_name']==1)
+                    {
+                        $t->mpoint_name = 'mPoints';
+                    }
+                    else if($advertisement['mpoint_name']==3)
+                    {
+                        $t->mpoint_name = 'DK Point';
+                    }
+                    else if($advertisement['mpoint_name']==4)
+                    {
+                        $t->mpoint_name = 'mCash';
+                    }
+                    else if($advertisement['mpoint_name']==5)
+                    {
+                        $t->mpoint_name = 'mrPoint';
+                    }
+                }
+                
                 return $t;
             }, $points,  array_keys($points));
         }
