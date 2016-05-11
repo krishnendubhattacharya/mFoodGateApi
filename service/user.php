@@ -84,6 +84,42 @@ function getUserByEmail($email)
     echo json_encode($rarray);
 }
 
+function registerMemberApi($email)
+{
+    if(!empty($email))
+    {
+        $rarray = array();
+        $result = findByConditionArray(array('email' => $email),'users');
+        if(!empty($result))
+        {
+            $rarray = array("type" => "success", "data" => $result['0'],"message" => "User already exist.");
+        }
+        else {
+            $from = ADMINEMAIL;
+            //$to = $saveresales->email;
+            $link = WEBSITEURL."register/";
+            $to = $email;  //'nits.ananya15@gmail.com';
+            $subject ='Voucher Gifted';
+            $body ='<html><body><p>Hi,</p>
+
+                    <p><a href='.$link.'>Click here</a> to register on mFood or open the below link to your browser:- <br />'.$link.'
+                    </p><br /><br />
+
+                    <p>Thanks,<br />
+                    mFood&nbsp;Team</p>
+
+                    <p>&nbsp;</p></body></html>';
+
+            sendMail($to,$subject,$body);
+            $rarray = array("type" => "success", "message" => "Email sent to user");
+        }
+    }
+    else {
+        $rarray = array("type" => "error", "message" => "No email found.");
+    }
+    echo json_encode($rarray);
+}
+
 function getAllCustomers() {
     $result = findByConditionArray(array('user_type_id' => 2),'users');
     if(!empty($result))

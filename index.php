@@ -85,6 +85,7 @@ $app->get('/getLaunchTodayPromo',  'getLaunchTodayPromo');
 $app->get('/getLastdayPromo',  'getLastdayPromo');
 $app->get('/getHotSellingPromo',  'getHotSellingPromo');
 $app->get('/getSpecialPromo',  'getSpecialPromo');
+$app->get('/registerMemberApi/:email',  'registerMemberApi');
 
 /************* Vouchers ****************/
 $app->get('/getResturantLaunchTodayPromo/:id',  'getResturantLaunchTodayPromo');
@@ -169,6 +170,10 @@ $app->post('/addOutlet', 'addOutlet');
 $app->post('/updateOutlet', 'updateOutlet');
 $app->delete('/deleteOutlet/:id', 'deleteOutlet');
 $app->get('/getOutletDetails/:id', 'getOutletDetails');
+$app->get('/getOutletsByUser/:user_id','getOutletsByUser');
+$app->post('/outletFileUpload', 'outletFileUpload');
+$app->post('/addOutletMerchant', 'addOutletMerchant');
+$app->post('/updateOutletMerchant', 'updateOutletMerchant');
 
 /***********News Call***********/
 $app->post('/addNews', 'addNews');

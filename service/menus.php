@@ -56,6 +56,14 @@
                     else {
                         $t->status = 'Inactive';
                     }
+                    if(!empty($t->is_featured))
+                    {
+                        $t->is_featured = 'Yes';
+                    }
+                    else {
+                        $t->is_featured = 'No';
+                    }
+                    // Data binding in angularJs is automatic synchronisation of data between model and view 
                     //$t->type = ($t->type=='C'?'Credit':'Debit');
                     //$t->date = date('m/d/Y',  strtotime($t->date));
                     //$t->expire_date = date('m/d/Y',  strtotime($t->expire_date));
