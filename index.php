@@ -321,6 +321,7 @@ $app->get('/getActiveAdvOther/:id', 'getActiveAdvOther');
 $app->post('/addToCart', 'addToCart');
 $app->post('/deleteFromCart', 'deleteFromCart');
 $app->delete('/deleteCartByUser/:user_id', 'deleteCartByUser');
+$app->get('/getCartByUser/:user_id', 'getCartByUser');
 
 /******************* Voucher Pdf *****************/
 $app->get('/downloadVoucherPdf/:vid', 'downloadVoucherPdf');
