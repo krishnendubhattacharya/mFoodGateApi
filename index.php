@@ -193,6 +193,7 @@ $app->post('/updateSiteSettings', 'updateSiteSettings');
 /***********Paypal Call***********/
 $app->post('/cart_checkout', 'cart_checkout');
 $app->post('/success_payment', 'success_payment');
+
 /*************Swap Call***********/
 $app->post('/swap', 'addSwap');
 $app->get('/mySwapList/:id', 'mySwapList');
@@ -322,6 +323,7 @@ $app->post('/addToCart', 'addToCart');
 $app->post('/deleteFromCart', 'deleteFromCart');
 $app->delete('/deleteCartByUser/:user_id', 'deleteCartByUser');
 $app->get('/getCartByUser/:user_id', 'getCartByUser');
+$app->post('/updateCartQuantity', 'updateCartQuantity');
 
 /******************* Voucher Pdf *****************/
 $app->get('/downloadVoucherPdf/:vid', 'downloadVoucherPdf');

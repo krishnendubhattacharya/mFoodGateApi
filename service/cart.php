@@ -95,4 +95,16 @@
     {
         deleteAll('cart',array('user_id' => $user_id));
     }
+    
+    function updateCartQuantity()
+    {
+        $request = Slim::getInstance()->request();
+	$body = json_decode($request->getBody());
+        if(!empty($body->item))
+        {
+            $item = $body->item;
+            $query = "UPDATE cart set quantity=".$item->quantity." where user_id=".$body->user_id." and offer_id=".$item->offer_id;
+            updateByQuery($query);
+        }
+    }
 ?>
