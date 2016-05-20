@@ -18,7 +18,7 @@ function getActiveRestaurants()
 function getFeaturedResturantHome() {     
 
         $is_active = 1;  
-	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo,restaurants.sub_title FROM restaurants where restaurants.is_featured=1 order by restaurants.seq ASC";
+	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo,restaurants.sub_title FROM restaurants where restaurants.is_featured=1 and is_active = 1 order by restaurants.seq ASC";
         
         //echo $sql;
         $site_path = SITEURL;

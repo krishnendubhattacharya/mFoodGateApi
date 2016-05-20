@@ -9,14 +9,21 @@
             {
                 $temp_cart = array();
                 $offer = findByIdArray($prod['offer_id'],'offers');
-                if(!empty($offer))
+                if(!empty($offer) && ($offer['buy_count']<$offer['quantity']))
                 {
                     $temp_cart['offer_id'] = $offer['id'];
                     $temp_cart['offer_percent'] = $offer['offer_percent'];
                     $temp_cart['offer_price'] = $offer['offer_price'];
                     $temp_cart['offer_title'] = $offer['title'];
                     $temp_cart['price'] = $offer['price'];
-                    $temp_cart['quantity'] = $prod['quantity'];
+                    if($prod['quantity']<$offer['quantity']-$offer['buy_count'])
+                    {
+                        $temp_cart['quantity'] = $prod['quantity'];
+                    }
+                    else
+                    {
+                        $temp_cart['quantity'] = $offer['quantity']-$offer['buy_count'];
+                    }
                     $temp_cart['mpoints'] = $offer['mpoints'];
                     $temp_cart['image'] = SITEURL.'voucher_images/'.$offer['image'];
                     $temp_cart['restaurant_id'] = $offer['restaurant_id'];
@@ -58,14 +65,21 @@
             {
                 $temp_cart = array();
                 $offer = findByIdArray($prod['offer_id'],'offers');
-                if(!empty($offer))
+                if(!empty($offer) && ($offer['buy_count']<$offer['quantity']))
                 {
                     $temp_cart['offer_id'] = $offer['id'];
                     $temp_cart['offer_percent'] = $offer['offer_percent'];
                     $temp_cart['offer_price'] = $offer['offer_price'];
                     $temp_cart['offer_title'] = $offer['title'];
                     $temp_cart['price'] = $offer['price'];
-                    $temp_cart['quantity'] = $prod['quantity'];
+                    if($prod['quantity']<$offer['quantity']-$offer['buy_count'])
+                    {
+                        $temp_cart['quantity'] = $prod['quantity'];
+                    }
+                    else
+                    {
+                        $temp_cart['quantity'] = $offer['quantity']-$offer['buy_count'];
+                    }
                     $temp_cart['mpoints'] = $offer['mpoints'];
                     $temp_cart['image'] = SITEURL.'voucher_images/'.$offer['image'];
                     $temp_cart['restaurant_id'] = $offer['restaurant_id'];

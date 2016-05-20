@@ -21,6 +21,52 @@ function getOutletsByRestaurant($id)
     echo json_encode($rarray);
 }
 
+function getOutletsBySelectedRestaurant()
+{
+    $rarray = array();
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    if(isset($body->restaurant_id))
+    {
+        $selRes = $body->restaurant_id;
+        unset($body->restaurant_id);
+    }
+        if(!empty($selRes))
+        {
+                $allResArray = array();
+                foreach($selRes as $singaleRes)
+                {                    
+                    $allResArray[] = $singaleRes->id;                    
+                }
+        }
+    $conditions = array();
+    //$conditions['restaurant_id'] = $id;
+    
+    $sql = "SELECT * FROM outlets where outlets.restaurant_id in(".implode(",",$allResArray).")";
+    $db = getConnection();
+    $stmt = $db->prepare($sql);
+    $stmt->execute();	
+    $restaurants=array();		
+    $restaurants = $stmt->fetchAll();
+    $db = null;
+    
+    //$restaurants = findByConditionArray($conditions,'outlets');
+    if(!empty($restaurants))
+    {
+        $restaurants = array_map(function($t){
+            $location = findByIdArray( $t['location_id'],'locations');
+            $t['city'] =  $location['city'];
+            return $t;
+        }, $restaurants);
+        $rarray = array('type' => 'success', 'data' => $restaurants);
+    }
+    else
+    {
+        $rarray = array('type' => 'error', 'message' => 'No outlets found');
+    }
+    echo json_encode($rarray);
+}
+
 function getOutletsByUser($userid)
 {
     $rarray = array();

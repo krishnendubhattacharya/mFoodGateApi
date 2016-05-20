@@ -109,6 +109,11 @@ function updateOffer() {
             $outlets = $body->outlet_id;
             unset($body->outlet_id);
         }
+        if(isset($body->restaurant_id))
+        {
+            $restaurants = $body->restaurant_id;
+            unset($body->restaurant_id);
+        }
         
 	$body->offer_to_date = $body->offer_to_date.' 23:59:59'; 
 	$allinfo['save_data'] = $body;
@@ -130,15 +135,27 @@ function updateOffer() {
                 }
             }
 
-            deleteAll('offer_outlet_map',array('offer_id' => $offers->id));
+            
             if(!empty($outlets))
             {
+                deleteAll('offer_outlet_map',array('offer_id' => $offers->id));
                 foreach($outlets as $outlet)
                 {
                     $temp = array();
                     $temp['offer_id'] = $offers->id;
                     $temp['outlet_id'] = $outlet->id;
                     add(json_encode(array('save_data' => $temp)),'offer_outlet_map');
+                }
+            }
+            if(!empty($restaurants))
+            {
+                deleteAll('offer_restaurent_map',array('offer_id' => $offers->id));
+                foreach($restaurants as $restaurant)
+                {
+                    $temp = array();
+                    $temp['offer_id'] = $offers->id;
+                    $temp['restaurent_id'] = $restaurant->id;
+                    add(json_encode(array('save_data' => $temp)),'offer_restaurent_map');
                 }
             }
 	    $result = '{"type":"success","message":"Changed Succesfully"}'; 
@@ -171,7 +188,7 @@ function addNewOffer() {
     $body->image = $body->image->filename;
     unset($body->image_url);
     
-    $restaurant_details = findByIdArray($body->restaurant_id,'restaurants');
+    //$restaurant_details = findByIdArray($body->restaurant_id,'restaurants');
     
     if(isset($body->category_id))
     {
@@ -184,12 +201,17 @@ function addNewOffer() {
         $outlets = $body->outlet_id;
         unset($body->outlet_id);
     }
+    if(isset($body->restaurant_id))
+    {
+        $restaurents = $body->restaurant_id;
+        unset($body->restaurant_id);
+    }
     $body->offer_to_date = $body->offer_to_date.' 23:59:59'; 
     $allinfo['save_data'] = $body; 
 	//$allinfo['save_data']['offer_to_date'] = $body->offer_to_date.' 23:59:59';
-    if(!empty($restaurant_details))
-    {
-        $body->merchant_id = $restaurant_details['user_id'];
+    //if(!empty($restaurant_details))
+    //{
+        //$body->merchant_id = $restaurant_details['user_id'];
 
         $news = add(json_encode($allinfo),'offers');
         if(!empty($news)){
@@ -216,6 +238,16 @@ function addNewOffer() {
                     add(json_encode(array('save_data' => $temp)),'offer_outlet_map');
                 }
             }
+            if(!empty($restaurents))
+            {
+                foreach($restaurents as $restaurent)
+                {
+                    $temp = array();
+                    $temp['offer_id'] = $offers->id;
+                    $temp['restaurent_id'] = $restaurent->id;
+                    add(json_encode(array('save_data' => $temp)),'offer_restaurent_map');
+                }
+            }
             $rarray = array('type' => 'success', 'offers' => $offers);
             //$result = '{"type":"success","message":"Added Successfully","offers":'.$offers.' }'; 
         }
@@ -223,11 +255,8 @@ function addNewOffer() {
             $rarray = array('type' => 'error', 'message' => 'Internal error');
             //$result = '{"type":"error","message":"Try Again!"}'; 
         }
-    }
-    else
-    {
-        $rarray = array('type' => 'error', 'message' => 'Invalid restaurant');
-    }
+    //}
+    
     echo json_encode($rarray);
     //echo  $result;
 	

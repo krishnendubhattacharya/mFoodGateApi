@@ -1960,6 +1960,8 @@ function getResturantLaunchTodayPromo($rid) {
 		$restaurant_details = findByIdArray($rid,'restaurants');
 		$is_active = 1;  
 		$lastdate = date('Y-m-d');
+		$restaurant_info = findByConditionArray(array('restaurent_id' => $rid),'offer_restaurent_map');
+                $restaurant_offers = array_column($restaurant_info, 'offer_id');
 			 $site_settings = findByIdArray('1','site_settings');
 			if(!empty($site_settings['new_promo_days']))
 			{
@@ -1969,6 +1971,8 @@ function getResturantLaunchTodayPromo($rid) {
 				$start_day = date('Y-m-d');
 			}
 		$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and DATE(offers.offer_to_date)>=CURDATE() and offers.restaurant_id=:rid and offers.buy_count < offers.quantity order by title DESC";
+		
+		//$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and DATE(offers.offer_to_date)>=CURDATE() and offers.id in(".implode(",",$restaurant_offers).") and offers.buy_count < offers.quantity order by title DESC";
 			
 			//echo $sql;
 			$site_path = SITEURL;
@@ -2410,6 +2414,8 @@ function getPromoDetails($id) {
 		{
                     $offer->created_on = date('m-d-Y',strtotime($offer->created_on));
                     $offer->offer_from_date = date('m-d-Y',strtotime($offer->offer_from_date));
+                    $todate = date('M d,Y H:i:s', strtotime($offer->offer_to_date));
+		    $offer->expire_date = $todate;
                     $offer->offer_to_date = date('m-d-Y',strtotime($offer->offer_to_date));
                             if(empty($offer->image)){
                                     $img = $site_path.'voucher_images/default.jpg';
@@ -2420,7 +2426,7 @@ function getPromoDetails($id) {
                                     $offer->image = $img;                            
                             }
                     $rid = 	$offer->restaurant_id;
-                    $sql = "SELECT * from restaurants where restaurants.id=:rid";	
+                    /*$sql = "SELECT * from restaurants where restaurants.id=:rid";	
                     $db = getConnection();
                     $stmt = $db->prepare($sql);	
                     $stmt->bindParam("rid", $rid);
@@ -2434,14 +2440,15 @@ function getPromoDetails($id) {
                                     $img = $site_path."restaurant_images/".$restaurants->logo;
                                     $restaurants->logo = $img;                            
                             }
-                    $db = null;
+                    $db = null;*/
                     //echo '<pre>';print_r($offer);print_r($restaurants);exit;
                     $offer = json_encode($offer);
-                    $restaurants = json_encode($restaurants);
+                    //$restaurants = json_encode($restaurants);
+                    $restaurants = findByConditionArray(array('offer_id' => $id),'offer_restaurent_map');
                     $categories = findByConditionArray(array('offer_id' => $id),'offer_category_map');
                     $outlets = findByConditionArray(array('offer_id' => $id),'offer_outlet_map');
 
-                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.$restaurants.',"count":'.$count.',"categories" : '.json_encode($categories).',"outlets" : '.json_encode($outlets).'}';
+                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"count":'.$count.',"categories" : '.json_encode($categories).',"outlets" : '.json_encode($outlets).'}';
 		}else{
 			$result =  '{"type":"error","message":"Sorry no promo found"}'; 
 		}

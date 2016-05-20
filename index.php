@@ -166,6 +166,7 @@ $app->get('/getResturantByMerchant/:uid', 'getResturantByMerchant');
 
 /**************** Outlets *************/
 $app->get('/getOutletsByRestaurant/:id', 'getOutletsByRestaurant');
+$app->post('/getOutletsBySelectedRestaurant', 'getOutletsBySelectedRestaurant');
 $app->post('/addOutlet', 'addOutlet');
 $app->post('/updateOutlet', 'updateOutlet');
 $app->delete('/deleteOutlet/:id', 'deleteOutlet');
