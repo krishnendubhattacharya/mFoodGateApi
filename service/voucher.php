@@ -2426,6 +2426,8 @@ function getPromoDetails($id) {
                                     $offer->image = $img;                            
                             }
                     $rid = 	$offer->restaurant_id;
+                    $merchant_id = $offer->merchant_id;
+                    $merchantInfo = findByConditionArray(array('id' => $merchant_id),'users');
                     /*$sql = "SELECT * from restaurants where restaurants.id=:rid";	
                     $db = getConnection();
                     $stmt = $db->prepare($sql);	
@@ -2445,10 +2447,52 @@ function getPromoDetails($id) {
                     $offer = json_encode($offer);
                     //$restaurants = json_encode($restaurants);
                     $restaurants = findByConditionArray(array('offer_id' => $id),'offer_restaurent_map');
+                    //print_r($restaurants);
+                    //exit;
                     $categories = findByConditionArray(array('offer_id' => $id),'offer_category_map');
                     $outlets = findByConditionArray(array('offer_id' => $id),'offer_outlet_map');
+                    if(!empty($restaurants)){
+                        foreach($restaurants as $index=>$restaurantInfo){
+                                $restaurant_id = '';
+                                $sql = '';
+                                $restaurant_id = $restaurantInfo['restaurent_id'];
+                                $sql = "SELECT * from restaurants where restaurants.id=:id";
+                                $db = getConnection();
+		                $stmt = $db->prepare($sql);	
+		                $stmt->bindParam("id", $restaurant_id);
+		
+		                $stmt->execute();
+		                $resDetail = $stmt->fetchObject();
+		                $db=null;
+		                $restaurants[$index]['title']=$resDetail->title;
+		                $restaurants[$index]['sub_title']=$resDetail->sub_title;
+		                $restaurants[$index]['description']=$resDetail->description;
+		                $restaurants[$index]['outlets']=array();
+		                if(!empty($outlets)){
+		                        foreach($outlets as $key=>$outletInfo){
+                                                $outlet_id = '';
+                                                $sql = ''; 
+                                                $outlet_id = $outletInfo['outlet_id'];
+                                                $sql = "SELECT * from outlets where outlets.id=:id and outlets.restaurant_id=:resid";
+                                                $db = getConnection();
+		                                $stmt = $db->prepare($sql);	
+		                                $stmt->bindParam("id", $outlet_id);
+		                                $stmt->bindParam("resid", $restaurant_id);
+		
+		                                $stmt->execute();
+		                                $outletDetail = $stmt->fetchObject();
+		                                $db=null;
+		                                if(!empty($outletDetail)){
+		                                        $outlet_count = count($restaurants[$index]['outlets']);
+		                                        $restaurants[$index]['outlets'][$outlet_count]= $outletDetail;
+		                                }		                                
+                                                
+		                        }
+		                }		                
+                        }
+                    }
 
-                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"count":'.$count.',"categories" : '.json_encode($categories).',"outlets" : '.json_encode($outlets).'}';
+                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"merchantInfo":'.json_encode($merchantInfo).',"count":'.$count.',"categories" : '.json_encode($categories).',"outlets" : '.json_encode($outlets).'}';
 		}else{
 			$result =  '{"type":"error","message":"Sorry no promo found"}'; 
 		}
@@ -3385,7 +3429,7 @@ function getSpecialPaymentPromo() {
         $is_active = 1;  
 	$lastdate = date('Y-m-d');
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.is_special=1 and DATE(offers.offer_to_date) >=:lastdate and offers.offer_type_id=2 and offers.buy_count < offers.quantity ORDER BY offers.offer_from_date DESC";
+        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and offers.is_special=1 and DATE(offers.offer_to_date) >=:lastdate and offers.offer_type_id=2 and offers.buy_count < offers.quantity ORDER BY offers.offer_from_date DESC";
         $site_settings = findByIdArray(1,'site_settings');
         
         //echo $sql;

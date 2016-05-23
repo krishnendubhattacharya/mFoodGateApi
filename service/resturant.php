@@ -59,7 +59,7 @@ function getResturantByCategory($cid) {
         $restaurants = findByConditionArray(array('category_id' => $cid),'resturant_category_map');
         $res_ids = array_column($restaurants, 'restaurant_id');
         $is_active = 1;  
-	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo,restaurants.sub_title FROM restaurants where restaurants.id IN(".implode(',',$res_ids).") order by restaurants.seq ASC";
+	    $sql = "SELECT restaurants.id,restaurants.title,restaurants.logo,restaurants.sub_title FROM restaurants where restaurants.id IN(".implode(',',$res_ids).") and restaurants.is_active=1 order by restaurants.seq ASC";
         
         $site_path = SITEURL;
         

@@ -312,7 +312,7 @@ function getActiveEvents()
                             $points[$i]->created_on = $created_on;
                             $from_date = date('m/d/Y h:i a', strtotime($points[$i]->from_date));
                             $points[$i]->from_date = $from_date;
-							$points[$i]->expire_date = date('d M, Y H:i:s', strtotime($points[$i]->to_date));
+							$points[$i]->expire_date = date('d M, Y H:i:s', strtotime($points[$i]->offer_to_date));
                             $to_date = date('m/d/Y h:i a', strtotime($points[$i]->to_date));
                             $points[$i]->to_date = $to_date;
 							
@@ -331,6 +331,12 @@ function getActiveEvents()
 							{
 								$location = findByIdArray($loc->location_id,'locations');
 								$points[$i]->locations[$k]->location = $location['city'];
+							}
+                                                        
+                                                        foreach($points[$i]->categories as $k=>$cat)
+							{
+								$category = findByIdArray($cat->category_id,'category');
+								$points[$i]->categories[$k]->category = $category['name'];
 							}
                     }	
                     /*if(!empty($points))

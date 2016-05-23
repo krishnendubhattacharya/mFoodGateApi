@@ -102,8 +102,9 @@ function getOutletDetails($id)
     if(!empty($restaurants))
     {
         $temp['outlet'] =  $restaurants;
-        $temp['location'] = findByIdArray( $restaurants['location_id'],'locations');
+        //$temp['location'] = findByIdArray( $restaurants['location_id'],'locations');
         $temp['categories'] = findByConditionArray(array('outlet_id' => $id),'outlet_category_map');
+        $temp['locations'] = findByConditionArray(array('outlet_id' => $id),'outlet_location_map');
         $rarray = array('type' => 'success', 'data' => $temp);
     }
     else
@@ -123,6 +124,11 @@ function addOutlet()
         unset($body->category_id);
     $body->restaurant_id = $body->resturant_id;
     unset($body->resturant_id);
+    
+    $locations = $body->location_id;
+    if(isset($body->location_id))
+        unset($body->location_id);
+    
     $allinfo['save_data'] = $body;
     $restaurant = findByIdArray( $body->restaurant_id,'restaurants');
     //print_r($restaurant);
@@ -142,6 +148,15 @@ function addOutlet()
                 $temp['category_id']   = $category->id;
                 $data = add(json_encode(array('save_data' => $temp)),'outlet_category_map');
             }
+            
+            foreach ($locations as $location)
+            {
+                $temp = array();
+                $temp['outlet_id'] = $outlet_details->id;
+                $temp['location_id']   = $location->id;
+                $data = add(json_encode(array('save_data' => $temp)),'outlet_location_map');
+            }
+            
             $rarray = array('type' => 'success', 'message' => 'Added Succesfully');
             #$result = '{"type":"success","message":"Added Succesfully"}'; 
         }
@@ -245,12 +260,16 @@ function updateOutlet()
     $request = Slim::getInstance()->request();
     $body = json_decode($request->getBody());
     $categories = $body->category_id;
+    $locations = $body->location_id;
     
     $outlet_id = $body->id;
     unset($body->id);
     
     if(isset($body->category_id))
         unset($body->category_id);
+    
+    if(isset($body->location_id))
+        unset($body->location_id);
     
     //$body->restaurant_id = $body->restaurant_id;
     unset($body->resturant_id);
@@ -273,6 +292,15 @@ function updateOutlet()
                 $temp['outlet_id'] = $outlet_details->id;
                 $temp['category_id']   = $category->id;
                 $data = add(json_encode(array('save_data' => $temp)),'outlet_category_map');
+            }
+            
+            deleteAll('outlet_location_map',array('outlet_id' => $outlet_id));
+            foreach($locations as $location)
+            {
+                $temp = array();
+                $temp['outlet_id'] = $outlet_details->id;
+                $temp['location_id']   = $location->id;
+                $data = add(json_encode(array('save_data' => $temp)),'outlet_location_map');
             }
             $rarray = array('type' => 'success', 'message' => 'Added Succesfully');
             #$result = '{"type":"success","message":"Added Succesfully"}'; 

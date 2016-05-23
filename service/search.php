@@ -43,6 +43,53 @@ function getSiteSearch()//$keyword,$category,$page=1
                 return $t;
             },$rarray);
         }
+        else if($category=='location')
+        {
+            $query = "SELECT * FROM locations where city LIKE '%$keyword%' and is_active=1";
+            $locations = findByQuery($query);
+            $location_ids='';
+            $outlet_ids = '';
+            $offer_ids = '';
+            if(!empty($locations))
+            {
+                $location_ids = implode(',',  array_column($locations, 'id'));
+                $outlet_query = "SELECT * FROM outlet_location_map WHERE location_id in($location_ids)";
+                $outlets = findByQuery($outlet_query);    
+                if(!empty($outlets))
+                {
+                    $outlet_ids = implode(',',array_column($outlets,'outlet_id'));
+                }
+                if(!empty($outlet_ids))
+                {
+                    $offers_query = "SELECT * FROM offer_outlet_map WHERE outlet_id in($outlet_ids)";
+                    $offers = findByQuery($offers_query);
+                    if(!empty($offers))
+                    {
+                        $offer_ids = implode(',',  array_column($offers, 'offer_id'));
+                    }
+                }
+            }
+            
+            if(!empty($offer_ids))
+            {
+                $sql = "SELECT * FROM offers WHERE is_active=1 and id in($offer_ids) ".$order.$limit;
+                $stmt = $db->prepare($sql);  
+                #$stmt->bindParam("like", "%$keyword%");
+                $stmt->execute();			
+                $rarray = $stmt->fetchAll();
+                $db = null;
+                $rarray = array_map(function($t){
+                    if(!empty($t['image']))
+                        $t['image_url'] = SITEURL.'voucher_images/'.$t['image'];
+
+                    return $t;
+                },$rarray);
+            }
+            else
+            {
+                $rarray = array();
+            }
+        }
         else if($category == 'event')
         {
             $sql = "SELECT * FROM events WHERE is_active=1 and status='O' and (title LIKE '%$keyword%' OR description LIKE '%$keyword%')".$order.$limit;

@@ -60,8 +60,9 @@ function getAllUsers() {
 }
 
 function getAllMerchants() {
-        $result = findByCondition(array('user_type_id' => 3),'users');
-	echo $result;
+        $query = "SELECT * from users where user_type_id=3 and parent_id=0";
+        $result = findByQuery($query);
+	echo json_encode($result);
 }
 
 function getActiveMerchants() {
