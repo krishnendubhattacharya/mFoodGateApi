@@ -36,6 +36,8 @@ require 'service/point_master.php';
 require 'service/blogs.php';
 require 'service/cart.php'; 
 require_once 'service/voucher_pdf.php';
+require_once 'service/merchantrestaurants.php';
+require_once 'service/merchantoutlet.php';
 
  
 $app = new Slim();
@@ -186,6 +188,11 @@ $app->get('/getNewsDetail/:id', 'getNewsDetail');
 $app->get('/getNewsList', 'getNewsList');
 $app->post('/updateNews', 'updateNews');
 $app->delete('/deleteNews/:news_id', 'deleteNews');
+$app->post('/addMerchantNews',  'addMerchantNews');
+$app->post('/newsFileUpload',  'newsFileUpload');
+$app->get('/getNewsByMerchant/:id', 'getNewsByMerchant');
+$app->post('/updateMerchantNews',  'updateMerchantNews');
+
 /***********Contents Call***********/
 $app->get('/getContent/:page_header', 'getContent');
 /***********SiteSettings Call***********/
@@ -328,6 +335,24 @@ $app->post('/updateCartQuantity', 'updateCartQuantity');
 
 /******************* Voucher Pdf *****************/
 $app->get('/downloadVoucherPdf/:vid', 'downloadVoucherPdf');
+
+/******************* Merchant Restaurant ***************/
+$app->get('/getMerchantsRestaurants/:merchant_id', 'getMerchantsRestaurants');
+$app->post('/MerchantRestaurantLogoUpload', 'MerchantRestaurantLogoUpload'); 
+$app->post('/addMerchantsResturant','addMerchantsResturant');
+$app->post('/updateMerchantsResturant','updateMerchantsResturant');
+$app->delete('/deleteMerchantRestaurant/:id','deleteMerchantRestaurant'); 
+$app->get('/getActiveMerchantRestaurant/:merchant_id', 'getActiveMerchantRestaurant');
+
+/******************* Merchant Outlet *******************/
+$app->post('/addMerchantOutlet','addMerchantOutlet');
+$app->get('/getMerchantsOutlet/:merchant_id', 'getMerchantsOutlet');
+$app->post('/MerchantOutletFileUpload','MerchantOutletFileUpload');
+$app->post('/updateMerchantOutlet','updateMerchantOutlet');
+$app->delete('/deleteMerchantOutlet/:merchant_id', 'deleteMerchantOutlet');
+
+/******************* Merchant News ***************/
+
 
 /*********************** Admin ************************/
 /******************** Users *************************/

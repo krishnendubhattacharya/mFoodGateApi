@@ -382,5 +382,157 @@ function deleteNews($id) {
        echo $result;	
 }
 
+function addMerchantNews() 
+    {
+        $request = Slim::getInstance()->request();
+	$body = json_decode($request->getBody());
+        
+        if($body->featured_event)
+        {
+            $body->featured_event = 1;
+        }
+        else
+        {
+            $body->featured_event = 0;
+        }
+        
+        if($body->special_event)
+        {
+            $body->special_event = 1;
+        }
+        else
+        {
+            $body->special_event = 0;
+        }
+        
+        if($body->post_to_public)
+        {
+            $body->post_to_public = 1;
+        }
+        else
+        {
+            $body->post_to_public = 0;
+        }
+        
+        if($body->is_active)
+        {
+            $body->is_active = 1;
+        }
+        else
+        {
+            $body->is_active = 0;
+        }
+        $body->date = date('Y-m-d H:i:s');
+        $body->published_date = date('Y-m-d',  strtotime($body->published_date));
+       
+        $allinfo['save_data'] = $body;
+        //print_r($allinfo);
 
+        //$allinfo['unique_data'] = $unique_field;
+	$cat_details  = add(json_encode($allinfo),'news');
+        //echo $cat_details;
+        //exit;
+        if(!empty($cat_details)){	
+	    $result = '{"type":"success","message":"Added Succesfully"}'; 
+	  }
+	  else{
+	       $result = '{"type":"error","message":"Not Added"}'; 
+	  }
+          echo $result;
+          exit;
+    }
+    
+    function newsFileUpload()
+    {
+        //print_r($_FILES);.
+        move_uploaded_file($_FILES['files']['tmp_name']['0'], 'news_images/'.$_FILES['files']['name']['0']);
+        echo json_encode($_FILES['files']['name']['0']);
+        exit;
+    }
+
+
+    function getNewsByMerchant($id)
+    {
+        $rarray = array();
+        $details = findByConditionArray(array('user_id' => $id),'news');
+        if(!empty($details))
+        {
+            $details = array_map(function($t){
+                if(!empty($t['image']))
+                {
+                    $t['imageurl'] = SITEURL.'news_images/'.$t['image'];
+                }
+                $t['published_date'] = date('m/d/Y',strtotime($t['published_date']));
+                return $t;
+            }, $details);
+            $rarray = array("type" => "success","data" => $details);
+        }
+        else {
+            $rarray = array("type" => "error","data" => array(),"message" => "Sorry no news found.");
+        }
+        echo json_encode($rarray);
+        exit;
+    }
+    
+    function updateMerchantNews() 
+    {
+        $request = Slim::getInstance()->request();
+	$body = json_decode($request->getBody());
+        
+        $id = $body->id;
+        if(isset($body->id))
+        {
+            unset($body->id);
+        }
+        if($body->featured_event)
+        {
+            $body->featured_event = 1;
+        }
+        else
+        {
+            $body->featured_event = 0;
+        }
+        
+        if($body->special_event)
+        {
+            $body->special_event = 1;
+        }
+        else
+        {
+            $body->special_event = 0;
+        }
+        
+        if($body->post_to_public)
+        {
+            $body->post_to_public = 1;
+        }
+        else
+        {
+            $body->post_to_public = 0;
+        }
+        
+       
+        $body->date = date('Y-m-d H:i:s');
+        $body->published_date = date('Y-m-d',  strtotime($body->published_date));
+        if(isset($body->imageurl))
+        {
+            unset($body->imageurl);
+        }
+        
+        $allinfo['save_data'] = $body;
+        //print_r($allinfo);
+
+        //$allinfo['unique_data'] = $unique_field;
+	$cat_details  = edit(json_encode($allinfo),'news',$id);
+        //echo $cat_details;
+        //exit;
+        if(!empty($cat_details)){	
+	    $result = '{"type":"success","message":"Added Succesfully"}'; 
+	  }
+	  else{
+	       $result = '{"type":"error","message":"Not Added"}'; 
+	  }
+          echo $result;
+          exit;
+    }
 ?>

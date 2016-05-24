@@ -1842,6 +1842,9 @@ function getResturantPromo($rid) {
 	//$offers = findByQuery($offers_query);
 	//$offer_ids = array_column($offers,'offer_id');
     $restaurant_details = findByIdArray($rid,'restaurants');
+    $res_offer_map = findByConditionArray(array('restaurent_id' => $rid),'offer_restaurent_map');
+        $related_promo = array_column($res_offer_map, 'offer_id');
+        //print_r($related_promo);
     if(!empty($restaurant_details['description']))
     {
         //$restaurant_details['description'] = strip_tags($restaurant_details['description']);
@@ -1850,7 +1853,12 @@ function getResturantPromo($rid) {
 	$lastdate = date('Y-m-d');
 	if(!empty($rid))
 	{
-		$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and offers.restaurant_id=:rid and offers.buy_count < offers.quantity  order by title DESC";
+	        if(!empty($related_promo)){
+	                $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and offers.buy_count < offers.quantity and offers.id in(".implode(",",$related_promo).")  order by title DESC";
+	                //$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and offers.restaurant_id=:rid and offers.buy_count < offers.quantity order by title DESC";
+	                
+	        
+		
 			
 			//echo $sql;
 			$site_path = SITEURL;
@@ -1859,7 +1867,7 @@ function getResturantPromo($rid) {
 			$db = getConnection();
 			$stmt = $db->prepare($sql);		
 			$stmt->bindParam("lastdate", $lastdate);
-		        $stmt->bindParam("rid", $rid);
+		        //$stmt->bindParam("rid", $rid);
 			$stmt->execute();
 			$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
 			$count = $stmt->rowCount();
@@ -1885,6 +1893,11 @@ function getResturantPromo($rid) {
 		} catch(PDOException $e) {
 			$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
 		}
+		}else{
+		        $vouchers = array();
+		        $count = 0;
+		        $result = '{"type":"success","getMerchantPromo":'.json_encode($vouchers).',"count":'.$count.',"restaurant" :'.  json_encode($restaurant_details).'}';
+		}
 	}
 	else
 	{
@@ -1903,10 +1916,13 @@ function getResturantSpecialPromo($rid) {
 	if(!empty($rid))
 	{
 		$restaurant_details = findByIdArray($rid,'restaurants');
+		$res_offer_map = findByConditionArray(array('restaurent_id' => $rid),'offer_restaurent_map');
+                $related_promo = array_column($res_offer_map, 'offer_id');
 		$is_active = 1;  
 		$site_settings = findByIdArray('1','site_settings');
 		$lastdate = date('Y-m-d');
-		$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and offers.restaurant_id=:rid and is_special=1 and offers.buy_count < offers.quantity order by title DESC";
+		if(!empty($related_promo)){
+		$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and is_special=1 and offers.buy_count < offers.quantity and offers.id in(".implode(",",$related_promo).") order by title DESC";
 			
 			//echo $sql;
 			$site_path = SITEURL;
@@ -1915,7 +1931,7 @@ function getResturantSpecialPromo($rid) {
 			$db = getConnection();
 			$stmt = $db->prepare($sql);		
 			$stmt->bindParam("lastdate", $lastdate);
-			$stmt->bindParam("rid", $rid);
+			//$stmt->bindParam("rid", $rid);
 			$stmt->execute();
 			$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
 			$count = $stmt->rowCount();
@@ -1941,6 +1957,11 @@ function getResturantSpecialPromo($rid) {
 		} catch(PDOException $e) {
 			$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
 		}
+		}else{
+		        $vouchers = array();		        
+		        $count = 0;
+		        $result = '{"type":"success","getMerchantPromo":'.json_encode($vouchers).',"count":'.$count.',"restaurant" :'.  json_encode($restaurant_details).'}';
+		}
 	}
 	else{
 		$result =  '{"type":"error","message":"No promo foiund."}'; 
@@ -1958,10 +1979,12 @@ function getResturantLaunchTodayPromo($rid) {
 	if(!empty($rid))
 	{
 		$restaurant_details = findByIdArray($rid,'restaurants');
+		$res_offer_map = findByConditionArray(array('restaurent_id' => $rid),'offer_restaurent_map');
+                $related_promo = array_column($res_offer_map, 'offer_id');
 		$is_active = 1;  
 		$lastdate = date('Y-m-d');
-		$restaurant_info = findByConditionArray(array('restaurent_id' => $rid),'offer_restaurent_map');
-                $restaurant_offers = array_column($restaurant_info, 'offer_id');
+		//$restaurant_info = findByConditionArray(array('restaurent_id' => $rid),'offer_restaurent_map');
+                //$restaurant_offers = array_column($restaurant_info, 'offer_id');
 			 $site_settings = findByIdArray('1','site_settings');
 			if(!empty($site_settings['new_promo_days']))
 			{
@@ -1970,7 +1993,8 @@ function getResturantLaunchTodayPromo($rid) {
 			else {
 				$start_day = date('Y-m-d');
 			}
-		$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and DATE(offers.offer_to_date)>=CURDATE() and offers.restaurant_id=:rid and offers.buy_count < offers.quantity order by title DESC";
+		if(!empty($related_promo)){
+		$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and DATE(offers.offer_to_date)>=CURDATE() and offers.buy_count < offers.quantity and offers.id in(".implode(",",$related_promo).") order by title DESC";
 		
 		//$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and DATE(offers.offer_to_date)>=CURDATE() and offers.id in(".implode(",",$restaurant_offers).") and offers.buy_count < offers.quantity order by title DESC";
 			
@@ -1981,7 +2005,7 @@ function getResturantLaunchTodayPromo($rid) {
 			$db = getConnection();
 			$stmt = $db->prepare($sql);		
 			//$stmt->bindParam("lastdate", $lastdate);
-		        $stmt->bindParam("rid", $rid);
+		        //$stmt->bindParam("rid", $rid);
 			$stmt->execute();
 			$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
 			$count = $stmt->rowCount();
@@ -2009,10 +2033,15 @@ function getResturantLaunchTodayPromo($rid) {
 		} catch(PDOException $e) {
 			$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
 		}
+		}else{
+		        $vouchers = array();		        
+		        $count = 0;
+		        $result = '{"type":"success","getMerchantPromo":'.json_encode($vouchers).',"count":'.$count.',"restaurant" :'.  json_encode($restaurant_details).'}';
+		}
 	}
 	else
 	{
-		$result =  '{"type":"error","message":"No promo foiund."}'; 
+		$result =  '{"type":"error","message":"No promo found."}'; 
 	}
 	echo $result;
 }
@@ -2027,7 +2056,9 @@ function getResturantLastDayPromo($rid) {
 	if(!empty($rid))
 	{
 		$restaurant_details = findByIdArray($rid,'restaurants');
-		$is_active = 1;  
+		$is_active = 1;
+		$res_offer_map = findByConditionArray(array('restaurent_id' => $rid),'offer_restaurent_map');
+                $related_promo = array_column($res_offer_map, 'offer_id');  
 		$lastdate = date('Y-m-d');
 			$site_settings = findByIdArray('1','site_settings');
 			if(!empty($site_settings['last_day_promo']))
@@ -2037,7 +2068,8 @@ function getResturantLastDayPromo($rid) {
 			else {
 				$start_day = date('Y-m-d');
 			}
-		$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and DATE(offers.offer_to_date) >=CURDATE() and DATE(offers.offer_to_date) < '$start_day' and offers.restaurant_id=:rid and offers.buy_count < offers.quantity order by title DESC";
+		if(!empty($related_promo)){
+		$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and DATE(offers.offer_to_date) >=CURDATE() and DATE(offers.offer_to_date) < '$start_day' and offers.buy_count < offers.quantity and offers.id in(".implode(",",$related_promo).") order by title DESC";
 			
 			//echo $sql;
 			$site_path = SITEURL;
@@ -2046,7 +2078,7 @@ function getResturantLastDayPromo($rid) {
 			$db = getConnection();
 			$stmt = $db->prepare($sql);		
 			//$stmt->bindParam("lastdate", $lastdate);
-			$stmt->bindParam("rid", $rid);
+			//$stmt->bindParam("rid", $rid);
 			$stmt->execute();
 			$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
 			$count = $stmt->rowCount();
@@ -2073,6 +2105,11 @@ function getResturantLastDayPromo($rid) {
 			
 		} catch(PDOException $e) {
 			$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+		}
+		}else{
+		        $vouchers = array();		        
+		        $count = 0;
+		        $result = '{"type":"success","getMerchantPromo":'.json_encode($vouchers).',"count":'.$count.',"restaurant" :'.  json_encode($restaurant_details).'}';
 		}
 	}
 	else
@@ -2092,6 +2129,8 @@ function getResturantHotSellingPromo($rid) {
 	if(!empty($rid))
 	{		
 		$restaurant_details = findByIdArray($rid,'restaurants');
+		$res_offer_map = findByConditionArray(array('restaurent_id' => $rid),'offer_restaurent_map');
+                $related_promo = array_column($res_offer_map, 'offer_id');
 		$is_active = 1;  
 		$lastdate = date('Y-m-d');
 			$site_settings = findByIdArray('1','site_settings');
@@ -2103,7 +2142,8 @@ function getResturantHotSellingPromo($rid) {
 			{
 				$perc = 0;
 			}
-		$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and ((offers.buy_count/offers.quantity)*100)>=$perc and offers.restaurant_id=:rid and offers.buy_count < offers.quantity order by title DESC";
+		if(!empty($related_promo)){
+		$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag,offers.buy_count,offers.quantity FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate and ((offers.buy_count/offers.quantity)*100)>=$perc and offers.buy_count < offers.quantity and offers.id in(".implode(",",$related_promo).") order by title DESC";
 			
 			//echo $sql;
 			$site_path = SITEURL;
@@ -2112,7 +2152,7 @@ function getResturantHotSellingPromo($rid) {
 			$db = getConnection();
 			$stmt = $db->prepare($sql);		
 			$stmt->bindParam("lastdate", $lastdate);
-			$stmt->bindParam("rid", $rid);
+			//$stmt->bindParam("rid", $rid);
 			$stmt->execute();
 			$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
 			$count = $stmt->rowCount();
@@ -2139,6 +2179,11 @@ function getResturantHotSellingPromo($rid) {
 			
 		} catch(PDOException $e) {
 			$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+		}
+		}else{
+		        $vouchers = array();		        
+		        $count = 0;
+		        $result = '{"type":"success","getMerchantPromo":'.json_encode($vouchers).',"count":'.$count.',"restaurant" :'.  json_encode($restaurant_details).'}';
 		}
 	}
 	else
