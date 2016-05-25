@@ -139,7 +139,7 @@ $app->get('/offerdetail/:id', 'getOfferDetail');
 $app->post('/offerImageUpload', 'offerImageUpload');
 $app->get('/getAllResellList', 'getAllResellList');
 $app->get('/getPromoDetails/:id','getPromoDetails');
-$app->get('/getRelatedPromo','getRelatedPromo');
+$app->get('/getRelatedPromo/:id','getRelatedPromo');
 $app->get('/getMyMembership/:userid','getMyMembership');
 $app->get('/getMyExpiredMembership/:userid','getMyExpiredMembership');
 $app->get('/getMyMembershipExpireSoon/:userid','getMyMembershipExpireSoon');
@@ -264,6 +264,8 @@ $app->delete('/deleteOffer',  'deleteOffer');
 $app->get('/getOffersByRestaurant/:id',  'getOffersByRestaurant');
 $app->get('/getAllOffers',  'getAllOffers');
 $app->post('/checkExpiredOffers',  'checkExpiredOffers');
+$app->get('/getOfferImages/:id',  'getOfferImages');
+$app->post('/addNewOfferImage',  'addNewOfferImage');
 
 /***************** Point Master ************/
 $app->get('/getAllPointMaster',  'getAllPointMaster');

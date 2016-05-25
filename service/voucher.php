@@ -2547,22 +2547,143 @@ function getPromoDetails($id) {
 	echo $result;
 }
 
-function getRelatedPromo() {     
+function getRelatedPromo($pid) {     
 
-    $is_active = 1;  
+    $is_active = 1;
+        $promoIdList=array();
+        $resPromoIdList=array();
+        $catPromoIdList=array();
+        $vouchers=array();
+        $offer_res_map = findByConditionArray(array('offer_id' => $pid),'offer_restaurent_map');
+        
+        $related_res = array_column($offer_res_map, 'restaurent_id');
+        $sql = "SELECT * FROM offer_restaurent_map where offer_restaurent_map.restaurent_id in(".implode(",",$related_res).")";
+        $db = getConnection();
+	$stmt = $db->prepare($sql);	
+	$stmt->execute();
+	$resDetail = $stmt->fetchAll(PDO::FETCH_OBJ);
+        //print_r($related_res);
+        //print_r($resDetail);
+        if(!empty($resDetail)){
+                foreach($resDetail as $resDetailVal){
+                        $resPromoIdList[]=$resDetailVal->offer_id;
+                        $promoIdList[]=$resDetailVal->offer_id;
+                }
+        }
+        
+        $offer_cat_map = findByConditionArray(array('offer_id' => $pid),'offer_category_map');
+        
+        $related_cat = array_column($offer_cat_map, 'category_id');
+        $sql = "SELECT * FROM offer_category_map where offer_category_map.category_id in(".implode(",",$related_cat).")";
+        $db = getConnection();
+	$stmt = $db->prepare($sql);	
+	$stmt->execute();
+	$catDetail = $stmt->fetchAll(PDO::FETCH_OBJ);
+        //print_r($related_cat);
+        //print_r($catDetail);
+        if(!empty($catDetail)){
+                foreach($catDetail as $catDetailVal){
+                        $catPromoIdList[]=$catDetailVal->offer_id;
+                        $promoIdList[]=$catDetailVal->offer_id;
+                }
+        }
+        //print_r(array_unique($promoIdList));
+        
+        $sql = "SELECT merchant_id FROM offers where offers.id=:id";
+        $db = getConnection();
+	$stmt = $db->prepare($sql);	
+	$stmt->bindParam("id", $pid);
+        $stmt->execute();
+        $offerDetail = $stmt->fetchObject();        
+        $merchant_id = $offerDetail->merchant_id;
+        
+        //exit;
 	$lastdate = date('Y-m-d');
-	$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate order by rand() limit 3";
+	/*if(!empty($promoIdList)){
+	        $promoIdList = array_unique($promoIdList);
+	        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.id !=:pid and offers.offer_to_date >=:lastdate or (offers.merchant_id=:merchantId or offers.id in(".implode(",",$promoIdList).")) limit 10";
+	}else{
+	        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate or offers.merchant_id=:merchantId limit 10";
+	}*/
+	//$sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.offer_to_date >=:lastdate order by rand() limit 3";
         
         //echo $sql;
-        $site_path = SITEURL;
-        
-	try {
-		$db = getConnection();
+        if(!empty($resPromoIdList)){
+                $resPromoIdList = array_unique($resPromoIdList);
+                $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.id !=:pid and offers.offer_to_date >=:lastdate and offers.id in(".implode(",",$resPromoIdList).") limit 10";
+                $db = getConnection();
 		$stmt = $db->prepare($sql);		
 		$stmt->bindParam("lastdate", $lastdate);
+		//$stmt->bindParam("merchantId", $merchant_id);
+		$stmt->bindParam("pid", $pid);
 		$stmt->execute();
-		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
-		$count = $stmt->rowCount();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);
+		//print_r($vouchers);
+		//echo count($vouchers);
+		//echo 'aa';
+		
+        }
+        if(count($vouchers) < 10){
+                $resPromoIdList = array_unique($resPromoIdList);
+                //print_r($resPromoIdList);
+                if(!empty($merchant_id)){
+                        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.id !=:pid and offers.offer_to_date >=:lastdate and (offers.merchant_id=:merchantId or offers.id in(".implode(",",$resPromoIdList).")) limit 10";
+                        $db = getConnection();
+		        $stmt = $db->prepare($sql);		
+		        $stmt->bindParam("lastdate", $lastdate);
+		        $stmt->bindParam("merchantId", $merchant_id);
+		        $stmt->bindParam("pid", $pid);
+		        $stmt->execute();
+		        $vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);
+		        //print_r($vouchers);
+		        //echo count($vouchers);
+		        //echo 'bb';
+                }
+        }
+        
+        if(count($vouchers) < 10){
+                $promoIdList = array_unique($promoIdList);                
+                        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.id !=:pid and offers.offer_to_date >=:lastdate and (offers.merchant_id=:merchantId or offers.id in(".implode(",",$promoIdList).")) limit 10";
+                        $db = getConnection();
+		        $stmt = $db->prepare($sql);		
+		        $stmt->bindParam("lastdate", $lastdate);
+		        $stmt->bindParam("merchantId", $merchant_id);
+		        $stmt->bindParam("pid", $pid);
+		        $stmt->execute();
+		        $vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);
+		        //print_r($vouchers);
+		        //echo count($vouchers);
+		        //echo 'cc';
+                
+        }
+        
+        if(count($vouchers) < 10){
+                $promoIdList = array_unique($promoIdList);                
+                        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.id !=:pid and offers.offer_to_date >=:lastdate limit 10";
+                        $db = getConnection();
+		        $stmt = $db->prepare($sql);		
+		        $stmt->bindParam("lastdate", $lastdate);
+		        //$stmt->bindParam("merchantId", $merchant_id);
+		        $stmt->bindParam("pid", $pid);
+		        $stmt->execute();
+		        $vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);
+		        //print_r($vouchers);
+		        //echo count($vouchers);
+		        //echo 'dd';
+                
+        }
+        //exit;
+        $site_path = SITEURL;
+        
+	if(!empty($vouchers)) {
+		/*$db = getConnection();
+		$stmt = $db->prepare($sql);		
+		$stmt->bindParam("lastdate", $lastdate);
+		$stmt->bindParam("merchantId", $merchant_id);
+		$stmt->bindParam("pid", $pid);
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ); */ 
+		$count = count($vouchers);
 		
 		for($i=0;$i<$count;$i++){
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
@@ -2581,8 +2702,8 @@ function getRelatedPromo() {
 		$vouchers = json_encode($vouchers);
 	    $result = '{"type":"success","getRelatedPromo":'.$vouchers.',"count":'.$count.'}';
 		
-	} catch(PDOException $e) {
-		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	} else {
+		$result =  '{"type":"error","message":"No Promo Found"}'; 
 	}
 	echo $result;
 }

@@ -387,6 +387,13 @@ function addMerchantNews()
         $request = Slim::getInstance()->request();
 	$body = json_decode($request->getBody());
         
+        $restaurants = array();
+        if(!empty($body->restaurants_ids))
+        {
+            $restaurants = $body->restaurants_ids;
+            unset($body->restaurants_ids);
+        }
+        
         if($body->featured_event)
         {
             $body->featured_event = 1;
@@ -433,6 +440,17 @@ function addMerchantNews()
         //echo $cat_details;
         //exit;
         if(!empty($cat_details)){	
+            $ret_details = json_decode($cat_details);
+            if(!empty($restaurants) && !empty($ret_details->id))
+            {
+                foreach($restaurants as $restaurant)
+                {
+                    $temp = array();
+                    $temp['news_id'] = $ret_details->id;
+                    $temp['restaurant_id'] = $restaurant;
+                    $s =  add(json_encode(array('save_data' =>$temp)),'news_restaurant_map');
+                }
+            }
 	    $result = '{"type":"success","message":"Added Succesfully"}'; 
 	  }
 	  else{
@@ -463,6 +481,20 @@ function addMerchantNews()
                     $t['imageurl'] = SITEURL.'news_images/'.$t['image'];
                 }
                 $t['published_date'] = date('m/d/Y',strtotime($t['published_date']));
+                $restaurants = findByConditionArray(array('news_id' => $t['id']),'news_restaurant_map');
+                if(!empty($restaurants))
+                {
+                    $t['restaurants_ids'] = array_map(function($s){
+                        $s['id'] = $s['restaurant_id'];
+                        return $s;
+                    }, $restaurants);
+                           $t['restaurants_ids'] = array_column($restaurants, 'restaurant_id');
+                }
+                else
+                {
+                    $t['restaurants_ids'] = array();
+                }
+                
                 return $t;
             }, $details);
             $rarray = array("type" => "success","data" => $details);

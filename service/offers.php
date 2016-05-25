@@ -261,4 +261,70 @@ function addNewOffer() {
     //echo  $result;
 	
 }
+
+function getOfferImages($pid)
+{
+    $rarray = array();
+    $conditions = array();
+    $site_path = SITEURL;
+    $offer_images = findByConditionArray(array('offer_id'=>$pid),'offer_images');
+    //print_r($offer_images);
+    if(!empty($offer_images))
+    {     
+        $count = count($offer_images);
+        for($i=0;$i<$count;$i++){
+                $image = $site_path."voucher_images/".$offer_images[$i]['image'];
+		$offer_images[$i]['image'] = $image;
+        }  
+        $rarray = array('type' => 'success', 'data' => $offer_images);
+    }
+    else
+    {
+        $rarray = array('type' => 'error', 'message' => 'No Images found');
+    }
+    echo json_encode($rarray);
+}
+function addNewOfferImage() {	
+	
+    $rarray = array();
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+   
+    $news = array();
+    
+    
+    $body->image->filename = time().$body->image->filename;
+    $s = file_put_contents('./voucher_images/'.$body->image->filename,  base64_decode($body->image->base64));
+    
+    $body->image = $body->image->filename;
+    unset($body->image_url);
+    
+    
+    
+    
+    //$body->offer_to_date = $body->offer_to_date.' 23:59:59'; 
+    $allinfo['save_data'] = $body; 
+	
+
+        $news = add(json_encode($allinfo),'offer_images');
+        if(!empty($news)){
+            $offers = json_decode($news);
+            
+
+            
+            
+            $rarray = array('type' => 'success', 'offers' => $offers);
+            //$result = '{"type":"success","message":"Added Successfully","offers":'.$offers.' }'; 
+        }
+        else{
+            $rarray = array('type' => 'error', 'message' => 'Internal error');
+            //$result = '{"type":"error","message":"Try Again!"}'; 
+        }
+    //}
+    
+    echo json_encode($rarray);
+    //echo  $result;
+	
+}
+
 ?>
