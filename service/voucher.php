@@ -2446,6 +2446,129 @@ function getPromoDetails($id) {
         
         //echo $sql;
         $site_path = SITEURL;
+        $offer_images = array();
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);	
+		$stmt->bindParam("id", $id);
+		
+		$stmt->execute();
+		$offer = $stmt->fetchObject();  
+		$count = $stmt->rowCount();
+		if($count>0)
+		{
+                    $offer->created_on = date('m-d-Y',strtotime($offer->created_on));
+                    $offer->offer_from_date = date('m-d-Y',strtotime($offer->offer_from_date));
+                    $todate = date('M d,Y H:i:s', strtotime($offer->offer_to_date));
+		    $offer->expire_date = $todate;
+                    $offer->offer_to_date = date('m-d-Y',strtotime($offer->offer_to_date));
+                            if(empty($offer->image)){
+                                    $img = $site_path.'voucher_images/default.jpg';
+                                    //$offer->image = $img;
+                            }
+                            else{                            
+                                    $img = $site_path."voucher_images/".$offer->image;
+                                    //$offer->image = $img;                            
+                            }
+                    $rid = 	$offer->restaurant_id;
+                    $merchant_id = $offer->merchant_id;
+                    $merchantInfo = findByConditionArray(array('id' => $merchant_id),'users');
+                    $promo_images = findByConditionArray(array('offer_id'=>$id),'offer_images');
+                    if(!empty($offer->image)){
+                            $img = $site_path."voucher_images/".$offer->image;
+                            $offer_images[0]['image'] = $img;
+                    }
+                        if(!empty($promo_images))
+                        {     
+                                $prmcount = count($promo_images);
+                                for($i=0;$i<$prmcount;$i++){
+                                        $image = $site_path."voucher_images/".$promo_images[$i]['image'];
+                                        $offer_images[$i+1]['image'] = $image;
+                                }  
+                                
+                        }
+                        
+                    /*$sql = "SELECT * from restaurants where restaurants.id=:rid";	
+                    $db = getConnection();
+                    $stmt = $db->prepare($sql);	
+                    $stmt->bindParam("rid", $rid);
+                    $stmt->execute();
+                    $restaurants = $stmt->fetchObject();
+                            if(empty($restaurants->logo)){
+                                    $img = $site_path.'restaurant_images/default.jpg';
+                                    $restaurants->logo = $img;
+                            }
+                            else{                            
+                                    $img = $site_path."restaurant_images/".$restaurants->logo;
+                                    $restaurants->logo = $img;                            
+                            }
+                    $db = null;*/
+                    //echo '<pre>';print_r($offer);print_r($restaurants);exit;
+                    $offer = json_encode($offer);
+                    //$restaurants = json_encode($restaurants);
+                    $restaurants = findByConditionArray(array('offer_id' => $id),'offer_restaurent_map');
+                    //print_r($restaurants);
+                    //exit;
+                    $categories = findByConditionArray(array('offer_id' => $id),'offer_category_map');
+                    $outlets = findByConditionArray(array('offer_id' => $id),'offer_outlet_map');
+                    if(!empty($restaurants)){
+                        foreach($restaurants as $index=>$restaurantInfo){
+                                $restaurant_id = '';
+                                $sql = '';
+                                $restaurant_id = $restaurantInfo['restaurent_id'];
+                                $sql = "SELECT * from restaurants where restaurants.id=:id";
+                                $db = getConnection();
+		                $stmt = $db->prepare($sql);	
+		                $stmt->bindParam("id", $restaurant_id);
+		
+		                $stmt->execute();
+		                $resDetail = $stmt->fetchObject();
+		                $db=null;
+		                $restaurants[$index]['title']=$resDetail->title;
+		                $restaurants[$index]['sub_title']=$resDetail->sub_title;
+		                $restaurants[$index]['description']=$resDetail->description;
+		                $restaurants[$index]['outlets']=array();
+		                if(!empty($outlets)){
+		                        foreach($outlets as $key=>$outletInfo){
+                                                $outlet_id = '';
+                                                $sql = ''; 
+                                                $outlet_id = $outletInfo['outlet_id'];
+                                                $sql = "SELECT * from outlets where outlets.id=:id and outlets.restaurant_id=:resid";
+                                                $db = getConnection();
+		                                $stmt = $db->prepare($sql);	
+		                                $stmt->bindParam("id", $outlet_id);
+		                                $stmt->bindParam("resid", $restaurant_id);
+		
+		                                $stmt->execute();
+		                                $outletDetail = $stmt->fetchObject();
+		                                $db=null;
+		                                if(!empty($outletDetail)){
+		                                        $outlet_count = count($restaurants[$index]['outlets']);
+		                                        $restaurants[$index]['outlets'][$outlet_count]= $outletDetail;
+		                                }		                                
+                                                
+		                        }
+		                }		                
+                        }
+                    }
+
+                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"merchantInfo":'.json_encode($merchantInfo).',"count":'.$count.',"categories" : '.json_encode($categories).',"promo_images" : '.json_encode($offer_images).',"outlets" : '.json_encode($outlets).'}';
+		}else{
+			$result =  '{"type":"error","message":"Sorry no promo found"}'; 
+		}
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
+}
+
+function getPromoDetailsAdmin($id) {     
+
+        $sql = "SELECT * from offers where offers.id=:id";
+        
+        //echo $sql;
+        $site_path = SITEURL;
         
 	try {
 		$db = getConnection();
@@ -2557,34 +2680,38 @@ function getRelatedPromo($pid) {
         $offer_res_map = findByConditionArray(array('offer_id' => $pid),'offer_restaurent_map');
         
         $related_res = array_column($offer_res_map, 'restaurent_id');
-        $sql = "SELECT * FROM offer_restaurent_map where offer_restaurent_map.restaurent_id in(".implode(",",$related_res).")";
-        $db = getConnection();
-	$stmt = $db->prepare($sql);	
-	$stmt->execute();
-	$resDetail = $stmt->fetchAll(PDO::FETCH_OBJ);
-        //print_r($related_res);
-        //print_r($resDetail);
-        if(!empty($resDetail)){
-                foreach($resDetail as $resDetailVal){
-                        $resPromoIdList[]=$resDetailVal->offer_id;
-                        $promoIdList[]=$resDetailVal->offer_id;
+        if(!empty($related_res)){
+                $sql = "SELECT * FROM offer_restaurent_map where offer_restaurent_map.restaurent_id in(".implode(",",$related_res).")";
+                $db = getConnection();
+	        $stmt = $db->prepare($sql);	
+	        $stmt->execute();
+	        $resDetail = $stmt->fetchAll(PDO::FETCH_OBJ);
+                //print_r($related_res);
+                //print_r($resDetail);
+                if(!empty($resDetail)){
+                        foreach($resDetail as $resDetailVal){
+                                $resPromoIdList[]=$resDetailVal->offer_id;
+                                $promoIdList[]=$resDetailVal->offer_id;
+                        }
                 }
         }
         
         $offer_cat_map = findByConditionArray(array('offer_id' => $pid),'offer_category_map');
         
         $related_cat = array_column($offer_cat_map, 'category_id');
-        $sql = "SELECT * FROM offer_category_map where offer_category_map.category_id in(".implode(",",$related_cat).")";
-        $db = getConnection();
-	$stmt = $db->prepare($sql);	
-	$stmt->execute();
-	$catDetail = $stmt->fetchAll(PDO::FETCH_OBJ);
-        //print_r($related_cat);
-        //print_r($catDetail);
-        if(!empty($catDetail)){
-                foreach($catDetail as $catDetailVal){
-                        $catPromoIdList[]=$catDetailVal->offer_id;
-                        $promoIdList[]=$catDetailVal->offer_id;
+        if(!empty($related_cat)){
+                $sql = "SELECT * FROM offer_category_map where offer_category_map.category_id in(".implode(",",$related_cat).")";
+                $db = getConnection();
+	        $stmt = $db->prepare($sql);	
+	        $stmt->execute();
+	        $catDetail = $stmt->fetchAll(PDO::FETCH_OBJ);
+                //print_r($related_cat);
+                //print_r($catDetail);
+                if(!empty($catDetail)){
+                        foreach($catDetail as $catDetailVal){
+                                $catPromoIdList[]=$catDetailVal->offer_id;
+                                $promoIdList[]=$catDetailVal->offer_id;
+                        }
                 }
         }
         //print_r(array_unique($promoIdList));

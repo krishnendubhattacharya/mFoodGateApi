@@ -139,6 +139,7 @@ $app->get('/offerdetail/:id', 'getOfferDetail');
 $app->post('/offerImageUpload', 'offerImageUpload');
 $app->get('/getAllResellList', 'getAllResellList');
 $app->get('/getPromoDetails/:id','getPromoDetails');
+$app->get('/getPromoDetailsAdmin/:id','getPromoDetailsAdmin');
 $app->get('/getRelatedPromo/:id','getRelatedPromo');
 $app->get('/getMyMembership/:userid','getMyMembership');
 $app->get('/getMyExpiredMembership/:userid','getMyExpiredMembership');
@@ -272,6 +273,7 @@ $app->get('/getAllPointMaster',  'getAllPointMaster');
 $app->post('/addNewPointMaster',  'addNewPointMaster');
 $app->post('/updatePointMaster',  'updatePointMaster');
 $app->delete('/deletePointMaster/:id',  'deletePointMaster');
+$app->get('/getActivePointMasterByMerchant/:id',  'getActivePointMasterByMerchant');
 
 /**************** Blogs *******************/
 $app->get('/getAllBlogs',  'getAllBlogs');

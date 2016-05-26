@@ -511,6 +511,13 @@ function addMerchantNews()
         $request = Slim::getInstance()->request();
 	$body = json_decode($request->getBody());
         
+        $restaurants = array();
+        if(!empty($body->restaurants_ids))
+        {
+            $restaurants = $body->restaurants_ids;
+            unset($body->restaurants_ids);
+        }
+        
         $id = $body->id;
         if(isset($body->id))
         {
@@ -559,6 +566,18 @@ function addMerchantNews()
         //echo $cat_details;
         //exit;
         if(!empty($cat_details)){	
+            $ret_details = json_decode($cat_details);
+            deleteAll('news_restaurant_map' , array('news_id' =>$ret_details->id));
+            if(!empty($restaurants) && !empty($ret_details->id))
+            {
+                foreach($restaurants as $restaurant)
+                {
+                    $temp = array();
+                    $temp['news_id'] = $ret_details->id;
+                    $temp['restaurant_id'] = $restaurant;
+                    $s =  add(json_encode(array('save_data' =>$temp)),'news_restaurant_map');
+                }
+            }
 	    $result = '{"type":"success","message":"Added Succesfully"}'; 
 	  }
 	  else{
