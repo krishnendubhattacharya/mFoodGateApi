@@ -2659,8 +2659,18 @@ function getPromoDetailsAdmin($id) {
 		                }		                
                         }
                     }
+                    
+                    $weekdays = findByConditionArray(array('offer_id' => $id),'offer_days_map');
+                    if(!empty($weekdays))
+                    {
+                        $weekdays = array_map(function($t){
+                            $s = array();
+                            $s['id'] = $t['day']; 
+                            return $s;
+                        }, $weekdays);
+                    }
 
-                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"merchantInfo":'.json_encode($merchantInfo).',"count":'.$count.',"categories" : '.json_encode($categories).',"outlets" : '.json_encode($outlets).'}';
+                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"merchantInfo":'.json_encode($merchantInfo).',"count":'.$count.',"categories" : '.json_encode($categories).',"outlets" : '.json_encode($outlets).',"weekdays":'.json_encode($weekdays).'}';
 		}else{
 			$result =  '{"type":"error","message":"Sorry no promo found"}'; 
 		}

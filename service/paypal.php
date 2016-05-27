@@ -213,34 +213,37 @@ function success_payment()
                 $stmt->execute();			
                 $order_details = $stmt->fetchAll(PDO::FETCH_OBJ); 
                 $db = null;
+                
                 foreach($order_details as $order_detail)
                 {
+                        $qty = $order_detail->quantity;
                     $offer_details = json_decode(findById($order_detail->offer_id,'offers'));
-                    
-                    $voucher_data = array();
-                    $voucher_data['offer_id'] =$order_detail->offer_id;
-                    $voucher_data['created_on'] = $offer_details->created_on;
-                    $voucher_data['price'] = $offer_details->price;
-                    $voucher_data['offer_price'] = $offer_details->offer_price;
-                    $voucher_data['offer_percent'] = $offer_details->offer_percent;
-                    $voucher_data['from_date'] = $offer_details->offer_from_date;
-                    $voucher_data['to_date'] = $offer_details->offer_to_date;
-                    $voucher_data['is_active'] = 1;
-                    $s = add(json_encode(array('save_data' => $voucher_data)),'vouchers');
-					$s = json_decode($s);
-           //print_r($s);  exit;       
-                    $owner_data = array();
-                    $owner_data['offer_id'] = $order_detail->offer_id;
-                    $owner_data['voucher_id'] = $s->id;
-                    $owner_data['from_user_id'] = 0;
-                    $owner_data['to_user_id'] = $order_detail->user_id;
-                    $owner_data['purchased_date'] = date('Y-m-d h:i:s');
-                    $owner_data['is_active'] = 1;
-                    $owner_data['price'] = $offer_details->price;
-                    $owner_data['offer_price'] = $offer_details->offer_price;
-                    $owner_data['offer_percent'] = $offer_details->offer_percent;
-                    $owner_data['buy_price'] = $offer_details->offer_price;
-                    add(json_encode(array('save_data' => $owner_data)),'voucher_owner');
+                    for($i=0;$i<$qty;$i++){
+                            $voucher_data = array();
+                            $voucher_data['offer_id'] =$order_detail->offer_id;
+                            $voucher_data['created_on'] = $offer_details->created_on;
+                            $voucher_data['price'] = $offer_details->price;
+                            $voucher_data['offer_price'] = $offer_details->offer_price;
+                            $voucher_data['offer_percent'] = $offer_details->offer_percent;
+                            $voucher_data['from_date'] = $offer_details->offer_from_date;
+                            $voucher_data['to_date'] = $offer_details->offer_to_date;
+                            $voucher_data['is_active'] = 1;
+                            $s = add(json_encode(array('save_data' => $voucher_data)),'vouchers');
+					        $s = json_decode($s);
+                   //print_r($s);  exit;       
+                            $owner_data = array();
+                            $owner_data['offer_id'] = $order_detail->offer_id;
+                            $owner_data['voucher_id'] = $s->id;
+                            $owner_data['from_user_id'] = 0;
+                            $owner_data['to_user_id'] = $order_detail->user_id;
+                            $owner_data['purchased_date'] = date('Y-m-d h:i:s');
+                            $owner_data['is_active'] = 1;
+                            $owner_data['price'] = $offer_details->price;
+                            $owner_data['offer_price'] = $offer_details->offer_price;
+                            $owner_data['offer_percent'] = $offer_details->offer_percent;
+                            $owner_data['buy_price'] = $offer_details->offer_price;
+                            add(json_encode(array('save_data' => $owner_data)),'voucher_owner');
+                    }
                     
                 }
                 

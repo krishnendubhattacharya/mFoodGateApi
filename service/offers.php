@@ -98,6 +98,12 @@ function updateOffer() {
 	    unset($body->id);
 	}	
         
+        if(isset($body->weekdays))
+        {
+            $weekdays = $body->weekdays;
+            unset($body->weekdays);
+        }
+
         if(isset($body->category_id))
         {
             $categories = $body->category_id;
@@ -158,6 +164,17 @@ function updateOffer() {
                     add(json_encode(array('save_data' => $temp)),'offer_restaurent_map');
                 }
             }
+            if(!empty($weekdays))
+            {
+                deleteAll('offer_days_map',array('offer_id' => $offers->id));
+                foreach($weekdays as $weekday)
+                {
+                    $temp = array();
+                    $temp['offer_id'] = $offers->id;
+                    $temp['day'] = $weekday->id;
+                    add(json_encode(array('save_data' => $temp)),'offer_days_map');
+                }
+            }
 	    $result = '{"type":"success","message":"Changed Succesfully"}'; 
 	}
 	else{
@@ -189,6 +206,12 @@ function addNewOffer() {
     unset($body->image_url);
     
     //$restaurant_details = findByIdArray($body->restaurant_id,'restaurants');
+    
+    if(isset($body->weekdays))
+    {
+        $weekdays = $body->weekdays;
+        unset($body->weekdays);
+    }
     
     if(isset($body->category_id))
     {
@@ -246,6 +269,17 @@ function addNewOffer() {
                     $temp['offer_id'] = $offers->id;
                     $temp['restaurent_id'] = $restaurent->id;
                     add(json_encode(array('save_data' => $temp)),'offer_restaurent_map');
+                }
+            }
+            
+            if(!empty($weekdays))
+            {
+                foreach($weekdays as $weekday)
+                {
+                    $temp = array();
+                    $temp['offer_id'] = $offers->id;
+                    $temp['day'] = $weekday->id;
+                    add(json_encode(array('save_data' => $temp)),'offer_days_map');
                 }
             }
             $rarray = array('type' => 'success', 'offers' => $offers);
