@@ -35,6 +35,7 @@ require 'service/advertisement.php';
 require 'service/point_master.php';
 require 'service/blogs.php';
 require 'service/cart.php'; 
+require 'service/qrcode.php';
 require_once 'service/voucher_pdf.php';
 require_once 'service/merchantrestaurants.php';
 require_once 'service/merchantoutlet.php';
@@ -357,6 +358,8 @@ $app->delete('/deleteMerchantOutlet/:merchant_id', 'deleteMerchantOutlet');
 
 /******************* Merchant News ***************/
 
+/******************** QR Code ********************/
+$app->get('/genVoucherQrCode', 'genVoucherQrCode');
 
 /*********************** Admin ************************/
 /******************** Users *************************/

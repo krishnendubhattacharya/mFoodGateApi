@@ -113,6 +113,7 @@ function getVoucherUserMerchentDetail($vid){
     $restaurant_details = array();
     $site_path = SITEURL;
 	try {
+                
 		$db = getConnection();
 		$stmt = $db->prepare($sql);  
 		$stmt->bindParam("id", $vid);
@@ -121,6 +122,8 @@ function getVoucherUserMerchentDetail($vid){
 		
 		//$vouchers->offer_to_date = $offer_to_date;
 		if(!empty($vouchers)){
+                        $restaurants = findByConditionArray(array('offer_id' => $vouchers->offer_id),'offer_restaurent_map');
+                        $restaurant_ids = array_column($restaurants,'restaurent_id');
 			$to_date = date('d M,Y', strtotime($vouchers->to_date));
 			//$offer_to_date = date('d M,Y', strtotime($vouchers->offer_to_date));
 			$vouchers->to_date = $to_date;
@@ -179,14 +182,15 @@ function getVoucherUserMerchentDetail($vid){
 			$restaurant_details = $stmt2->fetchObject(); 
 			//$offer_to_date = date('d M,Y', strtotime($restaurant_details->offer_to_date));
 			//$restaurant_details->offer_to_date = $offer_to_date;
-			if(empty($restaurant_details->logo)){
-			    $image = $site_path.'restaurant_images/default.jpg';
-			    $restaurant_details->logo = $image;
+			if(!empty($restaurant_details) && empty($restaurant_details->logo)){
+			    //$image = $site_path.'restaurant_images/default.jpg';
+                            //if(!empty($image))
+                                //$restaurant_details->logo = $image;
 			}
 			else{
 			   // for($i=0;$i<$countrestaurant;$i++){
-				$img = $site_path."restaurant_images/".$restaurant_details->logo;
-				$restaurant_details->logo = $img;
+				//$img = $site_path."restaurant_images/".$restaurant_details->logo;
+				//$restaurant_details->logo = $img;
 			    //}
 			}
 			$unique_field = array();
@@ -199,7 +203,7 @@ function getVoucherUserMerchentDetail($vid){
 			$offer_image = json_encode($offer_image);
 			$voucher_owner = json_encode($voucher_owner);
 			$db = null;
-			$result = '{"type":"success","voucher_details":'.$voucher_details.',"restaurant_details":'.$restaurant_details.',"voucher_image":'.$offer_image.',"voucher_owner":'.$voucher_owner.',"total_sold":'.$soldCount.'}';
+			$result = '{"type":"success","voucher_details":'.$voucher_details.',"restaurant_details":'.$restaurant_details.',"voucher_image":'.$offer_image.',"voucher_owner":'.$voucher_owner.',"total_sold":'.$soldCount.',"restaurant_ids":'.  json_encode($restaurant_ids).'}';
 		}
 		else if(empty($vouchers)){
 			$result = '{"type":"error","message":"Not found Offer Id"}';

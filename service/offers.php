@@ -121,6 +121,16 @@ function updateOffer() {
             unset($body->restaurant_id);
         }
         
+        if(!empty($body->item_start_hour))
+        {
+            $body->item_start_hour = date('H:i:s',strtotime($body->item_start_hour));
+        }
+
+        if(!empty($body->item_end_hour))
+        {
+            $body->item_end_hour = date('H:i:s',strtotime($body->item_end_hour));
+        }
+        
 	$body->offer_to_date = $body->offer_to_date.' 23:59:59'; 
 	$allinfo['save_data'] = $body;
 	//$allinfo['save_data']['offer_to_date'] = $body->offer_to_date.' 23:59:59'; 
@@ -229,6 +239,16 @@ function addNewOffer() {
         $restaurents = $body->restaurant_id;
         unset($body->restaurant_id);
     }
+    if(!empty($body->item_start_hour))
+    {
+        $body->item_start_hour = date('H:i:s',strtotime($body->item_start_hour));
+    }
+    
+    if(!empty($body->item_end_hour))
+    {
+        $body->item_end_hour = date('H:i:s',strtotime($body->item_end_hour));
+    }
+    
     $body->offer_to_date = $body->offer_to_date.' 23:59:59'; 
     $allinfo['save_data'] = $body; 
 	//$allinfo['save_data']['offer_to_date'] = $body->offer_to_date.' 23:59:59';
