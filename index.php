@@ -91,6 +91,7 @@ $app->get('/getSpecialPromo',  'getSpecialPromo');
 $app->get('/registerMemberApi/:email',  'registerMemberApi');
 
 /************* Vouchers ****************/
+$app->get('/getMerchantMembershipPromo/:id','getMerchantMembershipPromo');
 $app->get('/getResturantLaunchTodayPromo/:id',  'getResturantLaunchTodayPromo');
 $app->get('/getResturantHotSellingPromo/:id',  'getResturantHotSellingPromo');
 $app->get('/getResturantLastDayPromo/:id',  'getResturantLastDayPromo');
@@ -284,6 +285,10 @@ $app->post('/addNewBlog',  'addNewBlog');
 $app->post('/addNewMembership',  'addNewMembership'); 
 $app->get('/deleteMembership/:id',  'deleteMembership'); 
 $app->get('/getMembershipByMerchant/:id',  'getMembershipByMerchant'); 
+$app->post('/addMerchantMembership','addMerchantMembership');
+$app->get('/getMerchantMembership/:id',  'getMerchantMembership');
+$app->post('/updateMerchantMembership','updateMerchantMembership');
+$app->delete('/deleteMerchantMembership/:id',  'deleteMerchantMembership'); 
 
 
 /****************** Offer Types ***********/

@@ -202,8 +202,10 @@ function getVoucherUserMerchentDetail($vid){
 			$restaurant_details = json_encode($restaurant_details);
 			$offer_image = json_encode($offer_image);
 			$voucher_owner = json_encode($voucher_owner);
+                        
+                        $restaurants = findByConditionArray(array('offer_id' => $vouchers->offer_id),'offer_restaurent_map');
 			$db = null;
-			$result = '{"type":"success","voucher_details":'.$voucher_details.',"restaurant_details":'.$restaurant_details.',"voucher_image":'.$offer_image.',"voucher_owner":'.$voucher_owner.',"total_sold":'.$soldCount.',"restaurant_ids":'.  json_encode($restaurant_ids).'}';
+			$result = '{"type":"success","voucher_details":'.$voucher_details.',"restaurant_details":'.$restaurant_details.',"voucher_image":'.$offer_image.',"voucher_owner":'.$voucher_owner.',"total_sold":'.$soldCount.',"restaurant_ids":'.  json_encode($restaurant_ids).',"restaurant":'.json_encode($restaurants).'}';
 		}
 		else if(empty($vouchers)){
 			$result = '{"type":"error","message":"Not found Offer Id"}';
@@ -3777,7 +3779,22 @@ function getSpecialPaymentPromo() {
 
 
 
-
+function getMerchantMembershipPromo($user_id)
+{
+    $rarray = array();
+    $promo_query = "SELECT * FROM `offers` WHERE merchant_id=$user_id and offer_type_id=3";
+    $details = findByQuery($promo_query);
+    if(!empty($details))
+    {
+         $rarray = array("type" => "success","data" => $details);
+    }
+    else
+    {
+        $rarray = array("type" => "error", "message" => "Sorry no promo found", "data" => array());
+    }
+    echo json_encode($rarray);
+    exit;    
+}
 
 
 

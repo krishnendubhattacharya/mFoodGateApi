@@ -7,6 +7,7 @@
  */
 function genVoucherQrCode(){
     $code_string = '';
+    
     if(!empty($_GET['merchant_id']))
     {
         $code_string .= $_GET['merchant_id'];
@@ -23,11 +24,11 @@ function genVoucherQrCode(){
     }
     if(!empty($code_string))
     {
-        echo QRcode::png($code_string);
+        echo QRcode::png($code_string,false,'L',9,0);
     }
     else
     {
-        echo QRcode::png('mFoodGate');
+        echo QRcode::png('mFoodGate',false,'L',9,0);
     }
 }
 ?>

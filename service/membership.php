@@ -125,4 +125,72 @@ function deleteMembership($id)
     $result =  delete('membership_map',$id);
     echo $result;	
 }
+
+function addMerchantMembership()
+{
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $body->purchased_date = date('Y-m-d H:i:s');
+    
+    $allinfo['save_data'] = $body;
+    //print_r($allinfo);
+
+    //$allinfo['unique_data'] = $unique_field;
+    $cat_details  = add(json_encode($allinfo),'memberships');
+    //echo $cat_details;
+    //exit;
+    if(!empty($cat_details)){	
+        $result = '{"type":"success","message":"Added Succesfully","data":'.  $cat_details.'}'; 
+      }
+      else{
+           $result = '{"type":"error","message":"Not Added"}'; 
+      }
+      echo $result;
+      exit;
+}
+
+function getMerchantMembership($id)
+{
+    $rarray = array();
+    $details = findByConditionArray(array('user_id' => $id),'memberships');
+    if(!empty($details))
+    {
+        $details = array_map(function($t){
+            $t['promo'] = findByIdArray($t['promo_id'],'offers');
+            return $t;
+        },$details);
+        $rarray = array('type' => 'success', 'data' => $details);
+    }
+    else
+    {
+        $rarray = array('type' => 'error', 'message' => 'No membership found.', 'data' => array());
+    }
+    echo json_encode($rarray);
+    exit;
+}
+
+function updateMerchantMembership() {
+	$request = Slim::getInstance()->request();
+	$body = $request->getBody();
+	$coupon = json_decode($body);
+        $id = $coupon->id;
+	if(isset($coupon->id)){
+	        unset($coupon->id);
+	}
+	$allinfo['save_data'] = $coupon;
+	$coupon_details = edit(json_encode($allinfo),'memberships',$id);
+	if(!empty($coupon_details)){
+	    $result = '{"type":"success","message":"Changed Succesfully"}'; 
+	}
+	else{
+	    $result = '{"type":"error","message":"Not Changed"}'; 
+	}
+	echo $result;
+	
+}
+
+function deleteMerchantMembership($id) { 
+       $result =  delete('memberships',$id);
+       echo $result;	
+}
 ?>
