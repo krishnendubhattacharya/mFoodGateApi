@@ -39,6 +39,7 @@ require 'service/qrcode.php';
 require_once 'service/voucher_pdf.php';
 require_once 'service/merchantrestaurants.php';
 require_once 'service/merchantoutlet.php';
+require_once 'service/merchantmenucategory.php';
 
  
 $app = new Slim();
@@ -360,6 +361,12 @@ $app->get('/getMerchantsOutlet/:merchant_id', 'getMerchantsOutlet');
 $app->post('/MerchantOutletFileUpload','MerchantOutletFileUpload');
 $app->post('/updateMerchantOutlet','updateMerchantOutlet');
 $app->delete('/deleteMerchantOutlet/:merchant_id', 'deleteMerchantOutlet');
+
+/******************** Merchant Menu Category *************/
+$app->post('/addMerchantMenuCategory','addMerchantMenuCategory');
+$app->get('/getMerchantMenuCategory/:id','getMerchantMenuCategory');
+$app->post('/updateMerchantMenuCategory','updateMerchantMenuCategory');
+$app->delete('/deleteMerchantMenuCategory/:id','deleteMerchantMenuCategory');
 
 /******************* Merchant News ***************/
 
