@@ -79,6 +79,98 @@
         exit;
     }
     
+    function getActiveFeaturedMenusByRestaurant($res_id){
+        $rarray = array();
+        $query = "SELECT * FROM menus WHERE is_featured=1 and status=1 and merchantrestaurant_id=".$res_id;
+        $details = findByQuery($query);
+        if(!empty($details))
+        {
+            $rarray = array('type' => 'success','data' => $details);
+        }        
+        else
+        {
+            $rarray = array('type' => 'error', 'message' => 'No featured menus found');
+        }
+        echo json_encode($rarray);
+    }
+    
+    function getWebsiteFeaturedMenus($res_id)
+    {
+        $rarray = array('type' => 'error', 'message' => 'No menus found.');
+        $cats_query = 'SELECT * FROM merchant_menu_categories WHERE is_active=1 ORDER BY seq ASC';
+        $cats = findByQuery($cats_query);
+        if(!empty($cats))
+        {
+            $data_array = array();
+            foreach($cats as $cat)
+            {
+                $query = "SELECT * FROM menus WHERE is_featured=1 and status=1 and merchantrestaurant_id=".$res_id." and menucategory_id=".$cat['id'];
+                $menus = findByQuery($query);
+                if(!empty($menus))
+                {
+                    $menus = array_map(function($t){
+                        $t['image_url'] = SITEURL.'menu_images/'.$t['image'];
+                        return $t;
+                    },$menus);
+                   
+                    $cat['menus'] = $menus;
+                    $data_array[] = $cat;
+                }
+            }
+            $rarray = array('type' => 'success', 'data' => $data_array);
+            echo json_encode($rarray);
+        }
+    }
+    
+    function getActiveWebsiteMenus($res_id)
+    {
+        $rarray = array('type' => 'error', 'message' => 'No menus found.');
+        $cats_query = 'SELECT * FROM merchant_menu_categories WHERE is_active=1 ORDER BY seq ASC';
+        $cats = findByQuery($cats_query);
+        if(!empty($cats))
+        {
+            $data_array = array();
+            foreach($cats as $cat)
+            {
+                $query = "SELECT * FROM menus WHERE status=1 and merchantrestaurant_id=".$res_id." and menucategory_id=".$cat['id'];
+                $menus = findByQuery($query);
+                if(!empty($menus))
+                {
+                    $menus = array_map(function($t){
+                        $t['image_url'] = SITEURL.'menu_images/'.$t['image'];
+                        return $t;
+                    },$menus);
+                   
+                    $cat['menus'] = $menus;
+                    $data_array[] = $cat;
+                }
+            }
+            $rarray = array('type' => 'success', 'data' => $data_array);
+            echo json_encode($rarray);
+        }
+    }
+    
+    function getWebsiteMenuSliderImages($res_id)
+    {
+        $rarray = array();
+        $query = "SELECT * FROM menus WHERE status=1 and merchantrestaurant_id=".$res_id." and image IS NOT NULL";
+        $details = findByQuery($query);
+        if(!empty($details))
+        {
+            $details = array_map(function($t){
+                        $t['image_url'] = SITEURL.'menu_images/'.$t['image'];
+                        return $t;
+                    },$details);
+            $rarray = array('type' => 'success', 'data' => $details);
+        }
+        else
+        {
+            $rarray = array('type' => 'error', 'message' => 'No menu found');
+        }
+        echo json_encode($rarray);
+    }
+
+
     function menuFileUpload()
     {
         //print_r($_FILES);

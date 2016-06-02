@@ -196,6 +196,7 @@ $app->post('/addMerchantNews',  'addMerchantNews');
 $app->post('/newsFileUpload',  'newsFileUpload');
 $app->get('/getNewsByMerchant/:id', 'getNewsByMerchant');
 $app->post('/updateMerchantNews',  'updateMerchantNews');
+$app->get('/getActiveNewsByRestaurant/:id', 'getActiveNewsByRestaurant');
 
 /***********Contents Call***********/
 $app->get('/getContent/:page_header', 'getContent');
@@ -233,6 +234,10 @@ $app->get('/getMenuByUser/:user_id',  'getMenuByUser');
 $app->post('/menuFileUpload',  'menuFileUpload');
 $app->post('/updateMenu',  'updateMenu'); 
 $app->delete('/deleteMenu/:menu_id', 'deleteMenu'); 
+$app->get('/getActiveFeaturedMenusByRestaurant/:user_id','getActiveFeaturedMenusByRestaurant');
+$app->get('/getWebsiteFeaturedMenus/:res_id','getWebsiteFeaturedMenus');
+$app->get('/getActiveWebsiteMenus/:res_id','getActiveWebsiteMenus');
+$app->get('/getWebsiteMenuSliderImages/:res_id','getWebsiteMenuSliderImages');
 
 /*************** Events  *************/
 $app->post('/eventFilesUpload',  'eventFilesUpload');
@@ -354,6 +359,7 @@ $app->post('/addMerchantsResturant','addMerchantsResturant');
 $app->post('/updateMerchantsResturant','updateMerchantsResturant');
 $app->delete('/deleteMerchantRestaurant/:id','deleteMerchantRestaurant'); 
 $app->get('/getActiveMerchantRestaurant/:merchant_id', 'getActiveMerchantRestaurant');
+$app->get('/getMerchantRestaurantDetails/:res_id','getMerchantRestaurantDetails');
 
 /******************* Merchant Outlet *******************/
 $app->post('/addMerchantOutlet','addMerchantOutlet');

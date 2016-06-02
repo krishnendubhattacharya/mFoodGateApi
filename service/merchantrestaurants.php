@@ -33,7 +33,30 @@ function getActiveMerchantRestaurant($merchant_id)
     }
     else
     {
-        $rarray = array('type' => 'error','message' => 'No restaurants found.');
+        $rarray = array('type' => 'error','message' => 'No restaurants found.','restaurants'=>array());
+    }
+    echo json_encode($rarray);
+}
+
+function getMerchantRestaurantDetails($res_id)
+{
+    $rarray = array();
+    $details = findByIdArray($res_id,'merchantrestaurants');
+    if(!empty($details))
+    {
+        $details['logo_url'] =  SITEURL.'merchantrestaurant_images/'.$details['logo'];
+        $outlet_query = "SELECT * FROM merchantoutlets WHERE restaurant_id=$res_id and is_active=1";
+        $outlets = findByQuery($outlet_query);
+        $outlets = array_map(function($t){
+            $t['image_url'] = SITEURL.'merchantoutlet_images/'.$t['image'];
+            return $t;
+        },$outlets);
+        $details['outlets'] = $outlets;
+        $rarray = array('type' => 'success', 'data' => $details);
+    }
+    else
+    {
+        $rarray = array('type' => 'error', 'message' => 'Restaurant not found.');
     }
     echo json_encode($rarray);
 }

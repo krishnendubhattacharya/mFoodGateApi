@@ -1,4 +1,25 @@
 <?php
+function getActiveNewsByRestaurant($res_id)
+{
+    $rarray = array('type' => 'error','message' => 'No news found.');
+    $news = findByConditionArray(array('restaurant_id' => $res_id),'news_restaurant_map');
+    $news_id = array_column($news, 'news_id');
+    if(!empty($news_id))
+    {
+        $query = "SELECT * FROM news WHERE id in(".implode(',', $news_id).") and is_active=1";
+        $details = findByQuery($query);
+        if(!empty($details))
+        {
+            $details = array_map(function($t){
+                $t['image_url'] = SITEURL.'news_images/'.$t['image'];
+                return $t;
+            },$details);
+            $rarray = array('type' => 'success','data' => $details);
+        }
+    }
+    echo json_encode($rarray);
+}
+
 function addNews() {	
 	
 	$request = Slim::getInstance()->request();
