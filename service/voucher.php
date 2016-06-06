@@ -204,8 +204,27 @@ function getVoucherUserMerchentDetail($vid){
 			$voucher_owner = json_encode($voucher_owner);
                         
                         $restaurants = findByConditionArray(array('offer_id' => $vouchers->offer_id),'offer_restaurent_map');
+			$all_res = '';
+			if(!empty($restaurants)){
+				foreach($restaurants as $restaurant_key=>$restaurant_val){
+					$res_detail = findByIdArray($restaurant_val['restaurent_id'],'restaurants');
+					if(empty($all_res)){
+						$all_res = $res_detail['restaurant_id'];
+					}else{
+						$all_res = $all_res.','.$res_detail['restaurant_id'];
+					}
+				}
+			}
+			//echo $all_res;
 			$db = null;
-			$result = '{"type":"success","voucher_details":'.$voucher_details.',"restaurant_details":'.$restaurant_details.',"voucher_image":'.$offer_image.',"voucher_owner":'.$voucher_owner.',"total_sold":'.$soldCount.',"restaurant_ids":'.  json_encode($restaurant_ids).',"restaurant":'.json_encode($restaurants).'}';
+			$mer_details = findByIdArray($marchantId,'users');
+			$mer_name = '';
+			$voucher_no = 'vch000'.$vid;
+			if(!empty($mer_details['merchant_id'])){
+				$mer_name = $mer_details['merchant_id'];
+			}
+			
+			$result = '{"type":"success","voucher_details":'.$voucher_details.',"restaurant_details":'.$restaurant_details.',"voucher_image":'.$offer_image.',"voucher_owner":'.$voucher_owner.',"total_sold":'.$soldCount.',"restaurant_ids":'.  json_encode($restaurant_ids).',"restaurant":'.json_encode($restaurants).',"all_res":'.json_encode($all_res).',"mer_name":'.json_encode($mer_name).',"voucher_no":'.json_encode($voucher_no).'}';
 		}
 		else if(empty($vouchers)){
 			$result = '{"type":"error","message":"Not found Offer Id"}';

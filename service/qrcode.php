@@ -10,12 +10,12 @@ function genVoucherQrCode(){
     
     if(!empty($_GET['merchant_id']))
     {
-        $code_string .= $_GET['merchant_id'];
+        $code_string .= $_GET['merchant_id'].',';
     }
     
     if(!empty($_GET['restaurant_ids']))
     {
-        $code_string .= $_GET['restaurant_ids'];
+        $code_string = $code_string.'['. $_GET['restaurant_ids'].'],';
     }
     
     if(!empty($_GET['voucher_id']))
