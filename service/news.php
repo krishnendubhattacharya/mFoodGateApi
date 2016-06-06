@@ -6,7 +6,7 @@ function getActiveNewsByRestaurant($res_id)
     $news_id = array_column($news, 'news_id');
     if(!empty($news_id))
     {
-        $query = "SELECT * FROM news WHERE id in(".implode(',', $news_id).") and is_active=1";
+        $query = "SELECT * FROM news WHERE id in(".implode(',', $news_id).")";
         $details = findByQuery($query);
         if(!empty($details))
         {

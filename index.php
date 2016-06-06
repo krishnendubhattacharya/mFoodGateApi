@@ -386,5 +386,62 @@ $app->post('/users/adminlogin', 'adminlogin');
 $app->response()->header("Content-Type", "application/json");
 //$app->response()->header("Access-Control-Allow-Origin : * ");
 //$app->response()->header("Access-Control-Allow-Methods : POST, GET, OPTIONS, DELETE, PUT ");
+
+function request_headers() {
+       
+        $arh = array();
+        $rx_http = '/\AHTTP_/';
+        foreach($_SERVER as $key => $val) {
+                if( preg_match($rx_http, $key) ) {
+                        $arh_key = preg_replace($rx_http, '', $key);
+                        $rx_matches = array();
+                        // do string manipulations to restore the original letter case
+                        $rx_matches = explode('_', $arh_key);
+                        if( count($rx_matches) > 0 and strlen($arh_key) > 2 ) {
+                                foreach($rx_matches as $ak_key => $ak_val) $rx_matches[$ak_key] = ucfirst($ak_val);
+                                $arh_key = implode('-', $rx_matches);
+                        }
+                        $arh[$arh_key] = $val;
+                }
+        }
+        return( $arh );
+}
+
+
+//$app->hook('slim.before.dispatch', function () use ($app){
+//    
+//        $headers = request_headers();
+//        $response = array();
+//        //$app = \Slim\Slim::getInstance();
+// 
+//        $api_key = $headers['AUTHORIZATION'];
+// 
+//        // this could be a MYSQL query that parses an API Key table, for example
+//        if($api_key == 'YmVlcDpib29w') {
+//                $authorized = true;
+//        } else if ($api_key == NULL) {
+//                $response["error"] = true;
+//                $response["message"] = '{"error":{"text": "api key not sent" }}';
+//                $app->response->headers['X-Authenticated'] = 'False';
+//                $authorized = false;
+//                $app->halt(401, $response['message']);
+//        } else {
+//                $response["error"] = true;
+//                $response["message"] = '{"error":{"text": "api key invalid" }}';
+//                $app->response->headers['X-Authenticated'] = 'False';
+//                $authorized = false;
+//        }
+// 
+//        if(!$authorized){ //key is false
+//                // dont return 403 if you request the home page
+//                $req = $_SERVER['REQUEST_URI'];
+//                if ($req != "/") {
+//                $app->halt('403', $response['message']); // or redirect, or other something
+//                }
+//        }
+// 
+//});
+
+
 $app->run();
 ?>
