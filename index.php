@@ -111,6 +111,11 @@ $app->get('/getHotSellingMenuPromo',  'getHotSellingMenuPromo');
 $app->get('/getSpecialMenuPromo',  'getSpecialMenuPromo');
 $app->get('/getLaunchTodayPaymentPromo',  'getLaunchTodayPaymentPromo');
 
+$app->get('/getSpecialMerchantRestaurantPromo/:id',  'getSpecialMerchantRestaurantPromo'); 
+$app->get('/getLaunchTodayMerchantRestaurantPromo/:id',  'getLaunchTodayMerchantRestaurantPromo'); 
+$app->get('/getHotSellingMerchantRestaurantPromo/:id',  'getHotSellingMerchantRestaurantPromo'); 
+$app->get('/getLastdayMerchantRestaurantPromo/:id',  'getLastdayMerchantRestaurantPromo'); 
+
 $app->get('/getActivePaymentPromo',  'getActivePaymentPromo');
 $app->get('/getLastdayPaymentPromo',  'getLastdayPaymentPromo');
 $app->get('/getHotSellingPaymentPromo',  'getHotSellingPaymentPromo');
@@ -197,6 +202,8 @@ $app->post('/newsFileUpload',  'newsFileUpload');
 $app->get('/getNewsByMerchant/:id', 'getNewsByMerchant');
 $app->post('/updateMerchantNews',  'updateMerchantNews');
 $app->get('/getActiveNewsByRestaurant/:id', 'getActiveNewsByRestaurant');
+$app->get('/getFeaturedMerchantNews/:id', 'getFeaturedMerchantNews');
+$app->get('/getSpecialMerchantNews/:id', 'getSpecialMerchantNews');
 
 /***********Contents Call***********/
 $app->get('/getContent/:page_header', 'getContent');

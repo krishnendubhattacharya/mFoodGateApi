@@ -19,6 +19,43 @@ function getActiveNewsByRestaurant($res_id)
     }
     echo json_encode($rarray);
 }
+function getFeaturedMerchantNews($res_id)
+{
+    $rarray = array('type' => 'error','message' => 'No news found.');
+    $news_restaurants = findByConditionArray(array('restaurant_id' => $res_id),'news_restaurant_map');
+    $restaurants = array_column($news_restaurants, 'news_id');
+    
+    $news_query = "SELECT * FROM news WHERE id in(".implode(',',$restaurants).") and featured_event=1";
+    $news = findByQuery($news_query);
+    if(!empty($news))
+    {
+        $news = array_map(function($t){
+            $t['image_url'] = SITEURL.'news_images/'.$t['image'];
+            return $t;  
+        },$news);
+        $rarray = array('type' => 'success','data' => $news);
+    }
+    echo json_encode($rarray);
+}
+
+function getSpecialMerchantNews($res_id)
+{
+    $rarray = array('type' => 'error','message' => 'No news found.');
+    $news_restaurants = findByConditionArray(array('restaurant_id' => $res_id),'news_restaurant_map');
+    $restaurants = array_column($news_restaurants, 'news_id');
+    
+    $news_query = "SELECT * FROM news WHERE id in(".implode(',',$restaurants).") and special_event=1";
+    $news = findByQuery($news_query);
+    if(!empty($news))
+    {
+        $news = array_map(function($t){
+            $t['image_url'] = SITEURL.'news_images/'.$t['image'];
+            return $t;  
+        },$news);
+        $rarray = array('type' => 'success','data' => $news);
+    }
+    echo json_encode($rarray);
+}
 
 function addNews() {	
 	
