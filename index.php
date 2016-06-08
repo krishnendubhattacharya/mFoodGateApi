@@ -301,7 +301,8 @@ $app->get('/getMembershipByMerchant/:id',  'getMembershipByMerchant');
 $app->post('/addMerchantMembership','addMerchantMembership');
 $app->get('/getMerchantMembership/:id',  'getMerchantMembership');
 $app->post('/updateMerchantMembership','updateMerchantMembership');
-$app->delete('/deleteMerchantMembership/:id',  'deleteMerchantMembership'); 
+$app->delete('/deleteMerchantMembership/:id',  'deleteMerchantMembership');
+$app->get('/getMerResDetail/:mid/:rid',  'getMerResDetail'); 
 
 
 /****************** Offer Types ***********/

@@ -193,4 +193,13 @@ function deleteMerchantMembership($id) {
        $result =  delete('memberships',$id);
        echo $result;	
 }
+
+function getMerResDetail($mid,$rid) { 
+       $restaurant_details = findByIdArray($rid,'restaurants');
+       $merchant_details = findByIdArray($mid,'users');
+       $restaurant_id = $restaurant_details['restaurant_id'];
+       $merchant_id = $merchant_details['merchant_id'];
+       $result = array('type' => 'success', 'restaurant_id' => $restaurant_id, 'merchant_id' => $merchant_id);
+       echo json_encode($result);	
+}
 ?>
