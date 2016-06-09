@@ -4102,6 +4102,59 @@ function getMerchantMembershipPromo($user_id)
     exit;    
 }
 
+function getPurchasedMerchantMembershipPromo($user_id)
+{
+    $rarray = array();
+    $promo_query = "SELECT offers.id,offers.visible_id,vouchers.created_on,voucher_owner.to_user_id FROM `offers`,`vouchers`,`voucher_owner` WHERE vouchers.offer_id = offers.id and voucher_owner.voucher_id = vouchers.id and voucher_owner.is_active=1 and offers.merchant_id=$user_id and offers.offer_type_id=3";
+    $details = findByQuery($promo_query);
+    //echo '<pre>';
+    //print_r($details);
+    //exit;
+    
+    
+       $data =array();
+    if(!empty($details))
+    {
+        foreach($details as $key=>$details_val){
+                $member_id = '';
+                $offer_id = '';
+                $purchased_date = '';
+                $promo_id = '';
+                $sub_data =array();
+                $member_id = $details_val['to_user_id'];
+                $offer_id = $details_val['id'];
+                $purchased_date = $details_val['created_on'];
+                $promo_id = $details_val['visible_id'];
+                $member_details = findByIdArray($member_id,'users');
+                $member_email = $member_details['email'];
+                $member_phone = $member_details['phone'];
+                $member_address = $member_details['address'];
+                $member_name = $member_details['first_name'].' '.$member_details['last_name'];
+                $merchant_details = findByIdArray($user_id,'users');
+                $merchant_id = $merchant_details['merchant_id'];
+                $sub_data['member_id']=$member_id;
+                $sub_data['offer_id']=$offer_id;
+                $sub_data['promo_id']=$promo_id;
+                $sub_data['member_email']=$member_email;
+                $sub_data['member_phone']=$member_phone;
+                $sub_data['member_address']=$member_address;
+                $sub_data['member_name']=$member_name;
+                $sub_data['merchant_id']=$merchant_id;
+                $sub_data['restaurant_id']='R0001';
+                $sub_data['purchased_date']=$purchased_date;
+                $data[]=$sub_data;
+        
+        }
+         $rarray = array("type" => "success","data" => $data);
+    }
+    else
+    {
+        $rarray = array("type" => "error", "message" => "Sorry no promo found", "data" => array());
+    }
+    echo json_encode($rarray);
+    exit;    
+}
+
 
 
 ?>

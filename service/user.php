@@ -709,6 +709,26 @@ function activeProfile($unique_id){
 		    $user_details = json_encode($user);
 		    
 		    $db = getConnection();
+	            $sql1 = "SELECT * FROM member_user_map WHERE email=:email";
+	            $stmt = $db->prepare($sql1);  
+	            $stmt->bindParam("email", $email);	    
+	            $stmt->execute();	
+	            $membercount = $stmt->rowCount();
+	            //echo $count;exit;
+	            //$tempvoucher = $stmt->fetchObject();
+                    $allmember = $stmt->fetchAll(PDO::FETCH_OBJ);
+                    $db = null;
+                    if($membercount != 0){
+                        //$arr['is_active'] = 1;
+                        $maparr = array();
+		        $maparr['user_id'] = $id;
+		        $mapupdateinfo['save_data'] = $maparr;
+		        $cndtn=array();
+		        $cndtn['email']=$email;
+		        $updatemap = editByField(json_encode($mapupdateinfo),'member_user_map',$cndtn);
+                    }
+		    
+		    $db = getConnection();
 	            $sql = "SELECT * FROM gift_voucher_non_user WHERE email=:email";
 	            $stmt = $db->prepare($sql);  
 	            $stmt->bindParam("email", $email);	    

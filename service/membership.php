@@ -202,4 +202,61 @@ function getMerResDetail($mid,$rid) {
        $result = array('type' => 'success', 'restaurant_id' => $restaurant_id, 'merchant_id' => $merchant_id);
        echo json_encode($result);	
 }
+
+function addMemberUser()
+{
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $body->created_dete = date('Y-m-d H:i:s'); 
+       
+    $unique_field = array();
+        $unique_field['email']=$body->email;
+        //$unique_field['username']=$user->username;
+        $rowCount = rowCount(json_encode($unique_field),'users');
+        if($rowCount == 0){
+                
+                $from = ADMINEMAIL;
+						    //$to = $saveresales->email;
+	    $to = $body->email;  //'nits.ananya15@gmail.com';
+	    $subject ='Register in mFoodGate';
+	    $bodyy ='<html><body><p>Dear '.$body->name.',</p><br />		    
+
+			<span style="color:rgb(77, 76, 76); font-family:helvetica,arial">You need to register, please <a href="'.WEBSITEURL.'register/'.$body->email.'">Click Here</a>  </span><span style="color:rgb(77, 76, 76); font-family:helvetica,arial">&nbsp;to verify your account.</span><br />
+		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
+
+		    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
+
+
+		    <p>Thanks,<br />
+		    mFood&nbsp;Team</p>
+
+
+
+		    <p>&nbsp;</p></body></html>';
+		    //print_r($body);
+                //exit;
+	    sendMail($to,$subject,$bodyy);
+	    $allinfo['save_data'] = $body;
+	    
+                $save_details  = add(json_encode($allinfo),'member_user_map');
+                $result = '{"type":"success","message":"Added succesfully and mail sent to the user"}'; 
+        }else{
+        
+    //exit;
+                $condition = array('email' => $body->email);
+                $user_details = findByConditionArray($condition,'users');
+                //print_r($user_details);
+                
+                $user_id = $user_details[0]['id'];
+                $body->user_id = $user_id;
+                //print_r($body);
+                //exit;
+                $allinfo['save_data'] = $body;
+                $save_details  = add(json_encode($allinfo),'member_user_map');
+                $result = '{"type":"success","message":"Added succesfully"}'; 
+        }
+      echo $result;
+      exit;
+}
+
 ?>
