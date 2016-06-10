@@ -4105,7 +4105,7 @@ function getMerchantMembershipPromo($user_id)
 function getPurchasedMerchantMembershipPromo($user_id)
 {
     $rarray = array();
-    $promo_query = "SELECT offers.id,offers.visible_id,vouchers.created_on,voucher_owner.to_user_id FROM `offers`,`vouchers`,`voucher_owner` WHERE vouchers.offer_id = offers.id and voucher_owner.voucher_id = vouchers.id and voucher_owner.is_active=1 and offers.merchant_id=$user_id and offers.offer_type_id=3";
+    $promo_query = "SELECT offers.id,offers.visible_id,vouchers.created_on,vouchers.id as voucher_id,voucher_owner.to_user_id FROM `offers`,`vouchers`,`voucher_owner` WHERE vouchers.offer_id = offers.id and voucher_owner.voucher_id = vouchers.id and voucher_owner.is_active=1 and offers.merchant_id=$user_id and offers.offer_type_id=3";
     $details = findByQuery($promo_query);
     //echo '<pre>';
     //print_r($details);
@@ -4120,28 +4120,70 @@ function getPurchasedMerchantMembershipPromo($user_id)
                 $offer_id = '';
                 $purchased_date = '';
                 $promo_id = '';
+                $restaurant_id = '';
+                $member_email = '';
+                $member_phone='';
+                $member_address='';
+                $member_name='';
+                $merchant_id='';
                 $sub_data =array();
                 $member_id = $details_val['to_user_id'];
                 $offer_id = $details_val['id'];
-                $purchased_date = $details_val['created_on'];
+                $voucher_id = $details_val['voucher_id'];
+                $purchased_date_format = $details_val['created_on'];
+                $purchased_date = date('d M, Y', strtotime($details_val['created_on']));
                 $promo_id = $details_val['visible_id'];
                 $member_details = findByIdArray($member_id,'users');
                 $member_email = $member_details['email'];
-                $member_phone = $member_details['phone'];
-                $member_address = $member_details['address'];
+                if(!empty($member_details['phone'])){
+                        $member_phone = $member_details['phone'];
+                }
+                if(!empty($member_details['address'])){
+                        $member_address = $member_details['address'];
+                }
                 $member_name = $member_details['first_name'].' '.$member_details['last_name'];
                 $merchant_details = findByIdArray($user_id,'users');
                 $merchant_id = $merchant_details['merchant_id'];
+                $restaurants = findByConditionArray(array('offer_id' => $offer_id),'offer_restaurent_map');
+                //$memberIdDetails = findByConditionArray(array('offer_id' => $offer_id,'voucher_id' => $voucher_id,'user_id' => $member_id),'member_user_map');
+                $member_query = "SELECT * FROM `member_user_map` WHERE offer_id = $offer_id and voucher_id = $voucher_id and user_id=$member_id";
+                $memberIdDetails = findByQuery($member_query);
+                //echo $offer_id . ' '.$voucher_id.' '.$member_id;
+                //echo '<pre>';
+                //print_r($memberIdDetails);
+                if(!empty($memberIdDetails)){
+                        if(!empty($memberIdDetails[0]['member_id'])){
+                                $member_membership_id = $memberIdDetails[0]['member_id'];
+                        }else{
+                                $member_membership_id = '';
+                        }
+                }else{
+                        $member_membership_id = '';
+                }
+                //$res_ids = array_column($restaurants, 'restaurent_id');
+                //echo '<pre>';
+                //print_r($restaurants);
+                //print_r($res_ids);
+                if(!empty($restaurants[0]['restaurent_id'])){
+                        $restaurant_details = findByIdArray($restaurants[0]['restaurent_id'],'restaurants');
+                        $restaurant_id = $restaurant_details['restaurant_id'];
+                }else{
+                        $restaurant_id = '';
+                }
+                $merchant_details = findByIdArray($user_id,'users');
                 $sub_data['member_id']=$member_id;
                 $sub_data['offer_id']=$offer_id;
+                $sub_data['voucher_id']=$voucher_id;
                 $sub_data['promo_id']=$promo_id;
                 $sub_data['member_email']=$member_email;
                 $sub_data['member_phone']=$member_phone;
                 $sub_data['member_address']=$member_address;
                 $sub_data['member_name']=$member_name;
                 $sub_data['merchant_id']=$merchant_id;
-                $sub_data['restaurant_id']='R0001';
+                $sub_data['restaurant_id']=$restaurant_id;
                 $sub_data['purchased_date']=$purchased_date;
+                $sub_data['purchased_date_format']=$purchased_date_format;
+                $sub_data['member_membership_id']=$member_membership_id;
                 $data[]=$sub_data;
         
         }

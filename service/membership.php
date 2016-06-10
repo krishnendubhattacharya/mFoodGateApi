@@ -194,12 +194,24 @@ function deleteMerchantMembership($id) {
        echo $result;	
 }
 
-function getMerResDetail($mid,$rid) { 
+function getMerResDetail($mid,$rid,$uid) { 
        $restaurant_details = findByIdArray($rid,'restaurants');
        $merchant_details = findByIdArray($mid,'users');
        $restaurant_id = $restaurant_details['restaurant_id'];
        $merchant_id = $merchant_details['merchant_id'];
-       $result = array('type' => 'success', 'restaurant_id' => $restaurant_id, 'merchant_id' => $merchant_id);
+       $member_query = "SELECT * FROM `member_user_map` WHERE merchant_id='".$merchant_id."' and user_id=$uid";
+        $memberIdDetails = findByQuery($member_query);
+        //print_r($memberIdDetails);
+        if(!empty($memberIdDetails)){
+                if(!empty($memberIdDetails[0]['member_id'])){
+                        $member_membership_id = $memberIdDetails[0]['member_id'];
+                }else{
+                        $member_membership_id = '';
+                }
+        }else{
+                $member_membership_id = '';
+        }
+       $result = array('type' => 'success', 'restaurant_id' => $restaurant_id, 'merchant_id' => $merchant_id, 'member_id' => $member_membership_id);
        echo json_encode($result);	
 }
 
@@ -255,6 +267,21 @@ function addMemberUser()
                 $save_details  = add(json_encode($allinfo),'member_user_map');
                 $result = '{"type":"success","message":"Added succesfully"}'; 
         }
+      echo $result;
+      exit;
+}
+
+function saveMembershipMemberMap()
+{
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $body->created_dete = date('Y-m-d H:i:s');
+                
+        $allinfo['save_data'] = $body;
+
+        $save_details  = add(json_encode($allinfo),'member_user_map');
+        $result = '{"type":"success","message":"Added Succesfully"}'; 
+        
       echo $result;
       exit;
 }
