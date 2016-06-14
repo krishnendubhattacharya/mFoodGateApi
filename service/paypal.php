@@ -243,7 +243,12 @@ function success_payment()
                             $owner_data['offer_percent'] = $offer_details->offer_percent;
                             $owner_data['buy_price'] = $offer_details->offer_price;
                             add(json_encode(array('save_data' => $owner_data)),'voucher_owner');
+                            
+                            
                     }
+                    /********* Update Offer *************/
+                    $up_query = "UPDATE offers SET buy_count=buy_count+".$order_detail->quantity." where id=".$order_detail->offer_id;
+                    updateByQuery($up_query);
                     
                 }
                 
