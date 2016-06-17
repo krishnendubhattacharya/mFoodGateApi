@@ -36,6 +36,7 @@ require 'service/point_master.php';
 require 'service/blogs.php';
 require 'service/cart.php'; 
 require 'service/qrcode.php';
+require 'service/icon.php';
 require_once 'service/voucher_pdf.php';
 require_once 'service/merchantrestaurants.php';
 require_once 'service/merchantoutlet.php';
@@ -205,6 +206,13 @@ $app->post('/updateMerchantNews',  'updateMerchantNews');
 $app->get('/getActiveNewsByRestaurant/:id', 'getActiveNewsByRestaurant');
 $app->get('/getFeaturedMerchantNews/:id', 'getFeaturedMerchantNews');
 $app->get('/getSpecialMerchantNews/:id', 'getSpecialMerchantNews');
+
+/***********Icon Call***********/
+$app->post('/addIcon', 'addIcon');
+$app->get('/getIconDetail/:id', 'getIconDetail');
+$app->get('/getIconList', 'getIconList');
+$app->post('/updateIcon', 'updateIcon');
+$app->delete('/deleteIcon/:icon_id', 'deleteIcon');
 
 /***********Contents Call***********/
 $app->get('/getContent/:page_header', 'getContent');
