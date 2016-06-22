@@ -13,6 +13,26 @@ function getAllOffers()
             $t['restaurant'] = findByIdArray( $t['restaurant_id'],'restaurants');
             return $t;
         }, $restaurants);
+        //echo "<pre>";
+        
+        
+        foreach($restaurants as $index=>$restaurants_val){
+             $restaurants_list = findByConditionArray(array('offer_id' => $restaurants_val['id']),'offer_restaurent_map');
+             //print_r($restaurants_list);
+             $restaurant_name = "";
+             if(!empty($restaurants_list)){
+                foreach($restaurants_list as $res_key=>$res_val){
+                        $restaurant_detail = findByIdArray( $res_val['restaurent_id'],'restaurants');
+                        if(!empty($restaurant_name)){
+                              $restaurant_name = $restaurant_name.', '.$restaurant_detail['title'];  
+                        }else{
+                           $restaurant_name = $restaurant_detail['title'];     
+                        }
+                }
+             }
+             $restaurants[$index]['restaurant_name'] = $restaurant_name;
+        }
+        
         $rarray = array('type' => 'success', 'data' => $restaurants);
     }
     else
