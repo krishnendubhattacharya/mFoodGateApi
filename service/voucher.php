@@ -523,6 +523,21 @@ function getMyMembership($user_id){
 		$resale_count = $stmt1->rowCount();
 		$vouchers[$i]->resale = $resale_count;
                 $vouchers[$i]->restaurant = findByIdArray($vouchers[$i]->restaurant_id,'restaurants');
+                
+                $restaurants_list = findByConditionArray(array('offer_id' => $vouchers[$i]->offer_id),'offer_restaurent_map');
+                //print_r($restaurants_list);
+                $restaurant_name = "";
+                if(!empty($restaurants_list)){
+                foreach($restaurants_list as $res_key=>$res_val){
+                        $restaurant_detail = findByIdArray( $res_val['restaurent_id'],'restaurants');
+                        if(!empty($restaurant_name)){
+                              $restaurant_name = $restaurant_name.', '.$restaurant_detail['title'];  
+                        }else{
+                           $restaurant_name = $restaurant_detail['title'];     
+                        }
+                }
+                }
+                $vouchers[$i]->restaurant_name = $restaurant_name;
 	}
 	$db = null;
 	$vouchers = json_encode($vouchers);
