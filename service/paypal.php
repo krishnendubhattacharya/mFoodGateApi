@@ -221,7 +221,7 @@ function success_payment()
                     for($i=0;$i<$qty;$i++){
                             $voucher_data = array();
                             $voucher_data['offer_id'] =$order_detail->offer_id;
-                            $voucher_data['created_on'] = $offer_details->created_on;
+                            $voucher_data['created_on'] = date('Y-m-d h:i:s');
                             $voucher_data['price'] = $offer_details->price;
                             $voucher_data['offer_price'] = $offer_details->offer_price;
                             $voucher_data['offer_percent'] = $offer_details->offer_percent;
