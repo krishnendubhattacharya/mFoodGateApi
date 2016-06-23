@@ -311,7 +311,7 @@ $app->post('/addMerchantMembership','addMerchantMembership');
 $app->get('/getMerchantMembership/:id',  'getMerchantMembership');
 $app->post('/updateMerchantMembership','updateMerchantMembership');
 $app->delete('/deleteMerchantMembership/:id',  'deleteMerchantMembership');
-$app->get('/getMerResDetail/:mid/:rid/:uid',  'getMerResDetail'); 
+$app->get('/getMerResDetail/:mid/:rid/:uid/:vid',  'getMerResDetail'); 
 $app->post('/addMemberUser',  'addMemberUser');
 $app->post('/saveMembershipMemberMap',  'saveMembershipMemberMap');
 

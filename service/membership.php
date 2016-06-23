@@ -194,12 +194,12 @@ function deleteMerchantMembership($id) {
        echo $result;	
 }
 
-function getMerResDetail($mid,$rid,$uid) { 
+function getMerResDetail($mid,$rid,$uid,$vid) { 
        $restaurant_details = findByIdArray($rid,'restaurants');
        $merchant_details = findByIdArray($mid,'users');
        $restaurant_id = $restaurant_details['restaurant_id'];
        $merchant_id = $merchant_details['merchant_id'];
-       $member_query = "SELECT * FROM `member_user_map` WHERE merchant_id='".$merchant_id."' and user_id=$uid";
+       $member_query = "SELECT * FROM `member_user_map` WHERE merchant_id='".$merchant_id."' and user_id=$uid and  voucher_id=$vid";
         $memberIdDetails = findByQuery($member_query);
         //print_r($memberIdDetails);
         if(!empty($memberIdDetails)){
