@@ -523,7 +523,20 @@ function getMyMembership($user_id){
 		$resale_count = $stmt1->rowCount();
 		$vouchers[$i]->resale = $resale_count;
                 $vouchers[$i]->restaurant = findByIdArray($vouchers[$i]->restaurant_id,'restaurants');
-                
+                $voucher_id = $vouchers[$i]->voucher_id;
+                $member_query = "SELECT * FROM `member_user_map` WHERE  user_id=$user_id and  voucher_id=$voucher_id";
+                $memberIdDetails = findByQuery($member_query);
+                //print_r($memberIdDetails);
+                if(!empty($memberIdDetails)){
+                        if(!empty($memberIdDetails[0]['member_id'])){
+                                $member_membership_id = $memberIdDetails[0]['member_id'];
+                        }else{
+                                $member_membership_id = '';
+                        }
+                }else{
+                        $member_membership_id = '';
+                }
+                $vouchers[$i]->member_id = $member_membership_id;
                 $restaurants_list = findByConditionArray(array('offer_id' => $vouchers[$i]->offer_id),'offer_restaurent_map');
                 //print_r($restaurants_list);
                 $restaurant_name = "";
