@@ -247,11 +247,54 @@ function addMemberUser()
 		    <p>&nbsp;</p></body></html>';
 		    //print_r($body);
                 //exit;
+                $offercondition = array('visible_id' => $body->offer_visible_id);
+            $offer_details = findByConditionArray($offercondition,'offers');
+            if(!empty($offer_details)) {
 	    sendMail($to,$subject,$bodyy);
+	    //$body->offer_id = $body->offer_visible_id;
+	    $body->membership_start_date = date('Y-m-d h:i:s', strtotime($body->member_start_date));
+	    $body->membership_end_date = date('Y-m-d h:i:s', strtotime($body->member_end_date));
+	    //unset($body->offer_visible_id);
+	    unset($body->member_start_date);
+	    unset($body->member_end_date);
+	    
+            
+            $voucher_data = array();
+            $voucher_data['offer_id'] =$offer_details[0]['id'];
+            $voucher_data['created_on'] = $body->membership_start_date;
+            $voucher_data['price'] = $offer_details[0]['price'];
+            $voucher_data['offer_price'] = $offer_details[0]['offer_price'];
+            $voucher_data['offer_percent'] = $offer_details[0]['offer_percent'];
+            $voucher_data['from_date'] = $body->membership_start_date;
+            $voucher_data['to_date'] = $body->membership_end_date;
+            $voucher_data['is_active'] = 1;
+            $s = add(json_encode(array('save_data' => $voucher_data)),'vouchers');
+                $s = json_decode($s);
+   //print_r($s);  exit;       
+            $owner_data = array();
+            $owner_data['offer_id'] = $offer_details[0]['id'];
+            $owner_data['voucher_id'] = $s->id;
+            $owner_data['from_user_id'] = 0;
+            //$owner_data['to_user_id'] = $order_detail->user_id;
+            $owner_data['purchased_date'] = $body->membership_start_date;
+            $owner_data['is_active'] = 1;
+            $owner_data['price'] = $offer_details[0]['price'];
+            $owner_data['offer_price'] = $offer_details[0]['offer_price'];
+            $owner_data['offer_percent'] = $offer_details[0]['offer_percent'];
+            $owner_data['buy_price'] = $offer_details[0]['offer_price'];
+            add(json_encode(array('save_data' => $owner_data)),'voucher_owner');
+            
+            $body->offer_id = $offer_details[0]['id'];
+            $body->voucher_id = $s->id;
+            unset($body->offer_visible_id);
+            
 	    $allinfo['save_data'] = $body;
 	    
                 $save_details  = add(json_encode($allinfo),'member_user_map');
                 $result = '{"type":"success","message":"Added succesfully and mail sent to the user"}'; 
+                }else{
+                        $result = '{"type":"failure","message":"offer_visible_id is not exist."}'; 
+                }
         }else{
         
     //exit;
@@ -263,9 +306,54 @@ function addMemberUser()
                 $body->user_id = $user_id;
                 //print_r($body);
                 //exit;
+                $body->membership_start_date = date('Y-m-d h:i:s', strtotime($body->member_start_date));
+	    $body->membership_end_date = date('Y-m-d h:i:s', strtotime($body->member_end_date));
+	    //unset($body->offer_visible_id);
+	    unset($body->member_start_date);
+	    unset($body->member_end_date);
+	    $offercondition = array('visible_id' => $body->offer_visible_id);
+            $offer_details = findByConditionArray($offercondition,'offers');
+            //print_r($body);
+            //print_r($offer_details);
+            //exit;
+            if(!empty($offer_details)) {
+            $voucher_data = array();
+            $voucher_data['offer_id'] =$offer_details[0]['id'];
+            $voucher_data['created_on'] = $body->membership_start_date;
+            $voucher_data['price'] = $offer_details[0]['price'];
+            $voucher_data['offer_price'] = $offer_details[0]['offer_price'];
+            $voucher_data['offer_percent'] = $offer_details[0]['offer_percent'];
+            $voucher_data['from_date'] = $body->membership_start_date;
+            $voucher_data['to_date'] = $body->membership_end_date;
+            $voucher_data['is_active'] = 1;
+            $s = add(json_encode(array('save_data' => $voucher_data)),'vouchers');
+                $s = json_decode($s);
+   //print_r($s);  exit;       
+            $owner_data = array();
+            $owner_data['offer_id'] = $offer_details[0]['id'];
+            $owner_data['voucher_id'] = $s->id;
+            $owner_data['from_user_id'] = 0;
+            $owner_data['to_user_id'] = $user_id;
+            $owner_data['purchased_date'] = $body->membership_start_date;
+            $owner_data['is_active'] = 1;
+            $owner_data['price'] = $offer_details[0]['price'];
+            $owner_data['offer_price'] = $offer_details[0]['offer_price'];
+            $owner_data['offer_percent'] = $offer_details[0]['offer_percent'];
+            $owner_data['buy_price'] = $offer_details[0]['offer_price'];
+            add(json_encode(array('save_data' => $owner_data)),'voucher_owner');
+            
+            $body->offer_id = $offer_details[0]['id'];
+            $body->voucher_id = $s->id;
+            unset($body->offer_visible_id);
+            //print_r($body);
+            //exit;
                 $allinfo['save_data'] = $body;
                 $save_details  = add(json_encode($allinfo),'member_user_map');
                 $result = '{"type":"success","message":"Added succesfully"}'; 
+                }
+                else{
+                        $result = '{"type":"failure","message":"offer_visible_id is not exist."}'; 
+                }
         }
       echo $result;
       exit;

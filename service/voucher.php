@@ -4147,6 +4147,7 @@ function getPurchasedMerchantMembershipPromo($user_id)
                 $member_id = '';
                 $offer_id = '';
                 $purchased_date = '';
+                $expire_date = '';
                 $promo_id = '';
                 $restaurant_id = '';
                 $member_email = '';
@@ -4182,6 +4183,8 @@ function getPurchasedMerchantMembershipPromo($user_id)
                 if(!empty($memberIdDetails)){
                         if(!empty($memberIdDetails[0]['member_id'])){
                                 $member_membership_id = $memberIdDetails[0]['member_id'];
+                                $purchased_date = date('d M, Y', strtotime($memberIdDetails[0]['membership_start_date']));
+                                $expire_date = date('d M, Y', strtotime($memberIdDetails[0]['membership_end_date']));
                         }else{
                                 $member_membership_id = '';
                         }
@@ -4210,6 +4213,7 @@ function getPurchasedMerchantMembershipPromo($user_id)
                 $sub_data['merchant_id']=$merchant_id;
                 $sub_data['restaurant_id']=$restaurant_id;
                 $sub_data['purchased_date']=$purchased_date;
+                $sub_data['expiry_date']=$expire_date;
                 $sub_data['purchased_date_format']=$purchased_date_format;
                 $sub_data['member_membership_id']=$member_membership_id;
                 $data[]=$sub_data;

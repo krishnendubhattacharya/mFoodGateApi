@@ -709,7 +709,7 @@ function activeProfile($unique_id){
 		    $user_details = json_encode($user);
 		    
 		    $db = getConnection();
-	            $sql1 = "SELECT * FROM member_user_map WHERE email=:email";
+	            $sql1 = "SELECT * FROM member_user_map WHERE email=:email order by id desc";
 	            $stmt = $db->prepare($sql1);  
 	            $stmt->bindParam("email", $email);	    
 	            $stmt->execute();	
@@ -717,9 +717,27 @@ function activeProfile($unique_id){
 	            //echo $count;exit;
 	            //$tempvoucher = $stmt->fetchObject();
                     $allmember = $stmt->fetchAll(PDO::FETCH_OBJ);
+                    //print_r($allmember);
+                    //exit;
                     $db = null;
                     if($membercount != 0){
                         //$arr['is_active'] = 1;
+                        $member_offer_id = $allmember[0]->offer_id;
+                        $member_voucher_id = $allmember[0]->voucher_id;
+                        $member_voucher_query = "SELECT * FROM `voucher_owner` WHERE offer_id=$member_offer_id and is_active=1 and voucher_id=$member_voucher_id";
+                        $memberVoucherDetails = findByQuery($member_voucher_query);
+                        //print_r($memberVoucherDetails);
+                        //exit;
+                        if(!empty($memberVoucherDetails)){                                
+                                $voucher_owner_id = $memberVoucherDetails[0]['id'];
+                                $maparr = array();
+		                $maparr['to_user_id'] = $id;
+		                $voucherupdateinfo['save_data'] = $maparr; 
+                                $cndtn=array();
+		                $cndtn['id']=$voucher_owner_id;
+		                $updatemap = editByField(json_encode($voucherupdateinfo),'voucher_owner',$cndtn);
+                                                               
+                        }
                         $maparr = array();
 		        $maparr['user_id'] = $id;
 		        $mapupdateinfo['save_data'] = $maparr;
