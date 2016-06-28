@@ -252,11 +252,11 @@ function addMemberUser()
             if(!empty($offer_details)) {
 	    sendMail($to,$subject,$bodyy);
 	    //$body->offer_id = $body->offer_visible_id;
-	    $body->membership_start_date = date('Y-m-d h:i:s', strtotime($body->member_start_date));
-	    $body->membership_end_date = date('Y-m-d h:i:s', strtotime($body->member_end_date));
+	    $body->membership_start_date = date('Y-m-d h:i:s', strtotime($body->membership_start_date));
+	    $body->membership_end_date = date('Y-m-d h:i:s', strtotime($body->membership_end_date));
 	    //unset($body->offer_visible_id);
-	    unset($body->member_start_date);
-	    unset($body->member_end_date);
+	    //unset($body->member_start_date);
+	    //unset($body->member_end_date);
 	    
             
             $voucher_data = array();
@@ -306,11 +306,11 @@ function addMemberUser()
                 $body->user_id = $user_id;
                 //print_r($body);
                 //exit;
-                $body->membership_start_date = date('Y-m-d h:i:s', strtotime($body->member_start_date));
-	    $body->membership_end_date = date('Y-m-d h:i:s', strtotime($body->member_end_date));
+                $body->membership_start_date = date('Y-m-d h:i:s', strtotime($body->membership_start_date));
+	    $body->membership_end_date = date('Y-m-d h:i:s', strtotime($body->membership_end_date));
 	    //unset($body->offer_visible_id);
-	    unset($body->member_start_date);
-	    unset($body->member_end_date);
+	    //unset($body->member_start_date);
+	    //unset($body->member_end_date);
 	    $offercondition = array('visible_id' => $body->offer_visible_id);
             $offer_details = findByConditionArray($offercondition,'offers');
             //print_r($body);

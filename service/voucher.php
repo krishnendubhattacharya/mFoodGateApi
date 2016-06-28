@@ -4188,6 +4188,7 @@ function getPurchasedMerchantMembershipPromo($user_id)
                         }else{
                                 $member_membership_id = '';
                         }
+                $member_name = $memberIdDetails[0]['name'];
                 }else{
                         $member_membership_id = '';
                 }
