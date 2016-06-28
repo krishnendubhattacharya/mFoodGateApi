@@ -724,6 +724,24 @@ function activeProfile($unique_id){
                         //$arr['is_active'] = 1;
                         $member_offer_id = $allmember[0]->offer_id;
                         $member_voucher_id = $allmember[0]->voucher_id;
+                        $member_name = $allmember[0]->name;
+                        $first_name = '';
+                        $last_name = '';
+                        if(!empty($member_name)){
+                                $member_name = explode(' ',$member_name)
+                                $first_name = $member_name[0];
+                                $last_name = $member_name[1];
+                                if(isset($member_name[2])){
+                                        $last_name = $last_name.' '.$member_name[2];
+                                }
+                                $arr =array();
+                                $arr['first_name'] = $first_name;
+	                            $arr['last_name'] = $last_name;
+	                            $updateinfo =array();
+	                            $updateinfo['save_data'] = $arr;
+	                            // print_r($updateinfo);exit;
+	                            $update = edit(json_encode($updateinfo),'users',$id);
+                        }
                         $member_voucher_query = "SELECT * FROM `voucher_owner` WHERE offer_id=$member_offer_id and is_active=1 and voucher_id=$member_voucher_id";
                         $memberVoucherDetails = findByQuery($member_voucher_query);
                         //print_r($memberVoucherDetails);
