@@ -728,7 +728,7 @@ function activeProfile($unique_id){
                         $first_name = '';
                         $last_name = '';
                         if(!empty($member_name)){
-                                $member_name = explode(' ',$member_name)
+                                $member_name = explode(' ',$member_name);
                                 $first_name = $member_name[0];
                                 $last_name = $member_name[1];
                                 if(isset($member_name[2])){
