@@ -373,7 +373,8 @@ $app->get('/downloadVoucherPdf/:vid', 'downloadVoucherPdf');
 
 /******************* Merchant Restaurant ***************/
 $app->get('/getMerchantsRestaurants/:merchant_id', 'getMerchantsRestaurants');
-$app->post('/MerchantRestaurantLogoUpload', 'MerchantRestaurantLogoUpload'); 
+$app->post('/MerchantRestaurantLogoUpload', 'MerchantRestaurantLogoUpload');
+$app->post('/MerchantRestaurantIconUpload', 'MerchantRestaurantIconUpload'); 
 $app->post('/addMerchantsResturant','addMerchantsResturant');
 $app->post('/updateMerchantsResturant','updateMerchantsResturant');
 $app->delete('/deleteMerchantRestaurant/:id','deleteMerchantRestaurant'); 

@@ -2605,8 +2605,14 @@ function getPromoDetails($id) {
 		                }		                
                         }
                     }
-
-                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"merchantInfo":'.json_encode($merchantInfo).',"count":'.$count.',"categories" : '.json_encode($categories).',"promo_images" : '.json_encode($offer_images).',"outlets" : '.json_encode($outlets).'}';
+                    
+                    $offer_days = findByConditionArray(array('offer_id' => $id),'offer_days_map');
+                    $days_array = array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
+                    $offer_days = array_map(function($t) use ($days_array){
+                            $t['day'] = $days_array[$t['day']];
+                            return $t;
+                    },$offer_days);
+                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"merchantInfo":'.json_encode($merchantInfo).',"count":'.$count.',"categories" : '.json_encode($categories).',"promo_images" : '.json_encode($offer_images).',"offer_days":'.json_encode($offer_days).',"outlets" : '.json_encode($outlets).'}';
 		}else{
 			$result =  '{"type":"error","message":"Sorry no promo found"}'; 
 		}

@@ -7,6 +7,10 @@ function getMerchantsRestaurants($merchant_id)
     {
         $restaturants = array_map(function($s){
             $s['imageurl'] = SITEURL.'merchantrestaurant_images/'.$s['logo'];
+            $s['iconurl']="";
+            if(!empty($s['icon'])){
+            $s['iconurl'] = SITEURL.'merchantrestaurant_icon/'.$s['icon'];
+            }
             return $s;
         },$restaturants);
         $rarray = array('type' => 'success','restaurants' => $restaturants);
@@ -27,6 +31,12 @@ function getActiveMerchantRestaurant($merchant_id)
     {
         $restaturants = array_map(function($s){
             $s['imageurl'] = SITEURL.'merchantrestaurant_images/'.$s['logo'];
+            $s['iconurl']="";
+            if(!empty($s['icon'])){
+            $s['iconurl'] = SITEURL.'merchantrestaurant_icon/'.$s['icon'];
+            }else{
+                $s['iconurl'] = SITEURL.'icon_images/setting.png';
+            }
             return $s;
         },$restaturants);
         $rarray = array('type' => 'success','restaurants' => $restaturants);
@@ -49,6 +59,10 @@ function getMerchantRestaurantDetails($res_id)
         $outlets = findByQuery($outlet_query);
         $outlets = array_map(function($t){
             $t['image_url'] = SITEURL.'merchantoutlet_images/'.$t['image'];
+            $s['iconurl']="";
+            if(!empty($t['icon'])){
+            $t['iconurl'] = SITEURL.'merchantrestaurant_icon/'.$t['icon'];
+            }
             return $t;
         },$outlets);
         $details['outlets'] = $outlets;
@@ -119,6 +133,9 @@ function updateMerchantsResturant() {
         if(isset($body->imageurl)){
 	        unset($body->imageurl);
 	}
+	if(isset($body->iconurl)){
+	        unset($body->iconurl);
+	}
         
         $categories = array();
 //        if(isset($body->category_id))
@@ -160,6 +177,13 @@ function updateMerchantsResturant() {
 function MerchantRestaurantLogoUpload()
 {
     move_uploaded_file($_FILES['files']['tmp_name']['0'], 'merchantrestaurant_images/'.$_FILES['files']['name']['0']);
+    echo json_encode($_FILES['files']['name']['0']);
+    exit; 
+}
+
+function MerchantRestaurantIconUpload()
+{
+    move_uploaded_file($_FILES['files']['tmp_name']['0'], 'merchantrestaurant_icon/'.$_FILES['files']['name']['0']);
     echo json_encode($_FILES['files']['name']['0']);
     exit; 
 }
