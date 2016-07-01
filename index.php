@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Jakarta');
 require 'Slim/Slim.php';
 require 'config.php';
 require 'class/class.phpmailer.php';
