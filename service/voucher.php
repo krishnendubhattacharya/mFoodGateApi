@@ -129,12 +129,12 @@ function getVoucherUserMerchentDetail($vid){
 			$vouchers->to_date = $to_date;
 			if(empty($vouchers->image)){
 			    $image = $site_path.'voucher_images/default.jpg';
-			    $vouchers->image = $image;
+			    //$vouchers->image = $image;
 			}
 			else{
 			   // for($i=0;$i<$countrestaurant;$i++){
 				$image = $site_path."voucher_images/".$vouchers->image;
-				$vouchers->image = $image;
+				//$vouchers->image = $image;
 				//$restaurant_details->image = $img;
 			    //}
 			}
@@ -156,6 +156,20 @@ function getVoucherUserMerchentDetail($vid){
 			
 			$marchantId = $vouchers->merchant_id;
 			$offerId = $vouchers->offer_id;
+			$promo_images = findByConditionArray(array('offer_id'=>$offerId),'offer_images');
+                    if(!empty($vouchers->image)){
+                            $img = $site_path."voucher_images/".$vouchers->image;
+                            $offer_images[0]['image'] = $img;
+                    }
+                        if(!empty($promo_images))
+                        {     
+                                $prmcount = count($promo_images);
+                                for($i=0;$i<$prmcount;$i++){
+                                        $image = $site_path."voucher_images/".$promo_images[$i]['image'];
+                                        $offer_images[$i+1]['image'] = $image;
+                                }  
+                                
+                        }
 			/*$sql1 = "SELECT * FROM offer_images WHERE offer_images.offer_id=:offerid";
 			$stmt1 = $db->prepare($sql1);  
 			$stmt1->bindParam("offerid", $offerId);
@@ -224,7 +238,7 @@ function getVoucherUserMerchentDetail($vid){
 				$mer_name = $mer_details['merchant_id'];
 			}
 			
-			$result = '{"type":"success","voucher_details":'.$voucher_details.',"restaurant_details":'.$restaurant_details.',"voucher_image":'.$offer_image.',"voucher_owner":'.$voucher_owner.',"total_sold":'.$soldCount.',"restaurant_ids":'.  json_encode($restaurant_ids).',"restaurant":'.json_encode($restaurants).',"all_res":'.json_encode($all_res).',"mer_name":'.json_encode($mer_name).',"voucher_no":'.json_encode($voucher_no).'}';
+			$result = '{"type":"success","voucher_details":'.$voucher_details.',"restaurant_details":'.$restaurant_details.',"voucher_image":'.$offer_image.',"voucher_owner":'.$voucher_owner.',"total_sold":'.$soldCount.',"restaurant_ids":'.  json_encode($restaurant_ids).',"restaurant":'.json_encode($restaurants).',"all_res":'.json_encode($all_res).',"mer_name":'.json_encode($mer_name).',"voucher_no":'.json_encode($voucher_no).',"promo_images":'.json_encode($offer_images).'}';
 		}
 		else if(empty($vouchers)){
 			$result = '{"type":"error","message":"Not found Offer Id"}';
@@ -282,6 +296,20 @@ function resellVoucherDetail($vid,$resellid){
 			//print_r($resellvoucherdetails);exit;
 			$marchantId = $vouchers->merchant_id;
 			$offerId = $vouchers->offer_id;
+			$promo_images = findByConditionArray(array('offer_id'=>$offerId),'offer_images');
+                    if(!empty($vouchers->image)){
+                            $img = $site_path."voucher_images/".$vouchers->image;
+                            $offer_images[0]['image'] = $img;
+                    }
+                        if(!empty($promo_images))
+                        {     
+                                $prmcount = count($promo_images);
+                                for($i=0;$i<$prmcount;$i++){
+                                        $image = $site_path."voucher_images/".$promo_images[$i]['image'];
+                                        $offer_images[$i+1]['image'] = $image;
+                                }  
+                                
+                        }
 			/*$sql1 = "SELECT * FROM offer_images WHERE offer_images.offer_id=:offerid";
 			$stmt1 = $db->prepare($sql1);  
 			$stmt1->bindParam("offerid", $offerId);
@@ -1191,7 +1219,7 @@ function getGiftedByMe($userid){
 	$is_active = 1;  
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-    $sql = "SELECT * from give_voucher where give_voucher.from_user_id =:userid ";
+    $sql = "SELECT * from give_voucher where give_voucher.from_user_id =:userid order by id desc";
 	$non_users = findByConditionArray(array('user_id' => $userid),'gift_voucher_non_user');
         
         $gifted_vouchers = array_column($non_users, 'voucher_id');
@@ -1235,11 +1263,29 @@ function getGiftedByMe($userid){
 		    //$offer[$i]->offer_to_date = $todate;
 			
 			$gives[$i]->voucher_name = $offer->title;
-			$gives[$i]->resturant_name = $returant->title;
+			//$gives[$i]->resturant_name = (!empty($returant->title)?$returant->title:'');
 			$gives[$i]->offer_to_date = $todate;
 			$gives[$i]->price = number_format($offer->price,2,'.',',');
-			$gives[$i]->friend = $toUser->first_name.' '.$toUser->last_name;
-                        $gives[$i]->friend_email = $toUser->email;
+                        if(!empty($toUser))
+                        {                            
+                            $gives[$i]->friend = $toUser->first_name.' '.$toUser->last_name;
+                            $gives[$i]->friend_email = $toUser->email;
+                        }
+                        
+                        $restaurants_list = findByConditionArray(array('offer_id' => $gives[$i]->offer_id),'offer_restaurent_map');
+                        //print_r($restaurants_list);
+                        $restaurant_name = "";
+                        if(!empty($restaurants_list)){
+                           foreach($restaurants_list as $res_key=>$res_val){
+                                   $restaurant_detail = findByIdArray( $res_val['restaurent_id'],'restaurants');
+                                   if(!empty($restaurant_name)){
+                                         $restaurant_name = $restaurant_name.', '.$restaurant_detail['title'];  
+                                   }else{
+                                      $restaurant_name = $restaurant_detail['title'];     
+                                   }
+                           }
+                        }
+                        $gives[$i]->resturant_name = $restaurant_name;
 			
 		}
                 
@@ -1316,12 +1362,26 @@ function getGiftedToMe($userid){
 		    //$offer[$i]->offer_to_date = $todate;
 			
 			$gives[$i]->voucher_name = $offer->title;
-			$gives[$i]->resturant_name = $returant->title;
+			//$gives[$i]->resturant_name = $returant->title;
 			$gives[$i]->offer_to_date = $todate;
 			$gives[$i]->price = number_format($offer->price,2,'.',',');
 			$gives[$i]->friend = $toUser->first_name.' '.$toUser->last_name;
                         $gives[$i]->friend_email = $toUser->email;
                         
+                        $restaurants_list = findByConditionArray(array('offer_id' => $gives[$i]->offer_id),'offer_restaurent_map');
+                        //print_r($restaurants_list);
+                        $restaurant_name = "";
+                        if(!empty($restaurants_list)){
+                           foreach($restaurants_list as $res_key=>$res_val){
+                                   $restaurant_detail = findByIdArray( $res_val['restaurent_id'],'restaurants');
+                                   if(!empty($restaurant_name)){
+                                         $restaurant_name = $restaurant_name.', '.$restaurant_detail['title'];  
+                                   }else{
+                                      $restaurant_name = $restaurant_detail['title'];     
+                                   }
+                           }
+                        }
+                        $gives[$i]->resturant_name = $restaurant_name;
 			
 		}
 		$db = null;

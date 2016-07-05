@@ -65,6 +65,8 @@ function addNews() {
     $news = array();
     
 		$body->date = date('Y-m-d H:i:s');
+                if(!empty($body->published_date))
+                    $body->published_date = date('Y-m-d H:i:s',strtotime($body->published_date));
                 file_put_contents('./news_images/'.$body->image->filename,  base64_decode($body->image->base64));
                 $body->image = $body->image->filename;
                 unset($body->image_url);
@@ -101,6 +103,8 @@ function updateNews() {
             unset($body->image);
         }
         $id = $body->id;
+        if(!empty($body->published_date))
+                    $body->published_date = date('Y-m-d H:i:s',strtotime($body->published_date));
         unset($body->image_url);
 	if(isset($body->id)){
 	    unset($body->id);
@@ -148,7 +152,7 @@ function updateNews() {
 function getNewsList() {     
 
         $is_active = 1;  
-	    $sql = "SELECT news.id,news.title,news.description,news.image,news.views,news.is_banner,news.date,news.is_active FROM news order by id DESC";
+	    $sql = "SELECT news.id,news.title,news.description,news.image,news.views,news.is_banner,news.date,news.is_active,news.published_date FROM news order by id DESC";
         
         //echo $sql;
         $site_path = SITEURL;
@@ -165,13 +169,14 @@ function getNewsList() {
 		for($i=0;$i<$count;$i++){
 		    $restaurants[$i]->date = date('m-d-Y',strtotime($restaurants[$i]->date));
 		    if(empty($restaurants[$i]->image)){
-                            $img = $site_path.'news_images/default.jpg';
-                            $restaurants[$i]->image = $img;
-                        }
-                        else{                            
-	                        $img = $site_path."news_images/".$restaurants[$i]->image;
-	                        $restaurants[$i]->image = $img;                            
-                        }
+                        $img = $site_path.'news_images/default.jpg';
+                        $restaurants[$i]->image = $img;
+                    }
+                    else{                            
+                            $img = $site_path."news_images/".$restaurants[$i]->image;
+                            $restaurants[$i]->image = $img;                            
+                    }
+                    $restaurants[$i]->published_date = date('m/d/Y',  strtotime($restaurants[$i]->published_date));
 		    
 		}
 		$db = null;
