@@ -100,7 +100,7 @@ function swaplist() {
 function mySwapList($uid) {     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id, swap.posted_on  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent,vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id, swap.posted_on  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id=:uid";
 	
 	try {
 		$db = getConnection();
@@ -149,7 +149,7 @@ function mySwapList($uid) {
 function otherSwapList($uid) {     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id,swap.posted_on   FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id !=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id,swap.posted_on   FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id !=:uid";
 	
 	try {
 		$db = getConnection();
@@ -182,7 +182,7 @@ function myBidSwapList($uid) {
         $is_active = 1;  
 	$newdate = date('Y-m-d');
 		
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.voucher_id  FROM vouchers, swap, offers, interested_swap where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.user_id=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.voucher_id  FROM vouchers, swap, offers, interested_swap where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.user_id=:uid";
 	
 	try {
 		$db = getConnection();

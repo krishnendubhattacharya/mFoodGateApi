@@ -7,10 +7,10 @@ function getAllActiveVoucher($user_id) {
         $gift_vouchers = array_column($non_users, 'voucher_id');
         if(!empty($gift_vouchers))
         {
-            $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) >=:date and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3 and vouchers.id NOT in(".implode(",",$gift_vouchers).")";
+            $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.item_expire_date) >=:date and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3 and vouchers.id NOT in(".implode(",",$gift_vouchers).")";
         }
         else {
-            $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) >=:date and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
+            $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.item_expire_date) >=:date and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
         }
         
 	try {
@@ -61,11 +61,11 @@ function getExpireSoonVoucher($user_id) {
         $gift_vouchers = array_column($non_users, 'voucher_id');
         if(!empty($gift_vouchers))
         {
-             $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) BETWEEN :start and :end and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3 and vouchers.id NOT IN(".implode(",",$gift_vouchers).")";
+             $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.item_expire_date) BETWEEN :start and :end and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3 and vouchers.id NOT IN(".implode(",",$gift_vouchers).")";
         }
         else
         {
-            $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.to_date) BETWEEN :start and :end and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
+            $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.item_expire_date) BETWEEN :start and :end and voucher_owner.is_active=:is_active and voucher_owner.to_user_id=:user_id and offers.offer_type_id!=3";
         }
 		//$sql = "SELECT * FROM vouchers INNER JOIN offers ON vouchers.offer_id=offers.id WHERE vouchers.is_active=:is_active and vouchers.user_id=:user_id and vouchers.to_date BETWEEN :start and :end";
         try {
@@ -674,7 +674,7 @@ function getMyMembershipExpireSoon($user_id){
 function getResellListPostOwn($userid){
             $current_date = date('Y-m-d');
             $resales = array();
-            $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.status, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.to_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id=:user_id";
+            $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.status, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.item_expire_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id=:user_id";
 	   	
 	   
         try {
@@ -736,7 +736,7 @@ function getResellListPostOwn($userid){
 function getResellListPostOthers($userid){
 	$current_date = date('Y-m-d');
 	 $resales = array();
-	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price  FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.to_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";   	
+	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price  FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.item_expire_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";   	
 	   	 //$sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price, max(voucher_bids.bid_price) as max_bid_price FROM offers, voucher_resales,voucher_bids, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and voucher_bids.voucher_resale_id = voucher_resales.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";
 	   
     try {
@@ -773,7 +773,7 @@ function getResellListBidOwn($userid){
 	 $resales = array();
 	   	 //$sql = "SELECT voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price FROM voucher_resales, vouchers WHERE voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and vouchers.user_id=:user_id";
 	   	 
-	   	 $sql = "SELECT voucher_bids.id as bid_id,voucher_bids.voucher_id,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points as bid_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, voucher_resales.status, vouchers.to_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price,vouchers.to_date as expire_date, offers.title FROM voucher_bids, voucher_resales, vouchers, offers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and offers.id = vouchers.offer_id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_bids.user_id=:user_id";
+	   	 $sql = "SELECT voucher_bids.id as bid_id,voucher_bids.voucher_id,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points as bid_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, voucher_resales.status, vouchers.to_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price,vouchers.to_date as expire_date, offers.title FROM voucher_bids, voucher_resales, vouchers, offers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and offers.id = vouchers.offer_id and vouchers.item_expire_date >=:current_date and voucher_resales.is_active ='1' and voucher_bids.user_id=:user_id";
 	   	
 	   
 	   
@@ -1303,7 +1303,7 @@ function getGiftedByMe($userid){
                         $temp = array();
                         $temp['voucher_name'] = $offer['title'];
                         $temp['resturant_name'] = $restaurant['title'];
-                        $temp['offer_to_date'] = date('M d,Y', strtotime($offer['offer_to_date']));
+                        $temp['offer_to_date'] = date('M d,Y', strtotime($offer['item_expire_date']));
                         $temp['price'] = number_format($offer['price'],2,'.',',');
                         $temp['friend'] = '';
                         $temp['friend_email'] = $gifted_users[$voucher['id']];
@@ -1358,7 +1358,10 @@ function getGiftedToMe($userid){
 			$stmt->execute();
 			$toUser = $stmt->fetchObject();
 			
-			$todate = date('M d,Y', strtotime($offer->offer_to_date));
+                        $vouchers_query = "SELECT * FROM vouchers where offer_id=".$gives[$i]->offer_id;
+                        $vouchers = findByQuery($vouchers_query,'one');
+                    
+			$todate = date('M d,Y', strtotime($vouchers['item_expire_date']));
 		    //$offer[$i]->offer_to_date = $todate;
 			
 			$gives[$i]->voucher_name = $offer->title;
