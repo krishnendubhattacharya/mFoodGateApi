@@ -244,7 +244,11 @@ function addSubUser(){
     $rowCount = rowCount(json_encode($unique_field),'users');
     if($rowCount == 0){
         $user->password = md5($user->password);
-        $user->user_type_id = 3;
+        if($user->roll == 3){
+            $user->user_type_id = 3;
+        }else{
+            $user->user_type_id = 2;
+        }
 	$user->registration_date = date('Y-m-d h:m:s');
         $allinfo['save_data'] = $user;
         $user_details = add(json_encode($allinfo),'users');
@@ -278,6 +282,11 @@ function updateSubUser(){
         }
         else {
             unset($user->password);
+        }
+        if($user->roll == 3){
+            $user->user_type_id = 3;
+        }else{
+            $user->user_type_id = 2;
         }
         $allinfo['save_data'] = $user;
         $user_details = edit(json_encode($allinfo),'users',$user_id);

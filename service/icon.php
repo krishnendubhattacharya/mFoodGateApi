@@ -87,11 +87,13 @@ function getIconList() {
 		    if(empty($restaurants[$i]->image)){
                             $img = $site_path.'icon_images/setting.png';
                             $restaurants[$i]->image = "";
+                            $restaurants[$i]->imagee = "setting.png";
                             $restaurants[$i]->image_url = $img;
                         }
                         else{                            
 	                        $img = $site_path."icon_images/".$restaurants[$i]->image;
 	                        $restaurants[$i]->image = $img; 
+	                        $restaurants[$i]->imagee = $restaurants[$i]->image;
 	                        $restaurants[$i]->image_url = $img;                           
                         }
 		    
