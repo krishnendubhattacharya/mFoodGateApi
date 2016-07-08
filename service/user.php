@@ -244,11 +244,11 @@ function addSubUser(){
     $rowCount = rowCount(json_encode($unique_field),'users');
     if($rowCount == 0){
         $user->password = md5($user->password);
-        if($user->roll == 3){
+        //if($user->roll == 3){
             $user->user_type_id = 3;
-        }else{
-            $user->user_type_id = 2;
-        }
+        //}else{
+            //$user->user_type_id = 2;
+        //}
 	$user->registration_date = date('Y-m-d h:m:s');
         $allinfo['save_data'] = $user;
         $user_details = add(json_encode($allinfo),'users');
@@ -283,11 +283,11 @@ function updateSubUser(){
         else {
             unset($user->password);
         }
-        if($user->roll == 3){
+        //if($user->roll == 3){
             $user->user_type_id = 3;
-        }else{
-            $user->user_type_id = 2;
-        }
+        //}else{
+            //$user->user_type_id = 2;
+        //}
         $allinfo['save_data'] = $user;
         $user_details = edit(json_encode($allinfo),'users',$user_id);
         $user_details = json_decode($user_details);
@@ -602,6 +602,25 @@ function getlogin(){
 		    if(!empty($update)){
 		    //print_r($update);exit;
 		    $user->is_active=1;
+                    if((!empty($user->parent_id)) && (!empty($user->roll))){
+                        $parent_id = $user->parent_id;
+                        $db = getConnection();
+                        $sql = "SELECT * FROM users WHERE id=:id";
+                        $stmt = $db->prepare($sql);  
+                        $stmt->bindParam("id", $parent_id);                        
+                        $stmt->execute();	
+                        //$count = $stmt->rowCount();
+                        //echo $count;exit;
+                        $parent_user = $stmt->fetchObject();
+                        $db = null;
+                        if(!empty($parent_user)){
+                            $user->id=$parent_user->id;
+                            $user->merchant_name=$parent_user->merchant_name;
+                        }
+                        
+                        //$user->merchant_name=$parent_user->merchant_name;                       
+                        
+                    }
 		    //$user->is_logged_in=1;
 		    $user->last_login=$arr['last_login'];
 		    $user_details = json_encode($user);

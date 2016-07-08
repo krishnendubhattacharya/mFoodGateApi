@@ -31,4 +31,25 @@ function genVoucherQrCode(){
         echo QRcode::png('mFoodGate',false,'L',9,0);
     }
 }
+
+function genMembershipQrCode(){
+    $code_string = '';
+    
+    if(!empty($_GET['merchant_id']))
+    {
+        $code_string .= $_GET['merchant_id'].',';
+    }    
+    if(!empty($_GET['member_id']))
+    {
+        $code_string .= $_GET['member_id'];
+    }
+    if(!empty($code_string))
+    {
+        echo QRcode::png($code_string,false,'L',9,0);
+    }
+    else
+    {
+        echo QRcode::png('mFoodGate',false,'L',9,0);
+    }
+}
 ?>

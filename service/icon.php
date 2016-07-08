@@ -68,7 +68,7 @@ function updateIcon() {
 function getIconList() {     
 
         $is_active = 1;  
-	    $sql = "SELECT * FROM icon order by id DESC";
+	    $sql = "SELECT * FROM icon order by id ASC";
         
         //echo $sql;
         $site_path = SITEURL;

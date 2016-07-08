@@ -399,6 +399,7 @@ $app->delete('/deleteMerchantMenuCategory/:id','deleteMerchantMenuCategory');
 
 /******************** QR Code ********************/
 $app->get('/genVoucherQrCode', 'genVoucherQrCode');
+$app->get('/genMembershipQrCode', 'genMembershipQrCode');
 
 /*********************** Admin ************************/
 /******************** Users *************************/
