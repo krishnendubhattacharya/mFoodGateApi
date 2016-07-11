@@ -107,7 +107,7 @@ function getExpireSoonVoucher($user_id) {
 
 function getVoucherUserMerchentDetail($vid){
   //  $sql = "SELECT * FROM vouchers, offers, users where vouchers.offer_id = offers.id and vouchers.user_id = users.id and vouchers.id=:id";
-    $sql = "SELECT vouchers.offer_id, vouchers.view_id, vouchers.price, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id FROM vouchers , offers WHERE vouchers.offer_id=offers.id and vouchers.id=:id";
+    $sql = "SELECT vouchers.offer_id, vouchers.view_id, vouchers.price, vouchers.created_on, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id FROM vouchers , offers WHERE vouchers.offer_id=offers.id and vouchers.id=:id";
     $offerId ='';
     $offer_image = array();
     $restaurant_details = array();
@@ -127,6 +127,8 @@ function getVoucherUserMerchentDetail($vid){
 			$to_date = date('d M,Y', strtotime($vouchers->to_date));
 			//$offer_to_date = date('d M,Y', strtotime($vouchers->offer_to_date));
 			$vouchers->to_date = $to_date;
+                        
+                        $vouchers->created_on = date('d M,Y', strtotime($vouchers->created_on));
 			if(empty($vouchers->image)){
 			    $image = $site_path.'voucher_images/default.jpg';
 			    //$vouchers->image = $image;

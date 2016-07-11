@@ -205,13 +205,16 @@ function getMerResDetail($mid,$rid,$uid,$vid) {
         if(!empty($memberIdDetails)){
                 if(!empty($memberIdDetails[0]['member_id'])){
                         $member_membership_id = $memberIdDetails[0]['member_id'];
+                        $member_membership_end_date = date('d M,Y', strtotime($memberIdDetails[0]['membership_end_date']));
                 }else{
                         $member_membership_id = '';
+                        $member_membership_end_date ='';
                 }
         }else{
                 $member_membership_id = '';
+                $member_membership_end_date ='';
         }
-       $result = array('type' => 'success', 'restaurant_id' => $restaurant_id, 'merchant_id' => $merchant_id, 'member_id' => $member_membership_id);
+       $result = array('type' => 'success', 'restaurant_id' => $restaurant_id, 'merchant_id' => $merchant_id, 'member_id' => $member_membership_id,'expire_date'=>$member_membership_end_date);
        echo json_encode($result);	
 }
 
