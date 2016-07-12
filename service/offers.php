@@ -50,22 +50,80 @@ function checkExpiredOffers()
 
     $body = json_decode($body);
     $offer_ids = $body->offer_ids;
+    $user_id = $body->user_id;
+    $check_offer=array();
+    $rejectted_offer=array();
+    if(!empty($user_id)){
+        //print_r($offer_ids);
+        
+        foreach($offer_ids as $offer_index=>$offer_id){            
+            $sql = "select * from offers where id='".$offer_id."'";
+            $offer_result = findByQuery($sql);
+                if(!empty($offer_result)){
+                    $max_purchased = 0;
+                    $max_purchased = $offer_result[0]['max_purchased'];
+                    //print_r($offer_result);
+                    $sql = "select * from voucher_owner where offer_id='".$offer_id."' and to_user_id='".$user_id."' and is_active=1";
+                    $voucher_result = findByQuery($sql);                    
+                    $voucher_count = count($voucher_result);
+                    //echo $voucher_count;
+                    if($voucher_count >= $max_purchased){
+                        //unset($offer_ids[$offer_index]);
+                        $check_offer[]=$offer_ids[$offer_index];
+                        
+                    }
+                    
+                    
+            }
+        }
+        //print_r($check_offer);
+    }
     if(!empty($offer_ids))
     {
         $sql = "select * from offers where DATE(offer_to_date)<CURDATE() and id in(".implode(",",$offer_ids).")";
         $results = findByQuery($sql);
         if(!empty($results))
         {
-            $rarray = array('type' => 'success','ids' => array_column($results,'id'));
+            $rejectted_offer = array_column($results,'id');
+            if(!empty($check_offer)){
+                foreach($check_offer as $check_offer_val){
+                    if(in_array($check_offer_val, $rejectted_offer)){                        
+                    }else{
+                        $rejectted_offer[count($rejectted_offer)]=$check_offer_val;
+                    }
+                }
+            }
+            //print_r($rejectted_offer);
+            $rarray = array('type' => 'success','ids' => $rejectted_offer);
         }
         else
         {
-            $rarray = array('type' => 'error', 'message' => 'No offers found');
+            if(!empty($check_offer)){
+                foreach($check_offer as $check_offer_val){
+                    if(in_array($check_offer_val, $rejectted_offer)){                        
+                    }else{
+                        $rejectted_offer[count($rejectted_offer)]=$check_offer_val;
+                    }
+                }
+                $rarray = array('type' => 'success','ids' => $rejectted_offer);
+            }else{
+                $rarray = array('type' => 'error', 'message' => 'No offers found');
+            }
         }
     }
     else
     {
-        $rarray = array('type' => 'error', 'message' => 'No offers found');
+        if(!empty($check_offer)){
+                foreach($check_offer as $check_offer_val){
+                    if(in_array($check_offer_val, $rejectted_offer)){                        
+                    }else{
+                        $rejectted_offer[count($rejectted_offer)]=$check_offer_val;
+                    }
+                }
+                $rarray = array('type' => 'success','ids' => $rejectted_offer);
+            }else{
+                $rarray = array('type' => 'error', 'message' => 'No offers found');
+            }
     }
     echo json_encode($rarray);
 }
