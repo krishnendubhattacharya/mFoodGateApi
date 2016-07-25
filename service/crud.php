@@ -43,19 +43,27 @@ function findByIdArray($id,$table) {
     }
 }
 
-function findByConditionArray($conditions,$table) {
+function findByConditionArray($conditions,$table) {        
         $rarray = array();
 	$sql = "SELECT * FROM ".$table;
 	try {
             if(!empty($conditions)) 
             {
                 $sql .= " WHERE ";
+                $sql_cond = '';
                 foreach ($conditions as $key=>$condition)
                 {
-                    $sql .= "$key=:$key ";
-                    $$key = $condition;
+                    
+                    if(!empty($sql_cond)){
+                        $sql_cond .= "and $key=:$key ";
+                    }else{
+                        $sql_cond = "$key=:$key ";
+                    }
+                    $$key = $condition;                    
                 }
+                $sql .= $sql_cond;
             }
+            
             $db = getConnection();
             $stmt = $db->prepare($sql);
             $s = json_decode(json_encode($conditions));

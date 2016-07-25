@@ -38,6 +38,7 @@ require 'service/blogs.php';
 require 'service/cart.php'; 
 require 'service/qrcode.php';
 require 'service/icon.php';
+require 'service/dashboard.php';
 require_once 'service/voucher_pdf.php';
 require_once 'service/merchantrestaurants.php';
 require_once 'service/merchantoutlet.php';
@@ -400,6 +401,18 @@ $app->delete('/deleteMerchantMenuCategory/:id','deleteMerchantMenuCategory');
 /******************** QR Code ********************/
 $app->get('/genVoucherQrCode', 'genVoucherQrCode');
 $app->get('/genMembershipQrCode', 'genMembershipQrCode');
+
+/******************** Dashboard ********************/
+$app->get('/getAllInfoUptoDate/:merchant_id', 'getAllInfoUptoDate');
+$app->post('/getAllInfoDateRange', 'getAllInfoDateRange');
+$app->get('/promoVisit/:promo_id', 'promoVisit');
+$app->get('/bannerVisit/:banner_id', 'bannerVisit');
+$app->get('/addVisit/:banner_id', 'addVisit');
+$app->get('/newsVisit/:news_id', 'newsVisit');
+$app->get('/memberVisit/:user_id/:merchant_id', 'memberVisit');
+$app->post('/getMerchantOutletsBySelectedRestaurant', 'getMerchantOutletsBySelectedRestaurant');
+$app->post('/transactionTabDetails', 'transactionTabDetails');
+//$app->get('/genMembershipQrCode', 'genMembershipQrCode');
 
 /*********************** Admin ************************/
 /******************** Users *************************/
