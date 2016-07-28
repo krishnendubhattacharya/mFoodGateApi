@@ -278,6 +278,11 @@ function deleteOffer($id) {
        echo $result;	
 }
 
+function deleteOfferImage($id) { 
+       $result =  delete('offer_images',$id);
+       echo $result;	
+}
+
 
 function addNewOffer() {	
 	
