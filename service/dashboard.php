@@ -263,6 +263,8 @@
         $to_date = $body->to_date;
         $merchant_id = $body->merchant_id; 
         $website_visit_count = 0;
+        $show_start_date = date('d-M-Y',  strtotime($from_date));
+        $show_end_date = date('d-M-Y',  strtotime($to_date));
         
         $allPromo = findByConditionArray(array('merchant_id' => $merchant_id),'offers');
         $all_promo_ids = array_column($allPromo, 'id');
@@ -445,7 +447,7 @@
         //echo $unactivated_member_count;
         //print_r($unactivated_member_ids);
         
-        $data=array('total_target_banner'=>$total_target_banner,'total_actual_banner'=>$total_actual_banner,'total_target_add'=>$total_target_add,'total_actual_add'=>$total_actual_add,'promo_visit_count'=>$promo_visit_count,'news_visit_count'=>$news_visit_count,'website_visit_count'=>$website_visit_count,'redeem_promo_count'=>$redeem_promo_count,'unredeem_promo_count'=>$unredeem_promo_count,'all_user_count'=>$all_user_count,'male_user_count'=>$male_user_count,'female_user_count'=>$female_user_count,'active_member_user_count'=>$active_member_user_count,'inactive_member_user_count'=>$inactive_member_user_count,'active_male_user_count'=>$active_male_user_count,'active_female_user_count'=>$active_female_user_count,'unactivated_member_count'=>$unactivated_member_count,'first_redeem_restaurant'=>$first_redeem_restaurant,'second_redeem_restaurant'=>$second_redeem_restaurant,'third_redeem_restaurant'=>$third_redeem_restaurant,'fourth_redeem_restaurant'=>$fourth_redeem_restaurant,'fifth_redeem_restaurant'=>$fifth_redeem_restaurant,'first_redeem_value'=>$first_redeem_value,'second_redeem_value'=>$second_redeem_value,'third_redeem_value'=>$third_redeem_value,'fourth_redeem_value'=>$fourth_redeem_value,'fifth_redeem_value'=>$fifth_redeem_value);
+        $data=array('total_target_banner'=>$total_target_banner,'total_actual_banner'=>$total_actual_banner,'total_target_add'=>$total_target_add,'total_actual_add'=>$total_actual_add,'promo_visit_count'=>$promo_visit_count,'news_visit_count'=>$news_visit_count,'website_visit_count'=>$website_visit_count,'redeem_promo_count'=>$redeem_promo_count,'unredeem_promo_count'=>$unredeem_promo_count,'all_user_count'=>$all_user_count,'male_user_count'=>$male_user_count,'female_user_count'=>$female_user_count,'active_member_user_count'=>$active_member_user_count,'inactive_member_user_count'=>$inactive_member_user_count,'active_male_user_count'=>$active_male_user_count,'active_female_user_count'=>$active_female_user_count,'unactivated_member_count'=>$unactivated_member_count,'first_redeem_restaurant'=>$first_redeem_restaurant,'second_redeem_restaurant'=>$second_redeem_restaurant,'third_redeem_restaurant'=>$third_redeem_restaurant,'fourth_redeem_restaurant'=>$fourth_redeem_restaurant,'fifth_redeem_restaurant'=>$fifth_redeem_restaurant,'first_redeem_value'=>$first_redeem_value,'second_redeem_value'=>$second_redeem_value,'third_redeem_value'=>$third_redeem_value,'fourth_redeem_value'=>$fourth_redeem_value,'fifth_redeem_value'=>$fifth_redeem_value,'show_start_date'=>$show_start_date,'show_end_date'=>$show_end_date);
         $rarray = array('type' => 'success', 'data' => $data);
         echo json_encode($rarray);
         //exit;       

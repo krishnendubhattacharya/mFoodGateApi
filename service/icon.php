@@ -48,6 +48,9 @@ function updateIcon() {
         }
         $id = $body->id;
         unset($body->image_url);
+        if(isset($body->imagee)){
+	    unset($body->imagee);  
+	}
 	if(isset($body->id)){
 	    unset($body->id);
 	}	
