@@ -76,18 +76,28 @@ function redeemUserPoints()
     $user_id = $body->user_id;
     $points = $body->points;
     $carts = $body->cart;
+    $offerr_id = $carts[0]->offer_id;
+    $offer_detaill = json_decode(findById($offerr_id,'offers'));
+    $mer_id=$offer_detaill->merchant_id;
+    
+    //print_r($points);
+    //print_r($carts);
+    //exit;
     $rarray = array();
     try{
         $points_left = $points;
         $points_redeemed = 0;
         $date = date('Y-m-d H:i:s');
-        $sql = "SELECT * FROM points WHERE user_id=:user_id and expire_date>=:expire_date and remaining_points>0 ORDER BY expire_date ASC";
+        $sql = "SELECT * FROM points WHERE user_id=:user_id and remaining_points>0 and merchant_id=:mer_id";
         $db = getConnection();
         $stmt = $db->prepare($sql); 
         $stmt->bindParam("user_id", $user_id);
-        $stmt->bindParam("expire_date", $date);
+        $stmt->bindParam("mer_id", $mer_id);
+        //$stmt->bindParam("expire_date", $date);
         $stmt->execute();
         $allpoints = $stmt->fetchAll(PDO::FETCH_OBJ);
+        //print_r($allpoints);
+        //exit;
         if(!empty($allpoints))
         {
             foreach($allpoints as $point)
@@ -127,6 +137,14 @@ function redeemUserPoints()
             foreach($carts as $cart)
             {
                     $offer_details = json_decode(findById($cart->offer_id,'offers'));
+                    $merchant_id='';
+                    $offer_id ='';
+                    $point_id = '';
+                    $point = '';
+                    $merchant_id=$offer_details->merchant_id;
+                    $offer_id =$offer_details->id;
+                    $point_id = $offer_details->given_point_master_id;
+                    $point = $offer_details->mpoints_given;
                     
                     $voucher_data = array();
                     $voucher_data['offer_id'] =$cart->offer_id;
@@ -151,6 +169,20 @@ function redeemUserPoints()
                     $owner_data['offer_percent'] = $offer_details->offer_percent;
                     $owner_data['buy_price'] = $offer_details->offer_price;
                     add(json_encode(array('save_data' => $owner_data)),'voucher_owner');
+                    $point_data = array();
+                    $point_data['offer_id'] = $offer_id;
+                    $point_data['points'] = $point;
+                    $point_data['source'] = 'earn from promo click';
+                    $point_data['user_id'] = $user_id;
+                    $point_data['date'] = date('Y-m-d h:i:s');
+                    $point_data['type'] = 'P';
+                    $point_data['remaining_points'] = $point;
+                    $point_data['merchant_id'] = $merchant_id;
+                    $point_data['point_id'] = $point_id;                    
+                    add(json_encode(array('save_data' => $point_data)),'points');
+                    
+                    
+                    
             }
         }
         $rarray = array('status' => 'success','data' => $points);
@@ -161,17 +193,21 @@ function redeemUserPoints()
     exit;
 }
 
-function getUsersPoints($user_id)
+function getUsersPoints($user_id,$promo_id)
 {
     $rarray = array();
+    $offer_details = json_decode(findById($promo_id,'offers'));
+    $merchant_id =$offer_details->merchant_id;
+    //echo $merchant_id;
     try
     {
         $date = date('Y-m-d H:i:s');
-        $sql = "SELECT sum(remaining_points) as sum FROM points WHERE user_id=:user_id and expire_date>=:expire_date";
+        $sql = "SELECT sum(remaining_points) as sum FROM points WHERE user_id=:user_id and merchant_id=:merchant_id";
         $db = getConnection();
         $stmt = $db->prepare($sql); 
         $stmt->bindParam("user_id", $user_id);
-        $stmt->bindParam("expire_date", $date);
+        $stmt->bindParam("merchant_id", $merchant_id);
+        //$stmt->bindParam("expire_date", $date);
         $stmt->execute();
         $points = $stmt->fetch();        
         $rarray = array('status' => 'success','data' => $points);

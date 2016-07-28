@@ -497,10 +497,11 @@ function updateUser($id) {
             $user->dob = date("Y-m-d", strtotime($user->dob));
         }
         
-//        
-//        $arealist = $user->areaList;
-//        unset($user->areaList);
-//       
+        if(isset($user->areaList)){
+        $arealist = $user->areaList;
+        unset($user->areaList);
+	}
+       
         $typelist = array();
         if(isset($user->typeList))
         {
@@ -515,22 +516,23 @@ function updateUser($id) {
         }
         
 	$allinfo['save_data'] = $user;
-       
+       //print_r($allinfo);
+	//exit;
 	$result = edit(json_encode($allinfo),'users',$id);
         if($result)
         {
-//            deleteAll('merchant_location_map',array('user_id' => $user_id));
-//            if(!empty($arealist))
-//            {
-//                foreach($arealist as $area)
-//                {
-//                    $temp = array();
-//                    $temp['user_id'] = $user_id;
-//                    $temp['location_id'] = $area->id;
-//                    add(json_encode(array('save_data'=>$temp)),'merchant_location_map');
-//                }
-//            }
-//            
+            deleteAll('merchant_location_map',array('user_id' => $user_id));
+            if(!empty($arealist))
+            {
+                foreach($arealist as $area)
+                {
+                    $temp = array();
+                    $temp['user_id'] = $user_id;
+                    $temp['location_id'] = $area->id;
+                    add(json_encode(array('save_data'=>$temp)),'merchant_location_map');
+                }
+            }
+            
             deleteAll('merchant_category_map',array('user_id' => $id));
             if(!empty($typelist))
             {

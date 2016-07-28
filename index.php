@@ -242,7 +242,7 @@ $app->post('/swapinterest', 'swapinterest');
 /**********points Call*********/
 $app->get('/mypoints/:user_id',  'getMyPoints');
 $app->get('/expiresoonpoints/:user_id',  'getExpireSoonPoints');
-$app->get('/getUsersPoints/:user_id',  'getUsersPoints');
+$app->get('/getUsersPoints/:user_id/:promo_id',  'getUsersPoints');
 $app->post('/redeemUserPoints',  'redeemUserPoints');
 $app->get('/swapInterestAccept/:siid',  'swapInterestAccept');
 
@@ -412,6 +412,7 @@ $app->get('/newsVisit/:news_id', 'newsVisit');
 $app->get('/memberVisit/:user_id/:merchant_id', 'memberVisit');
 $app->post('/getMerchantOutletsBySelectedRestaurant', 'getMerchantOutletsBySelectedRestaurant');
 $app->post('/transactionTabDetails', 'transactionTabDetails');
+$app->get('/websiteVisit', 'websiteVisit');
 //$app->get('/genMembershipQrCode', 'genMembershipQrCode');
 
 /*********************** Admin ************************/

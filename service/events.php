@@ -390,22 +390,22 @@ function getMerchantsRelatedEvents($id)
                 }
                 //$categories = findByConditionArray(array('outlet_id' => 'IN (1,2)'),'outlet_category_map');
                 //$outlet_categories = array_unique(array_column($categories, 'category_id'));
-                $db = getConnection(); 
-                $in  = str_repeat('?,', count($outlet_locations) - 1) . '?';
-                $sql = "SELECT * FROM event_location_map WHERE location_id IN ($in)";
-                $stm = $db->prepare($sql);
-                $stm->execute($outlet_locations);
-                $data = $stm->fetchAll();
+                //$db = getConnection(); 
+                //$in  = str_repeat('?,', count($outlet_locations) - 1) . '?';
+                $sql = "SELECT * FROM event_location_map WHERE location_id in(".implode(',',$outlet_locations).")";
+                //$stm = $db->prepare($sql);
+                //$stm->execute($outlet_locations);
+                $data = findByQuery($sql); 
                 if(!empty($data))
                 {
                     $events = array_column($data, 'event_id');
                 }
                 
-                $in  = str_repeat('?,', count($outlet_categories) - 1) . '?';
-                $sql = "SELECT * FROM event_category_map WHERE category_id IN ($in)";
-                $stm = $db->prepare($sql);
-                $stm->execute($outlet_categories);
-                $cat_data = $stm->fetchAll();
+                //$in  = str_repeat('?,', count($outlet_categories) - 1) . '?';
+                $sql = "SELECT * FROM event_category_map WHERE category_id in(".implode(',',$outlet_categories).")";
+                //$stm = $db->prepare($sql);
+                //$stm->execute($outlet_categories);
+                $cat_data = findByQuery($sql);
                 //print_r($events);
                 if(!empty($cat_data))
                 {
@@ -423,38 +423,40 @@ function getMerchantsRelatedEvents($id)
                 //array_push($events, $loc_events, $cat_events);
                 
                 $events = array_values(array_unique($events));
+			//print_r($events);
                 if(!empty($events))
                 {
-                    try
-                    {
-                        $event_in  = str_repeat('?,', count($events) - 1) . '?';
-                        $sql = "SELECT * FROM events WHERE id IN ($event_in)";
+                    
+                        //$event_in  = str_repeat('?,', count($events) - 1) . '?';
+                        $sql = "SELECT * FROM events WHERE id in(".implode(',',$events).")";
                         //$db = getConnection();
-                        $stmt = $db->prepare($sql); 
+                        //$stmt = $db->prepare($sql); 
                         //$stmt->bindParam("user_id", $user_id);
-                        $stmt->execute($events);
-                        $points = $stmt->fetchAll(PDO::FETCH_OBJ);
+                       // $stmt->execute($events);
+                        $points = findByQuery($sql);
+			//print_r($points);
+			//exit;
 
-                                    $count = $stmt->rowCount();
+                                    $count = count($points);
 
                                     for($i=0;$i<$count;$i++){
-                                            $created_on = date('m/d/Y', strtotime($points[$i]->created_on));
-                                            $points[$i]->created_on = $created_on;
-                                            $from_date = date('m/d/Y', strtotime($points[$i]->from_date));
-                                            $points[$i]->from_date = $from_date;
-                                            $to_date = date('m/d/Y', strtotime($points[$i]->to_date));
-                                            $points[$i]->to_date = $to_date;
-                                            if(!empty($points[$i]->image))
-                                                $points[$i]->image_url = SITEURL.'event_images/'.$points[$i]->image;
+                                            $created_on = date('m/d/Y', strtotime($points[$i]['created_on']));
+                                            $points[$i]['created_on'] = $created_on;
+                                            $from_date = date('m/d/Y', strtotime($points[$i]['from_date']));
+                                            $points[$i]['from_date'] = $from_date;
+                                            $to_date = date('m/d/Y', strtotime($points[$i]['to_date']));
+                                            $points[$i]['to_date'] = $to_date;
+                                            if(!empty($points[$i]['image']))
+                                                $points[$i]['image_url'] = SITEURL.'event_images/'.$points[$i]['image'];
 
-                                            if($points[$i]->status == 'O')
-                                                $points[$i]->status = 'Open';
-                                            else if($points[$i]->status == 'E')
-                                                $points[$i]->status = 'Expired';
+                                            if($points[$i]['status'] == 'O')
+                                                $points[$i]['status'] = 'Open';
+                                            else if($points[$i]['status'] == 'E')
+                                                $points[$i]['status'] = 'Expired';
                                             else
-                                                $points[$i]->status = 'Completed';
-                                            $points[$i]->categories = json_decode(findByCondition(array('event_id'=>$points[$i]->id),'event_category_map'));
-                                            $points[$i]->locations = json_decode(findByCondition(array('event_id'=>$points[$i]->id),'event_location_map'));
+                                                $points[$i]['status'] = 'Completed';
+                                            $points[$i]['categories'] = json_decode(findByCondition(array('event_id'=>$points[$i]['id']),'event_category_map'));
+                                            $points[$i]['locations'] = json_decode(findByCondition(array('event_id'=>$points[$i]['id']),'event_location_map'));
                                     }	
                                     /*if(!empty($points))
                         {
@@ -467,10 +469,8 @@ function getMerchantsRelatedEvents($id)
                             }, $points,  array_keys($points));
                         }*/
                         $rarray = array('status' => 'success','data' => $points);
-                    }
-                    catch(PDOException $e) {
-                        $rarray = array('status' => 'error','error' => array('text' => $e->getMessage()));
-                    } 
+                    //}
+                    
                 }
                 else
                 {

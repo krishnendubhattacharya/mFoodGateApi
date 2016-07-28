@@ -100,6 +100,13 @@
         $fifth_month_year = date('Y m',strtotime("-1 months"));
         $sixth_month_year = date('Y m');
         
+        $first_month_text = date('M',strtotime("-5 months"));
+        $second_month_text = date('M',strtotime("-4 months"));
+        $third_month_text = date('M',strtotime("-3 months"));
+        $fourth_month_text = date('M',strtotime("-2 months"));
+        $fifth_month_text = date('M',strtotime("-1 months"));
+        $sixth_month_text = date('M');
+        
         $first_month_year = explode(' ',$first_month_year);        
         $second_month_year = explode(' ',$second_month_year);
         $third_month_year = explode(' ',$third_month_year);
@@ -233,16 +240,17 @@
         $active_member_user_count = count($member_user_res);        
         $inactive_member_user_count = $all_member_count - $active_member_user_count;
         }
-        
-        
+                
         
         $data=array('restaurant_count'=>$restaurant_count,'outlet_count'=>$outlet_count,'active_outlet_count'=>$active_outlet_count,'all_promo'=>$all_promo,'all_featured_promo'=>$all_featured_promo,'all_banner'=>$all_banner,'all_add'=>$all_add,'all_active_promo'=>$all_active_promo,'all_active_featured_promo'=>$all_active_featured_promo,'all_active_banner'=>$all_active_banner,'all_active_add'=>$all_active_add,'all_hot_promo'=>$all_hot_promo);
-        $member_graph = array('all'=>$all_user_count,'active_user'=>$active_member_user_count,'inactive_user'=>$inactive_member_user_count,'male_user'=>$male_user_count,'female_user'=>$female_user_count);
-        $new_member_graph = array('Feb'=>$first_count,'Mar'=>$second_count,'Apr'=>$third_count,'May'=>$fourth_count,'Jun'=>$fifth_count,'Jul'=>$sixth_count);
-        $promo_graph = array('Feb'=>$first_promo_count,'Mar'=>$second_promo_count,'Apr'=>$third_promo_count,'May'=>$fourth_promo_count,'Jun'=>$fifth_promo_count,'Jul'=>$sixth_promo_count);
+        $member_graph = array('all'=>$all_user_count,'active_user'=>$active_member_user_count,'inactive_user'=>$inactive_member_user_count,'male_user'=>$male_user_count,'female_user'=>$female_user_count,'purchase_member'=>$all_user_count);
+        $new_member_graph = array($first_month_text=>$first_count,$second_month_text=>$second_count,$third_month_text=>$third_count,$fourth_month_text=>$fourth_count,$fifth_month_text=>$fifth_count,$sixth_month_text=>$sixth_count);
+        $promo_graph = array($first_month_text=>$first_promo_count,$second_month_text=>$second_promo_count,$third_month_text=>$third_promo_count,$fourth_month_text=>$fourth_promo_count,$fifth_month_text=>$fifth_promo_count,$sixth_month_text=>$sixth_promo_count);
 
-        $order_graph = array('Feb'=>$first_order_count,'Mar'=>$second_order_count,'Apr'=>$third_order_count,'May'=>$fourth_order_count,'Jun'=>$fifth_order_count,'Jul'=>$sixth_order_count);
-        $rarray = array('type' => 'success', 'data' => $data,'member_graph'=>$member_graph,'new_member_graph'=>$new_member_graph,'promo_graph'=>$promo_graph,'order_graph'=>$order_graph);
+        $order_graph = array($first_month_text=>$first_order_count,$second_month_text=>$second_order_count,$third_month_text=>$third_order_count,$fourth_month_text=>$fourth_order_count,$fifth_month_text=>$fifth_order_count,$sixth_month_text=>$sixth_order_count);
+        
+        $month_name = array('first'=>$first_month_text,'second'=>$second_month_text,'third'=>$third_month_text,'fourth'=>$fourth_month_text,'fifth'=>$fifth_month_text,'sixth'=>$sixth_month_text);
+        $rarray = array('type' => 'success', 'data' => $data,'member_graph'=>$member_graph,'new_member_graph'=>$new_member_graph,'promo_graph'=>$promo_graph,'order_graph'=>$order_graph,'month_name'=>$month_name);
         
         echo json_encode($rarray);      
         
@@ -253,7 +261,62 @@
         $body = json_decode($request->getBody());        
         $from_date = $body->from_date;
         $to_date = $body->to_date;
-        $merchant_id = $body->merchant_id;          
+        $merchant_id = $body->merchant_id; 
+        $website_visit_count = 0;
+        
+        $allPromo = findByConditionArray(array('merchant_id' => $merchant_id),'offers');
+        $all_promo_ids = array_column($allPromo, 'id');
+        //print_r($all_promo_ids);
+        $first_redeem_restaurant = '';
+        $second_redeem_restaurant = '';
+        $third_redeem_restaurant = '';
+        $fourth_redeem_restaurant = '';
+        $fifth_redeem_restaurant = '';
+        
+        $first_redeem_value = '';
+        $second_redeem_value = '';
+        $third_redeem_value = '';
+        $fourth_redeem_value = '';
+        $fifth_redeem_value = '';
+         
+        $reddeem_voucher_sql = "select restaurants.title,Sum(vouchers.offer_price) as amount from vouchers,restaurants where vouchers.RedeemRestaurant = restaurants.restaurant_id and DATE(vouchers.RedeemDate) between '".$from_date."' AND '".$to_date."' and vouchers.Status='redeem' and vouchers.offer_id in(".implode(',',$all_promo_ids).") group by vouchers.RedeemRestaurant";
+        $reddeem_voucher_res = findByQuery($reddeem_voucher_sql);
+        //print_r($reddeem_voucher_res);
+        if(!empty($reddeem_voucher_res)){
+            $sorted_val = array();
+            foreach($reddeem_voucher_res as $reddeem_voucher_key => $reddeem_voucher_val){
+                $sorted_val[$reddeem_voucher_key]=$reddeem_voucher_val['amount'];
+            }
+            //print_r($sorted_val);
+            array_multisort($sorted_val, SORT_DESC, $reddeem_voucher_res);
+            //print_r($reddeem_voucher_res);
+            if(isset($reddeem_voucher_res[0])){
+                $first_redeem_restaurant = $reddeem_voucher_res[0]['title'];
+                $first_redeem_value = $reddeem_voucher_res[0]['amount'];               
+                
+            }
+            if(isset($reddeem_voucher_res[1])){
+                $second_redeem_restaurant = $reddeem_voucher_res[1]['title'];
+                $second_redeem_value = $reddeem_voucher_res[1]['amount'];              
+                
+            }
+            if(isset($reddeem_voucher_res[2])){
+                $third_redeem_restaurant = $reddeem_voucher_res[2]['title'];
+                $third_redeem_value = $reddeem_voucher_res[2]['amount'];               
+                
+            }
+            if(isset($reddeem_voucher_res[3])){
+                $fourth_redeem_restaurant = $reddeem_voucher_res[3]['title'];
+                $fourth_redeem_value = $reddeem_voucher_res[3]['amount'];               
+                
+            }
+            if(isset($reddeem_voucher_res[4])){
+                $fifth_redeem_restaurant = $reddeem_voucher_res[4]['title'];
+                $fifth_redeem_value = $reddeem_voucher_res[4]['amount'];               
+                
+            }
+            
+        }
         
         $target_banner_sql = "select * from banners where DATE(start_date) between '".$from_date."' AND '".$to_date."' and merchant_id='".$merchant_id."'";        
         $target_banner = findByQuery($target_banner_sql);        
@@ -285,6 +348,12 @@
         $news_view_sql = "select * from news_visit where DATE(created_date) between '".$from_date."' AND '".$to_date."' and merchant_id='".$merchant_id."'";        
         $news_visit = findByQuery($news_view_sql);
         $news_visit_count = count($news_visit);
+        
+        $web_view_sql = "select * from website_visit where DATE(created_date) between '".$from_date."' AND '".$to_date."'";        
+        $website_visit = findByQuery($web_view_sql);
+	//print_r($website_visit);
+        $website_visit_count = count($website_visit);
+        
         
         $redeem_view_sql = "select * from vouchers where DATE(created_on) between '".$from_date."' AND '".$to_date."' and Status='redeem'";        
         $redeem_visit = findByQuery($redeem_view_sql);        
@@ -326,6 +395,7 @@
         $all_active_member_ids = '';
         $active_male_user_count=0;
         $active_female_user_count=0;
+        //$website_visit_count = 0;
         if(!empty($all_member_ids)){
         $all_user_sql = "select id from users where DATE(registration_date) between '".$from_date."' AND '".$to_date."' and id in(".implode(',',$all_member_ids).")";
         $all_user_res = findByQuery($all_user_sql);
@@ -374,7 +444,8 @@
         }
         //echo $unactivated_member_count;
         //print_r($unactivated_member_ids);
-        $data=array('total_target_banner'=>$total_target_banner,'total_actual_banner'=>$total_actual_banner,'total_target_add'=>$total_target_add,'total_actual_add'=>$total_actual_add,'promo_visit_count'=>$promo_visit_count,'news_visit_count'=>$news_visit_count,'redeem_promo_count'=>$redeem_promo_count,'unredeem_promo_count'=>$unredeem_promo_count,'all_user_count'=>$all_user_count,'male_user_count'=>$male_user_count,'female_user_count'=>$female_user_count,'active_member_user_count'=>$active_member_user_count,'inactive_member_user_count'=>$inactive_member_user_count,'active_male_user_count'=>$active_male_user_count,'active_female_user_count'=>$active_female_user_count,'unactivated_member_count'=>$unactivated_member_count);
+        
+        $data=array('total_target_banner'=>$total_target_banner,'total_actual_banner'=>$total_actual_banner,'total_target_add'=>$total_target_add,'total_actual_add'=>$total_actual_add,'promo_visit_count'=>$promo_visit_count,'news_visit_count'=>$news_visit_count,'website_visit_count'=>$website_visit_count,'redeem_promo_count'=>$redeem_promo_count,'unredeem_promo_count'=>$unredeem_promo_count,'all_user_count'=>$all_user_count,'male_user_count'=>$male_user_count,'female_user_count'=>$female_user_count,'active_member_user_count'=>$active_member_user_count,'inactive_member_user_count'=>$inactive_member_user_count,'active_male_user_count'=>$active_male_user_count,'active_female_user_count'=>$active_female_user_count,'unactivated_member_count'=>$unactivated_member_count,'first_redeem_restaurant'=>$first_redeem_restaurant,'second_redeem_restaurant'=>$second_redeem_restaurant,'third_redeem_restaurant'=>$third_redeem_restaurant,'fourth_redeem_restaurant'=>$fourth_redeem_restaurant,'fifth_redeem_restaurant'=>$fifth_redeem_restaurant,'first_redeem_value'=>$first_redeem_value,'second_redeem_value'=>$second_redeem_value,'third_redeem_value'=>$third_redeem_value,'fourth_redeem_value'=>$fourth_redeem_value,'fifth_redeem_value'=>$fifth_redeem_value);
         $rarray = array('type' => 'success', 'data' => $data);
         echo json_encode($rarray);
         //exit;       
@@ -447,6 +518,17 @@
         $rarray = array('type' => 'success', 'data' =>'Successfully saved' );
         echo json_encode($rarray);     
         
+        
+    }
+    
+    function websiteVisit(){
+        
+            $created_on = date('Y-m-d H:i:s');
+            $member_visit = array();            
+            $member_visit['created_date'] = $created_on;
+            $member = add(json_encode(array('save_data' => $member_visit)),'website_visit');
+            $rarray = array('type' => 'success', 'data' =>'Successfully saved' );        
+            echo json_encode($rarray);      
         
     }
     
@@ -1578,9 +1660,136 @@
 		
 	}
 
-        //print_r($res_sql_res);
-        //print_r($total_res_ids);
-        //print_r($total_outlet_ids);
+	$available_event_sql = "select * from events where status='O' and DATE(offer_from_date) between '".$start_date."' AND '".$end_date."' and is_active=1";
+	$available_event_res = findByQuery($available_event_sql);
+	$events_ids = array_column($available_event_res, 'id');
+	$availableEvent = count($available_event_res);
+	//print_r($events_ids);
+	//print_r($available_event_res);
+
+	$deal_event_sql = "select * from events where status='C' and DATE(offer_from_date) between '".$start_date."' AND '".$end_date."' and is_active=1";
+	$deal_event_res = findByQuery($deal_event_sql);
+	$dealEvent = count($deal_event_res);
+	//print_r($deal_event_res);
+	if(!empty($events_ids)){
+		$open_event_sql = "select * from event_bids where event_id NOT in(".implode(',',$events_ids).") and is_accepted = 0";
+		$open_event_res = findByQuery($open_event_sql);
+		$openEvent = count($open_event_res);
+		//print_r($open_event_res);
+	
+		$feedback_event_sql = "select * from event_bids where event_id in(".implode(',',$events_ids).") and is_accepted = 0 and user_id != '".$merchant_id."'";
+		$feedback_event_res = findByQuery($feedback_event_sql);
+		$feedbackEvent = count($feedback_event_res);
+	}
+	$events=array();
+	$merchant_category = findByConditionArray(array('user_id' => $merchant_id),'merchant_category_map');
+	$category_ids = array_column($merchant_category, 'category_id');
+
+	$merchant_location = findByConditionArray(array('user_id' => $merchant_id),'merchant_location_map');
+	$location_ids = array_column($merchant_location, 'location_id');
+	
+
+	$sql = "SELECT * FROM event_location_map WHERE location_id in(".implode(',',$location_ids).")";
+        
+        $data = findByQuery($sql); 
+        if(!empty($data))
+        {
+            $events = array_column($data, 'event_id');
+        }
+        
+        
+        $sql = "SELECT * FROM event_category_map WHERE category_id in(".implode(',',$category_ids).")";
+        
+        $cat_data = findByQuery($sql);        
+        if(!empty($cat_data))
+        {
+            $cat_events = array_column($cat_data, 'event_id');
+            if(!empty($cat_events))
+            {
+                foreach($cat_events as $ta)
+                {
+                    $events[] = $ta;
+                }
+            }
+        }
+        
+	$events = array_values(array_unique($events));
+	if(!empty($events)){
+		$my_event_sql = "select * from events where DATE(offer_from_date) between '".$start_date."' AND '".$end_date."' and is_active=1 and id in(".implode(',',$events).")";
+		$my_event_res = findByQuery($my_event_sql);
+		$myeventsid = array_column($my_event_res, 'id');
+		$myEvent = count($my_event_res);
+		if(!empty($myeventsid)){
+			$offer_event_sql = "select * from event_bids where event_id in(".implode(',',$myeventsid).") and user_id = '".$merchant_id."'";
+			$offer_event_res = findByQuery($offer_event_sql);
+			$myOfferEvent = count($offer_event_res);
+		}
+	}
+        $cur_month = date('m');
+        $next_month = $cur_month+1;
+        $cur_year = date('Y');
+	$point_master_sql = "select * from point_master where user_id='".$merchant_id."' and DATE(start_date) between '".$start_date."' AND '".$end_date."'";
+        
+        $exp_master_sql = "select * from point_master where user_id='".$merchant_id."' and DATE(expire_date) < CURDATE()";
+        $next_month_exp_master_sql = "select * from point_master where user_id='".$merchant_id."' and MONTH(expire_date)= '".$next_month."'";
+        
+        $cur_year_exp_master_sql = "select * from point_master where user_id='".$merchant_id."' and YEAR(expire_date)= '".$cur_year."'";
+	$point_master_res = findByQuery($point_master_sql);
+        $exp_master_res = findByQuery($exp_master_sql);
+        $next_month_exp_master_res = findByQuery($next_month_exp_master_sql);
+        $cur_year_exp_master_res = findByQuery($cur_year_exp_master_sql);
+        
+	$pointsid = array_column($point_master_res, 'id');
+        $exppointsid = array_column($exp_master_res, 'id');
+        $nextmonthpointsid = array_column($next_month_exp_master_res, 'id');
+        $curyearpointsid = array_column($cur_year_exp_master_res, 'id');
+        
+	//print_r($pointsid);
+        //print_r($exppointsid);
+        //print_r($nextmonthpointsid);
+        //print_r($curyearpointsid);
+        if(!empty($pointsid)){
+            $generated_mpoint_sql = "select sum(points) as generated,sum(redeemed_points) as redeem,sum(remaining_points) as balance from points where merchant_id='".$merchant_id."' and point_id in(".implode(',',$pointsid).")";
+            $generated_mpoint_res = findByQuery($generated_mpoint_sql);
+            //print_r($generated_mpoint_res);
+            if(!empty($generated_mpoint_res)){
+                $generatedPoint = $generated_mpoint_res[0]['generated'];
+                $redeemPoint = $generated_mpoint_res[0]['redeem'];
+                $balancedPoint = $generated_mpoint_res[0]['balance'];
+                //echo $generatedPoint;
+            }
+            
+        }
+        if(!empty($exppointsid)){
+            $expired_mpoint_sql = "select sum(remaining_points) as balance from points where merchant_id='".$merchant_id."' and point_id in(".implode(',',$exppointsid).")";
+            $expired_mpoint_res = findByQuery($expired_mpoint_sql);
+            //print_r($expired_mpoint_res);
+            if(!empty($expired_mpoint_res)){                
+                $expiredPoint = $expired_mpoint_res[0]['balance'];
+                //echo $expiredPoint;
+            }
+            
+        }
+        if(!empty($nextmonthpointsid)){
+            $nextmonth_mpoint_sql = "select sum(remaining_points) as balance from points where merchant_id='".$merchant_id."' and point_id in(".implode(',',$nextmonthpointsid).")";
+            $nextmonth_mpoint_res = findByQuery($nextmonth_mpoint_sql);
+            //print_r($nextmonth_mpoint_res);
+            if(!empty($nextmonth_mpoint_res)){                
+                $nextMonthExpPoint = $nextmonth_mpoint_res[0]['balance'];
+                //echo $expiredPoint;
+            }
+            
+        }
+        if(!empty($curyearpointsid)){
+            $curyear_mpoint_sql = "select sum(remaining_points) as balance from points where merchant_id='".$merchant_id."' and point_id in(".implode(',',$curyearpointsid).")";
+            $curyear_mpoint_res = findByQuery($curyear_mpoint_sql);
+            //print_r($curyear_mpoint_res);
+            if(!empty($curyear_mpoint_res)){                
+                $thisYearExpPoint = $curyear_mpoint_res[0]['balance'];
+                //echo $expiredPoint;
+            }
+            
+        }
         //exit;
 
 	$data=array('allMenuOffer'=>$allMenuOffer,'allMembershipOffer'=>$allMembershipOffer,'allPaymentOffer'=>$allPaymentOffer,'allRedeemPaymentOffer'=>$allRedeemPaymentOffer,'allRedeemMenuOffer'=>$allRedeemMenuOffer,'allRedeemMembershipOffer'=>$allRedeemMembershipOffer,'allAvailablePaymentOffer'=>$allAvailablePaymentOffer,'allAvailableMenuOffer'=>$allAvailableMenuOffer,'allAvailableMembershipOffer'=>$allAvailableMembershipOffer,'offerPaymentOffer'=>$offerPaymentOffer,'offerMenuOffer'=>$offerMenuOffer,'offerMembershipOffer'=>$offerMembershipOffer,'redeemPaymentOffer'=>$redeemPaymentOffer,'redeemMenuOffer'=>$redeemMenuOffer,'redeemMembershipOffer'=>$redeemMembershipOffer,'availablePaymentOffer'=>$availablePaymentOffer,'availableMenuOffer'=>$availableMenuOffer,'availableMembershipOffer'=>$availableMembershipOffer,'willActivePaymentOffer'=>$willActivePaymentOffer,'willActiveMenuOffer'=>$willActiveMenuOffer,'willActiveMembershipOffer'=>$willActiveMembershipOffer,'newPaymentOffer'=>$newPaymentOffer,'newMenuOffer'=>$newMenuOffer,'newMembershipOffer'=>$newMembershipOffer,'newMembershipOffer'=>$newMembershipOffer,'hotPaymentOffer'=>$hotPaymentOffer,'hotMenuOffer'=>$hotMenuOffer,'hotMembershipOffer'=>$hotMembershipOffer,'lastdayPaymentOffer'=>$lastdayPaymentOffer,'lastdayMenuOffer'=>$lastdayMenuOffer,'lastdayMembershipOffer'=>$lastdayMembershipOffer,'specialPaymentOffer'=>$specialPaymentOffer,'specialMenuOffer'=>$specialMenuOffer,'specialMembershipOffer'=>$specialMembershipOffer,'viewPaymentOffer'=>$viewPaymentOffer,'viewMenuOffer'=>$viewMenuOffer,'viewMembershipOffer'=>$viewMembershipOffer,'willActiveNews'=>$willActiveNews,'willActiveAddv'=>$willActiveAddv,'willActiveBanner'=>$willActiveBanner,'activeNews'=>$activeNews,'activeAddv'=>$activeAddv,'activeBanner'=>$activeBanner,'targetNews'=>$targetNews,'targetAddv'=>$targetAddv,'targetBanner'=>$targetBanner,'actualNews'=>$allMenuOffer,'allMenuOffer'=>$actualNews,'actualAddv'=>$actualAddv,'actualBanner'=>$actualBanner,'remainingNews'=>$remainingNews,'remainingAddv'=>$remainingAddv,'remainingBanner'=>$remainingBanner,'exceedNews'=>$exceedNews,'exceedAddv'=>$exceedAddv,'exceedBanner'=>$exceedBanner,'availableEvent'=>$availableEvent,'dealEvent'=>$dealEvent,'openEvent'=>$openEvent,'feedbackEvent'=>$feedbackEvent,'myEvent'=>$myEvent,'myOfferEvent'=>$myOfferEvent,'generatedPoint'=>$generatedPoint,'redeemPoint'=>$redeemPoint,'expiredPoint'=>$expiredPoint,'balancedPoint'=>$balancedPoint,'nextMonthExpPoint'=>$nextMonthExpPoint,'thisYearExpPoint'=>$thisYearExpPoint);

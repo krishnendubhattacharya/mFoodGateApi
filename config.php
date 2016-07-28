@@ -17,8 +17,7 @@ function getConnection() {
 	$dbpass="Host@123456";
 	$dbname="mfoodgate";
 	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);	
-	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        date_default_timezone_set('Asia/Jakarta'); 
+	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);         
 	return $dbh;
 }
 ?>

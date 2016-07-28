@@ -42,6 +42,9 @@
         $request = Slim::getInstance()->request();
 	$body = json_decode($request->getBody());
         $user_id = $body->user_id;
+        if(isset($body->condition)){
+            unset($body->condition);
+        }
         if(!empty($body->cart))
         {  
             foreach($body->cart as $offer)

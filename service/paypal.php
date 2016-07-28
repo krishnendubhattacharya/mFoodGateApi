@@ -1,6 +1,5 @@
 <?php
 require   './paypal/vendor/autoload.php';
-
 use PayPal\Api\Amount; 
 use PayPal\Api\Details; 
 use PayPal\Api\Item; 
@@ -218,7 +217,17 @@ function success_payment()
                 {
                         $qty = $order_detail->quantity;
                     $offer_details = json_decode(findById($order_detail->offer_id,'offers'));
+                    print_r($offer_details);
+                    $merchant_id='';
+                    $offer_id ='';
+                    $point_id = '';
+                    $point = '';
+                    $merchant_id=$offer_details->merchant_id;
+                    $offer_id =$offer_details->id;
+                    $point_id = $offer_details->given_point_master_id;
+                    $point = $offer_details->mpoints_given;
                     for($i=0;$i<$qty;$i++){
+                        if($offer_details->conditions == 0){
                             $voucher_data = array();
                             $voucher_data['offer_id'] =$order_detail->offer_id;
                             $voucher_data['created_on'] = date('Y-m-d h:i:s');
@@ -256,6 +265,19 @@ function success_payment()
                             $owner_data['offer_percent'] = $offer_details->offer_percent;
                             $owner_data['buy_price'] = $offer_details->offer_price;
                             add(json_encode(array('save_data' => $owner_data)),'voucher_owner');
+                            
+                                $point_data = array();
+                                $point_data['offer_id'] = $offer_id;
+                                $point_data['points'] = $point;
+                                $point_data['source'] = 'earn from promo click';
+                                $point_data['user_id'] = $order_detail->user_id;
+                                $point_data['date'] = date('Y-m-d h:i:s');
+                                $point_data['type'] = 'P';
+                                $point_data['remaining_points'] = $point;
+                                $point_data['merchant_id'] = $merchant_id;
+                                $point_data['point_id'] = $point_id;                    
+                                add(json_encode(array('save_data' => $point_data)),'points');
+                            }
                             
                             
                     }
