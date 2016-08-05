@@ -287,12 +287,15 @@ $app->get('/getSiteSearch',  'getSiteSearch');
 /****************** Offers ***************/
 $app->post('/addNewOffer',  'addNewOffer');
 $app->post('/updateOffer',  'updateOffer');
-$app->delete('/deleteOffer',  'deleteOffer');
+$app->delete('/deleteOffer/:id',  'deleteOffer');
 $app->get('/getOffersByRestaurant/:id',  'getOffersByRestaurant');
 $app->get('/getAllOffers',  'getAllOffers');
 $app->post('/checkExpiredOffers',  'checkExpiredOffers');
 $app->get('/getOfferImages/:id',  'getOfferImages');
 $app->post('/addNewOfferImage',  'addNewOfferImage');
+$app->delete('/deleteOfferImage/:id',  'deleteOfferImage');
+$app->get('/checkOfferId/:id',  'checkOfferId');
+$app->post('/checkOffersQuantity',  'checkOffersQuantity');
 
 /***************** Point Master ************/
 $app->get('/getAllPointMaster',  'getAllPointMaster');
@@ -300,6 +303,7 @@ $app->post('/addNewPointMaster',  'addNewPointMaster');
 $app->post('/updatePointMaster',  'updatePointMaster');
 $app->delete('/deletePointMaster/:id',  'deletePointMaster');
 $app->get('/getActivePointMasterByMerchant/:id',  'getActivePointMasterByMerchant');
+$app->get('/getAllMFoodPointMaster',  'getAllMFoodPointMaster');
 
 /**************** Blogs *******************/
 $app->get('/getAllBlogs',  'getAllBlogs');

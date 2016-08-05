@@ -107,7 +107,7 @@ function getExpireSoonVoucher($user_id) {
 
 function getVoucherUserMerchentDetail($vid){
   //  $sql = "SELECT * FROM vouchers, offers, users where vouchers.offer_id = offers.id and vouchers.user_id = users.id and vouchers.id=:id";
-    $sql = "SELECT vouchers.offer_id, vouchers.view_id, vouchers.price, vouchers.created_on, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id FROM vouchers , offers WHERE vouchers.offer_id=offers.id and vouchers.id=:id";
+    $sql = "SELECT vouchers.offer_id, vouchers.view_id, vouchers.price, vouchers.created_on, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id, offers.item_start_date, offers.item_expire_date, offers.item_start_hour, offers.item_end_hour, offers.including_holidays FROM vouchers , offers WHERE vouchers.offer_id=offers.id and vouchers.id=:id";
     $offerId ='';
     $offer_image = array();
     $restaurant_details = array();
@@ -122,6 +122,13 @@ function getVoucherUserMerchentDetail($vid){
 		
 		//$vouchers->offer_to_date = $offer_to_date;
 		if(!empty($vouchers)){
+                        
+                        $offer_days = findByConditionArray(array('offer_id' => $vouchers->offer_id),'offer_days_map');
+                        $days_array = array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
+                        $offer_days = array_map(function($t) use ($days_array){
+                                $t['day'] = $days_array[$t['day']];
+                                return $t;
+                        },$offer_days);
                         $restaurants = findByConditionArray(array('offer_id' => $vouchers->offer_id),'offer_restaurent_map');
                         $restaurant_ids = array_column($restaurants,'restaurent_id');
 			$to_date = date('d M,Y', strtotime($vouchers->to_date));
@@ -240,7 +247,7 @@ function getVoucherUserMerchentDetail($vid){
 				$mer_name = $mer_details['merchant_id'];
 			}
 			
-			$result = '{"type":"success","voucher_details":'.$voucher_details.',"restaurant_details":'.$restaurant_details.',"voucher_image":'.$offer_image.',"voucher_owner":'.$voucher_owner.',"total_sold":'.$soldCount.',"restaurant_ids":'.  json_encode($restaurant_ids).',"restaurant":'.json_encode($restaurants).',"all_res":'.json_encode($all_res).',"mer_name":'.json_encode($mer_name).',"voucher_no":'.json_encode($voucher_no).',"promo_images":'.json_encode($offer_images).'}';
+			$result = '{"type":"success","voucher_details":'.$voucher_details.',"restaurant_details":'.$restaurant_details.',"voucher_image":'.$offer_image.',"voucher_owner":'.$voucher_owner.',"total_sold":'.$soldCount.',"restaurant_ids":'.  json_encode($restaurant_ids).',"restaurant":'.json_encode($restaurants).',"all_res":'.json_encode($all_res).',"mer_name":'.json_encode($mer_name).',"voucher_no":'.json_encode($voucher_no).',"promo_images":'.json_encode($offer_images).',"offer_days":'.json_encode($offer_days).'}';
 		}
 		else if(empty($vouchers)){
 			$result = '{"type":"error","message":"Not found Offer Id"}';

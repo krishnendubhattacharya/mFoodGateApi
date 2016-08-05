@@ -117,11 +117,41 @@
     {
         $request = Slim::getInstance()->request();
 	$body = json_decode($request->getBody());
+        $rarray =array();
         if(!empty($body->item))
         {
+            
             $item = $body->item;
-            $query = "UPDATE cart set quantity=".$item->quantity." where user_id=".$body->user_id." and offer_id=".$item->offer_id;
-            updateByQuery($query);
+            $offer_id = $item->offer_id;
+            $promo_details = findByConditionArray(array('id' => $offer_id),'offers');
+            //print_r($promo_details);
+            $remaining_promo = $promo_details[0]['quantity'] - $promo_details[0]['buy_count'];
+            $max_purchased = $promo_details[0]['max_purchased'];
+            //$sql = "select * from voucher_owner where offer_id='".$offer_id."' and to_user_id='".$body->user_id."' and is_active=1";
+            //$voucher_result = findByQuery($sql);                    
+            //$voucher_count = count($voucher_result);
+            /*if($max_purchased > $voucher_count){
+                $qty = $max_purchased - $voucher_count;
+            }else{
+                $qty = 0;
+            }*/
+            //echo $max_purchased.'a';
+            //echo $qty.'b';
+            //echo $voucher_count.'c';
+            if($item->quantity <= $remaining_promo){
+                if($item->quantity <= $max_purchased){
+                    $query = "UPDATE cart set quantity=".$item->quantity." where user_id=".$body->user_id." and offer_id=".$item->offer_id;
+                    updateByQuery($query);
+                    $rarray = array('type' => 'success', 'data' => 'ok');
+                }else{
+                    $rarray = array('type' => 'failure', 'data' => 'Quantity must be less than of maximum purchased of this promo');
+                }
+            }else{
+                $rarray = array('type' => 'failure', 'data' => 'Quantity must be less than of remaining quantity');
+            }           
+            
         }
+        echo json_encode($rarray);
+        
     }
 ?>

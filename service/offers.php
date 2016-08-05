@@ -125,6 +125,64 @@ function checkExpiredOffers()
                 $rarray = array('type' => 'error', 'message' => 'No offers found');
             }
     }
+    if(!empty($rejectted_offer)){
+        $offer_name = '';
+        foreach($rejectted_offer as $rejectted_index=>$rejectted_value){
+            $promo_details = array();
+            $promo_details = findByConditionArray(array('id' => $rejectted_value),'offers');
+            if(!empty($offer_name)){
+                $offer_name = $offer_name.', '.$promo_details[0]['title'];
+            }else{
+                $offer_name = $promo_details[0]['title'];
+            }
+        }
+        $rarray['data'] = $offer_name.' promo expired or quantity exceeds maximum purchased.';
+    }
+    echo json_encode($rarray);
+}
+
+function checkOfferId($promo_id)
+{
+    $sql = "select * from offers where DATE(offer_to_date)<CURDATE() and id ='".$promo_id."'";
+    $results = findByQuery($sql);
+    if(!empty($results)){
+        $rarray = array('type' => 'error', 'message' => 'Promo Expired');
+    }else{
+        $rarray = array('type' => 'success', 'message' => 'ok');
+    }
+    echo json_encode($rarray);
+}
+
+function checkOffersQuantity()
+{
+    $rarray = array();
+    $request = Slim::getInstance()->request();
+    $body = $request->getBody();
+    $body = json_decode($body);
+    $offer_ids = $body->offer_ids;
+    $offer_qty = $body->offer_qty;
+    //print_r($offer_ids);
+    //print_r($offer_qty);
+    $offer_name = '';
+    foreach($offer_ids as $offer_index=>$offer_id){
+        $promo_details=array();
+        $remaining_promo = 0;
+        $promo_details = findByConditionArray(array('id' => $offer_id),'offers');
+        $remaining_promo = $promo_details[0]['quantity'] - $promo_details[0]['buy_count'];
+        //echo $remaining_promo.'a';
+        if($offer_qty[$offer_index] <= $remaining_promo){
+            if(!empty($offer_name)){
+                $offer_name = $offer_name.', '.$promo_details[0]['title'];
+            }else{
+                $offer_name = $promo_details[0]['title'];
+            }
+        }
+    }
+    if(!empty($offer_name)){
+        $rarray = array('type' => 'success', 'message' => 'ok');
+    }else{
+        $rarray = array('type' => 'error', 'message' => $offer_name.' promo do not have enough quantity');
+    }
     echo json_encode($rarray);
 }
 
