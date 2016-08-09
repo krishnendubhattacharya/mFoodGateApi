@@ -161,6 +161,8 @@ function checkOffersQuantity()
     $body = json_decode($body);
     $offer_ids = $body->offer_ids;
     $offer_qty = $body->offer_qty;
+    $quantity_array=array();
+    $offer_id_array = array();
     //print_r($offer_ids);
     //print_r($offer_qty);
     $offer_name = '';
@@ -170,7 +172,9 @@ function checkOffersQuantity()
         $promo_details = findByConditionArray(array('id' => $offer_id),'offers');
         $remaining_promo = $promo_details[0]['quantity'] - $promo_details[0]['buy_count'];
         //echo $remaining_promo.'a';
-        if($offer_qty[$offer_index] <= $remaining_promo){
+        if($offer_qty[$offer_index] > $remaining_promo){
+            //$quantity_array[]=
+            $offer_id_array[]=$offer_id;
             if(!empty($offer_name)){
                 $offer_name = $offer_name.', '.$promo_details[0]['title'];
             }else{
@@ -178,10 +182,10 @@ function checkOffersQuantity()
             }
         }
     }
-    if(!empty($offer_name)){
+    if(empty($offer_name)){
         $rarray = array('type' => 'success', 'message' => 'ok');
     }else{
-        $rarray = array('type' => 'error', 'message' => $offer_name.' promo do not have enough quantity');
+        $rarray = array('type' => 'error','offer_ids'=>$offer_id_array, 'message' => $offer_name.' promo do not have enough quantity');
     }
     echo json_encode($rarray);
 }

@@ -69,9 +69,10 @@ function getActivePointMasterByMerchant($user_id)
 {
     $rarray = array();
     $conditions = array();
+    $restaurants = array();
     
-    //$restaurants_query = "SELECT * FROM point_master WHERE "
-    $restaurants = findByConditionArray(array('user_id' => $user_id),'point_master');
+    //$restaurants_query = "SELECT * FROM point_master WHERE "    
+    $restaurants = findByConditionArray(array('type' => 0),'point_master');
     if(!empty($restaurants))
     {
         $restaurants = array_map(function($t){
@@ -90,13 +91,54 @@ function getActivePointMasterByMerchant($user_id)
             //$t['restaurant'] = findByIdArray( $t['restaurant_id'],'restaurants'); 
             return $s;
         }, $restaurants);
-        $rarray = array('type' => 'success', 'data' => $restaurants);
+        //$rarray = array('type' => 'success', 'data' => $restaurants);
     }
-    else
-    {
-        $rarray = array('type' => 'error', 'message' => 'No outlets found');
+    //print_r($restaurants);
+    if($user_id != 1){
+        $merchant_point = findByConditionArray(array('user_id' => $user_id),'point_master');
+        if(!empty($merchant_point))
+        {
+            foreach($merchant_point as $t){
+                $s = array();
+                $user = findByIdArray( $t['user_id'],'users');
+                $s['id'] = $t['id'];
+                $s['user_id'] = $t['user_id'];
+                $s['merchant_name'] = (!empty($user['merchant_name'])?$user['merchant_name']:''); 
+                $s['name'] = $t['name'];
+                $s['type'] = $t['type'];
+                $s['value'] = $t['value'];
+                $s['money_point'] = $t['money_point'];
+                $s['valid_days'] = $t['valid_days'];
+                $s['start_date'] = $t['start_date'];
+                $s['expire_date'] =  date('d M, Y',  strtotime($t['expire_date']));
+                $restaurants[] = $s;
+            }
+            /*$restaurants = array_map(function($t){
+                $s = array();
+                $user = findByIdArray( $t['user_id'],'users');
+                $s['id'] = $t['id'];
+                $s['user_id'] = $t['user_id'];
+                $s['merchant_name'] = (!empty($user['merchant_name'])?$user['merchant_name']:''); 
+                $s['name'] = $t['name'];
+                $s['type'] = $t['type'];
+                $s['value'] = $t['value'];
+                $s['money_point'] = $t['money_point'];
+                $s['valid_days'] = $t['valid_days'];
+                $s['start_date'] = $t['start_date'];
+                $s['expire_date'] =  date('d M, Y',  strtotime($t['expire_date']));
+                //$t['restaurant'] = findByIdArray( $t['restaurant_id'],'restaurants'); 
+                return $s;
+            }, $restaurants);*/
+            //$rarray = array('type' => 'success', 'data' => $restaurants);
+        }        
+    }
+    if(!empty($restaurants)){
+        $rarray = array('type' => 'success', 'data' => $restaurants);
+    }else{
+        $rarray = array('type' => 'error', 'message' => 'No points found');
     }
     echo json_encode($rarray);
+    
 }
 
 function addNewPointMaster() {	

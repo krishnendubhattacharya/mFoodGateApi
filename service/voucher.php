@@ -2894,6 +2894,8 @@ function getRelatedPromo($pid) {
         if(count($vouchers) < 10){
                 $resPromoIdList = array_unique($resPromoIdList);
                 //print_r($resPromoIdList);
+                //exit;
+                if(!empty($resPromoIdList)){
                 if(!empty($merchant_id)){
                         $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.id !=:pid and offers.offer_to_date >=:lastdate and (offers.merchant_id=:merchantId or offers.id in(".implode(",",$resPromoIdList).")) limit 10";
                         $db = getConnection();
@@ -2908,9 +2910,11 @@ function getRelatedPromo($pid) {
 		        //echo 'bb';
                 }
         }
+        }
         
         if(count($vouchers) < 10){
-                $promoIdList = array_unique($promoIdList);                
+                $promoIdList = array_unique($promoIdList);
+                if(!empty($promoIdList)){
                         $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.id !=:pid and offers.offer_to_date >=:lastdate and (offers.merchant_id=:merchantId or offers.id in(".implode(",",$promoIdList).")) limit 10";
                         $db = getConnection();
 		        $stmt = $db->prepare($sql);		
@@ -2922,11 +2926,13 @@ function getRelatedPromo($pid) {
 		        //print_r($vouchers);
 		        //echo count($vouchers);
 		        //echo 'cc';
+                }
                 
         }
         
         if(count($vouchers) < 10){
-                $promoIdList = array_unique($promoIdList);                
+                $promoIdList = array_unique($promoIdList);
+                if(!empty($promoIdList)){
                         $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where offers.is_active=1 and offers.id !=:pid and offers.offer_to_date >=:lastdate limit 10";
                         $db = getConnection();
 		        $stmt = $db->prepare($sql);		
@@ -2938,6 +2944,7 @@ function getRelatedPromo($pid) {
 		        //print_r($vouchers);
 		        //echo count($vouchers);
 		        //echo 'dd';
+                }
                 
         }
         //exit;
