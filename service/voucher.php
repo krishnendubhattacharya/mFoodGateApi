@@ -1,5 +1,6 @@
 <?php
-function getAllActiveVoucher($user_id) {     
+function getAllActiveVoucher($user_id) {  
+    
         $is_active = 1;  
         $site_path = SITEURL;
 	$newdate = date('Y-m-d');
@@ -725,6 +726,9 @@ function getResellListPostOwn($userid){
 					$resales[$i]->high_bid = 0;
 					$resales[$i]->low_bid = 0;
 				}
+                                $resales[$i]->price = number_format($resales[$i]->price,1,'.',',');
+                                $resales[$i]->voucher_price = number_format($resales[$i]->voucher_price,1,'.',',');
+                                $resales[$i]->purchase_price = number_format($resales[$i]->purchase_price,1,'.',',');
 				//print_r($resales[$i]);exit;
 			    
                         
@@ -763,6 +767,9 @@ function getResellListPostOthers($userid){
 	    		for($i=0;$i<$list_count;$i++){
 			    $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
 			    $resales[$i]->expire_date = $todate;
+                            $resales[$i]->price = number_format($resales[$i]->price,1,'.',',');
+                            $resales[$i]->voucher_price = number_format($resales[$i]->voucher_price,1,'.',',');
+                            $resales[$i]->purchase_price = number_format($resales[$i]->purchase_price,1,'.',',');
 			}
 	    		$resales = json_encode($resales);
 	    	     $result = '{"type":"success","resale_details":'.$resales.'}';
@@ -811,6 +818,10 @@ function getResellListBidOwn($userid){
 			    }else{
 			        $resales[$i]->Status = 'Resell';
 			    }
+                            $resales[$i]->price = number_format($resales[$i]->price,1,'.',',');
+                            $resales[$i]->voucher_price = number_format($resales[$i]->voucher_price,1,'.',',');
+                            $resales[$i]->purchase_price = number_format($resales[$i]->purchase_price,1,'.',',');
+                            $resales[$i]->bid_price = number_format($resales[$i]->bid_price,1,'.',',');
 			}
 	    		$resales = json_encode($resales);
 	    		
@@ -876,6 +887,7 @@ function getBidderList($id,$userid){
 						    		for($i=0;$i<$bid_count;$i++){
 								    $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
 								    $resales[$i]->expire_date = $todate;
+                                                                    $resales[$i]->bid_price = number_format($resales[$i]->bid_price,1,'.',',');;
 								}
 						    		$resales = json_encode($resales);
 						    	     $result = '{"type":"success","bidder_details":'.$resales.' }';

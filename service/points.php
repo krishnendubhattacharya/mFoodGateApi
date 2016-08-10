@@ -1,5 +1,5 @@
 <?php
-function getMyPoints($user_id){
+/*function getMyPoints($user_id){
     $rarray = array();
     try
     {
@@ -65,6 +65,97 @@ function getMyPoints($user_id){
     catch(PDOException $e) {
         $rarray = array('status' => 'error','error' => array('text' => $e->getMessage()));
     } 
+    echo json_encode($rarray);
+    exit;
+}*/
+
+function getMyPoints($user_id){
+    $rarray = array();    
+    $sql = "select * from point_master where DATE(expire_date) != '0000-00-00 00:00:00'";
+    $point_master_res = findByQuery($sql);
+    $cnt = 0;
+    if(!empty($point_master_res)){    
+        $pointsid = array_column($point_master_res, 'id');
+        $point_data = array();
+        //echo '<pre>';
+
+        
+        //$pointsid = array_column($point_res, 'id');
+        
+            foreach($point_master_res as $point_key=>$point_val){
+                $point_data = array();
+                $point_id = $point_val['id'];
+                $merchant_name = '';
+                $point_name = '';                
+                $point_name = $point_val['name'];
+                if($point_val['type'] != 0){
+                    $mer_id = $point_val['user_id'];
+                    $user_sql = "select merchant_name from users where id='".$mer_id."'";
+                    $user_res = findByQuery($user_sql);
+                    //print_r($user_res);
+                    if(!empty($user_res)){
+                        $merchant_name = $user_res[0]['merchant_name'];
+                    }                    
+                }else{
+                    $merchant_name = 'mFoodGate';
+                }
+                $point_sql = "select * from points where user_id='".$user_id."' and point_id='".$point_id."'";
+                $point_res = findByQuery($point_sql);
+                //print_r($point_res);
+                if(!empty($point_res)){
+                    //print_r($point_res);
+                    $point_data['id']=$point_id;
+                    $point_data['merchant_name']=$merchant_name;
+                    $point_data['point_name']=$point_name;
+                    $point_data['merchant_name']=$merchant_name;
+                    $total_point = 0;
+                    $redeem_point = 0;
+                    $expired_point = 0;
+                    $available_point = 0;
+                    $cur_date = date('Y-m-d');
+                    if($point_val['expire_date'] >= $cur_date){
+                        foreach($point_res as $point_detail_val){
+                            $total_point = $total_point + $point_detail_val['points'];
+                            $redeem_point = $redeem_point + $point_detail_val['redeemed_points'];
+                        }
+                        $available_point = $total_point-$redeem_point;
+                        $point_data['total_point']=$total_point;
+                        $point_data['redeem_point']=$redeem_point;
+                        $point_data['available_point']=$available_point;
+                        $point_data['expired_point']=$expired_point;
+                    }else{
+                        foreach($point_res as $point_detail_val){ 
+                            $total_point = $total_point + $point_detail_val['points'];
+                            $redeem_point = $redeem_point + $point_detail_val['redeemed_points'];
+                            $expired_point = $expired_point + $point_detail_val['remaining_points'];
+                        }
+                        $available_point = $total_point-$redeem_point;
+                        $point_data['total_point']=$total_point;
+                        $point_data['redeem_point']=$redeem_point;
+                        $point_data['available_point']=$available_point;
+                        $point_data['expired_point']=$expired_point;
+                    }
+                    $rarray[]=$point_data;
+                    $cnt=1;
+                }else{                    
+                    unset($point_master_res[$point_key]);
+                }
+                //print_r($point_detail_res);
+            }
+        
+        //print_r($point_data);
+        //exit;
+            if($cnt == 1){
+                $rarray = array('status' => 'success','data' => $rarray); 
+            }else{
+                $rarray = array('status' => 'error','data' => 'No Data found'); 
+            }
+        
+    }else{
+        $rarray = array('status' => 'error','data' => 'No Data found'); 
+    }
+      
+     
     echo json_encode($rarray);
     exit;
 }
@@ -219,7 +310,7 @@ function getUsersPoints($user_id,$promo_id)
     exit;
 }
 
-function getExpireSoonPoints($user_id)
+/*function getExpireSoonPoints($user_id)
 {
     $rarray = array();
     try
@@ -249,6 +340,99 @@ function getExpireSoonPoints($user_id)
     catch(PDOException $e) {
         $rarray = array('status' => 'error','error' => array('text' => $e->getMessage()));
     } 
+    echo json_encode($rarray);
+    exit;
+}*/
+
+function getExpireSoonPoints($user_id){
+    $rarray = array();    
+    $cur_year = date('Y');
+    $cur_month = date('m');
+    
+    $sql = "select * from point_master where MONTH(expire_date)='".$cur_month."'";
+    $point_master_res = findByQuery($sql);
+    $cnt = 0;
+    if(!empty($point_master_res)){    
+        $pointsid = array_column($point_master_res, 'id');
+        $point_data = array();
+        //echo '<pre>';
+
+        
+        //$pointsid = array_column($point_res, 'id');
+        
+            foreach($point_master_res as $point_key=>$point_val){
+                $point_data = array();
+                $point_id = $point_val['id'];
+                $merchant_name = '';
+                $point_name = ''; 
+                $month_count = 0;
+                $year_count = 0;
+                $expired_point = 0;
+                $available_point = 0;
+                /*$monthsql = "select * from point_master where MONTH(expire_date)='".$cur_month."' and id='".$point_id."'";
+                $point_master_month_res = findByQuery($monthsql);
+                if(!empty($point_master_month_res)){
+                    $point_month_sql = "select * from points where user_id='".$user_id."' and point_id='".$point_id."'";
+                    $point_month_res = findByQuery($point_month_sql);
+                    //print_r($point_res);
+                    if(!empty($point_month_res)){
+                        foreach($point_month_res as $point_month_detail_val){                            
+                            $month_count = $month_count + $point_month_detail_val['remaining_points'];
+                        }
+                    }
+                }*/
+                $point_name = $point_val['name'];
+                if($point_val['type'] != 0){
+                    $mer_id = $point_val['user_id'];
+                    $user_sql = "select merchant_name from users where id='".$mer_id."'";
+                    $user_res = findByQuery($user_sql);
+                    //print_r($user_res);
+                    if(!empty($user_res)){
+                        $merchant_name = $user_res[0]['merchant_name'];
+                    }                    
+                }else{
+                    $merchant_name = 'mFoodGate';
+                }
+                $point_sql = "select * from points where user_id='".$user_id."' and point_id='".$point_id."'";
+                $point_res = findByQuery($point_sql);
+                //print_r($point_res);
+                if(!empty($point_res)){
+                    //print_r($point_res);
+                    $point_data['id']=$point_id;
+                    $point_data['merchant_name']=$merchant_name;
+                    $point_data['point_name']=$point_name;
+                    $point_data['merchant_name']=$merchant_name;                    
+                    
+                    foreach($point_res as $point_detail_val){
+                        //$total_point = $total_point + $point_detail_val['points'];
+                        $year_count = $year_count + $point_detail_val['remaining_points'];
+                    }                    
+                    //$point_data['year_count']=$year_count;
+                    $point_data['month_count']=$year_count;
+                    
+                    $rarray[]=$point_data;
+                    $cnt=1;
+                }else{                    
+                    unset($point_master_res[$point_key]);
+                }
+                
+                
+                //print_r($point_detail_res);
+            }
+        
+        //print_r($point_data);
+        //exit;
+            if($cnt == 1){
+                $rarray = array('status' => 'success','data' => $rarray); 
+            }else{
+                $rarray = array('status' => 'error','data' => 'No Data found'); 
+            }
+        
+    }else{
+        $rarray = array('status' => 'error','data' => 'No Data found'); 
+    }
+      
+     
     echo json_encode($rarray);
     exit;
 }

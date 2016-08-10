@@ -1,12 +1,13 @@
 <?php
 function addSwap(){
+    
     $request = Slim::getInstance()->request();
     $body = json_decode($request->getBody());
     $voucher_id = $body->voucher_id;
 	$offer_id = $body->offer_id;
 	$user_id = $body->user_id;
 	$newdate = date('Y-m-d');
-    
+        
     //echo $voucher_id.'|'.$offer_id.'|'.$user_id;exit;
     $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and vouchers.to_date >=:date and voucher_owner.is_active='1' and voucher_owner.to_user_id=:user_id and vouchers.id=:voucher_id";
     try {
@@ -135,6 +136,7 @@ function mySwapList($uid) {
 			}else{
 				$vouchers[$i]->high_bid = 0;
 			}
+                        $vouchers[$i]->price = number_format($vouchers[$i]->price,1,'.',',');
 		    
 		}
 		$db = null;
@@ -146,7 +148,8 @@ function mySwapList($uid) {
 	echo  $result;
 }
 
-function otherSwapList($uid) {     
+function otherSwapList($uid) {  
+    
         $is_active = 1;  
 	$newdate = date('Y-m-d');
         $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id,swap.posted_on   FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id !=:uid";
@@ -167,6 +170,8 @@ function otherSwapList($uid) {
                     {
                         $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
                     }
+                    $vouchers[$i]->price = number_format($vouchers[$i]->price,1,'.',',');
+                    
 		    
 		}
 		$db = null;
@@ -191,7 +196,7 @@ function myBidSwapList($uid) {
 		$stmt->execute();
 		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
 		$count = $stmt->rowCount();
-		
+		//my_voucher.price, swap_voucher.price
 		for($i=0;$i<$count;$i++){
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
@@ -200,6 +205,8 @@ function myBidSwapList($uid) {
 			$vouchers[$i]->swap_offer = findByIdArray($vouchers[$i]->swap_voucher['offer_id'],'offers');
 			$vouchers[$i]->my_voucher = findByIdArray($vouchers[$i]->my_voucher_id,'vouchers');
 			$vouchers[$i]->my_offer = findByIdArray($vouchers[$i]->my_voucher['offer_id'],'offers');
+                        $vouchers[$i]->swap_voucher->price = number_format($vouchers[$i]->swap_voucher->price,1,'.',',');
+                        $vouchers[$i]->my_voucher->price = number_format($vouchers[$i]->my_voucher->price,1,'.',',');
 			
                     if(!empty($vouchers[$i]->image))
                     {
