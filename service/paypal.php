@@ -121,8 +121,9 @@ function cart_checkout(){
     /*echo $ex->getCode(); // Prints the Error Code
     echo $ex->getData(); // Prints the detailed error message 
     die($ex);*/
+            print_r($ex);
             $rarray = array('type' => 'error');
-            echo $rarray;
+            print_r($rarray);
             exit;
 } catch (Exception $ex) {
             // NOTE: PLEASE DO NOT USE RESULTPRINTER CLASS IN YOUR ORIGINAL CODE. FOR SAMPLE ONLY
@@ -225,6 +226,7 @@ function success_payment()
                     $merchant_id=$offer_details->merchant_id;
                     $offer_id =$offer_details->id;
                     $point_id = $offer_details->given_point_master_id;
+                    $needed_point_id = $offer_details->point_master_id;
                     $point = $offer_details->mpoints_given;
                     for($i=0;$i<$qty;$i++){
                         if($offer_details->conditions == 0){
@@ -277,6 +279,19 @@ function success_payment()
                                 $point_data['merchant_id'] = $merchant_id;
                                 $point_data['point_id'] = $point_id;                    
                                 add(json_encode(array('save_data' => $point_data)),'points');
+                                
+                                $point_detail_data = array();
+                                $point_detail_data['offer_id'] = $offer_id;
+                                $point_detail_data['points'] = $point;
+                                $point_detail_data['source'] = 'earn from promo click';
+                                $point_detail_data['user_id'] = $order_detail->user_id;
+                                $point_detail_data['date'] = date('Y-m-d h:i:s');
+                                $point_detail_data['type'] = 'P';
+                                $point_detail_data['remaining_points'] = $point;
+                                $point_detail_data['merchant_id'] = $merchant_id;
+                                $point_detail_data['point_id'] = $point_id; 
+                                $point_detail_data['transaction_type'] = 0;
+                                add(json_encode(array('save_data' => $point_detail_data)),'point_details');
                             }
                             
                             

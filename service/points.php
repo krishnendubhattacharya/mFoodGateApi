@@ -99,7 +99,7 @@ function getMyPoints($user_id){
                 }else{
                     $merchant_name = 'mFoodGate';
                 }
-                $point_sql = "select * from points where user_id='".$user_id."' and point_id='".$point_id."'";
+                $point_sql = "select * from point_details where user_id='".$user_id."' and point_id='".$point_id."'";
                 $point_res = findByQuery($point_sql);
                 //print_r($point_res);
                 if(!empty($point_res)){
@@ -160,12 +160,129 @@ function getMyPoints($user_id){
     exit;
 }
 
+function myPointDetails($point_id,$user_id){
+    $rarray = array();   
+    
+    $cur_date = date('Y-m-d');
+    $sql = "select * from point_master where id='".$point_id."'";
+    $point_master_res = findByQuery($sql);
+    $point_sql = "select * from point_details where user_id='".$user_id."' and point_id='".$point_id."' order by date desc";
+    //echo '<pre>';
+    $point_res = findByQuery($point_sql);
+    if(!empty($point_master_res)){
+        //print_r($point_master_res);
+        //$point_data = array();
+        $point_id = $point_master_res[0]['id'];
+        $merchant_name = '';
+        $point_name = '';                
+        $point_name = $point_master_res[0]['name'];
+        $expire_date = date('d M, Y',  strtotime($point_master_res[0]['expire_date']));
+        if($point_master_res[0]['type'] != 0){
+            $mer_id = $point_master_res[0]['user_id'];
+            $user_sql = "select merchant_name from users where id='".$mer_id."'";
+            $user_res = findByQuery($user_sql);
+            //print_r($user_res);
+            if(!empty($user_res)){
+                $merchant_name = $user_res[0]['merchant_name'];
+            }                    
+        }else{
+            $merchant_name = 'mFoodGate';
+        }
+        
+        
+        //print_r($point_res);
+        if(!empty($point_res)){
+            //print_r($point_res);
+            
+            
+            
+            if($point_master_res[0]['expire_date'] < $cur_date){
+                foreach($point_res as $point_detail_val){
+                    $point_data = array();
+                    $available_point = 0;
+                    $source='';
+                    $transaction = '';
+                    $transaction_date='';
+                    $available_point = $point_detail_val['points']-$point_detail_val['redeemed_points'];
+                    if($point_detail_val['type']=='P'){
+                        $source = 'Voucher';
+                    }elseif($point_detail_val['type']=='A'){
+                        $source = 'Advertise';
+                    }elseif($point_detail_val['type']=='B'){
+                        $source = 'Banner';
+                    }
+                    $transaction ='Expired';
+                    $transaction_date = date('d M, Y',  strtotime($point_detail_val['date']));
+                    $point_data['merchant_name']=$merchant_name;
+                    $point_data['point_name']=$point_name;
+                    $point_data['source']=$source;
+                    $point_data['transaction']=$transaction;
+                    $point_data['transaction_date']=$transaction_date;
+                    $point_data['expire_date']=$expire_date;
+                    $point_data['available_point']=$available_point;
+                    $rarray[]=$point_data;
+                }                
+                
+            }else{
+                foreach($point_res as $point_detail_val){
+                    $point_data = array();
+                    $available_point = 0;
+                    $source='';
+                    $transaction = '';
+                    $transaction_date='';
+                    if($point_detail_val['type']=='P'){
+                        $source = 'Voucher';
+                    }elseif($point_detail_val['type']=='A'){
+                        $source = 'Advertise';
+                    }elseif($point_detail_val['type']=='B'){
+                        $source = 'Banner';
+                    }
+                    if($point_detail_val['transaction_type']==1){
+                        $transaction = 'Redeem';
+                        $available_point = $point_detail_val['redeemed_points'];
+                    }elseif($point_detail_val['transaction_type']==0){
+                        $transaction = 'Get';
+                        $available_point = $point_detail_val['points'];
+                    }
+                    $point_data['merchant_name']=$merchant_name;
+                    $point_data['point_name']=$point_name;
+                    $transaction_date = date('d M, Y',  strtotime($point_detail_val['date']));
+                    $point_data['merchant_name']=$merchant_name;
+                    $point_data['point_name']=$point_name;
+                    $point_data['source']=$source;
+                    $point_data['transaction']=$transaction;
+                    $point_data['transaction_date']=$transaction_date;
+                    $point_data['expire_date']=$expire_date;
+                    $point_data['available_point']=$available_point;
+                    $rarray[]=$point_data;
+                    
+                }                
+            }
+            
+            $cnt=1;
+        }else{
+            $rarray = array('status' => 'error','data' => 'No Data found');
+        }
+        if($cnt == 1){
+            $rarray = array('status' => 'success','data' => $rarray); 
+        }else{
+            $rarray = array('status' => 'error','data' => 'No Data found'); 
+        }
+    }else{
+        $rarray = array('status' => 'error','data' => 'No Data found');
+    }
+    echo json_encode($rarray);
+    exit;
+    
+}
+
 function redeemUserPoints()
 {
      $request = Slim::getInstance()->request();
     $body = json_decode($request->getBody());
     $user_id = $body->user_id;
     $points = $body->points;
+    $needed_point = $points;
     $carts = $body->cart;
     $offerr_id = $carts[0]->offer_id;
     $offer_detaill = json_decode(findById($offerr_id,'offers'));
@@ -201,21 +318,23 @@ function redeemUserPoints()
                         //$temp = $points_redeemed
                         $points_left = $points_left - $point->remaining_points;
                         $points_redeemed = $points_redeemed + $point->remaining_points;
-                        $sqlInsert = 'UPDATE points set remaining_points=0, redeemed_points=redeemed_points + :redeemed_points where id=:id';
+                        $sqlInsert = 'UPDATE points set remaining_points=0, redeemed_points=redeemed_points + :redeemed_points, redeemed_date=:redeemed_date  where id=:id';
                         $preparedStatement = $db->prepare($sqlInsert);
                         $preparedStatement->bindParam("id", $point->id);
                         $preparedStatement->bindParam("redeemed_points", $point->remaining_points);
+                        $preparedStatement->bindParam("redeemed_date",$date);
                         $preparedStatement->execute();
                     }
                     else
                     {
                         
                         $rem_pt = $point->remaining_points - $points_left;
-                        $sqlInsert = 'UPDATE points set remaining_points=:remaining_points, redeemed_points= redeemed_points + :redeemed_points where id=:id';
+                        $sqlInsert = 'UPDATE points set remaining_points=:remaining_points, redeemed_points= redeemed_points + :redeemed_points, redeemed_date=:redeemed_date where id=:id';
                         $preparedStatement = $db->prepare($sqlInsert);
                         $preparedStatement->bindParam("id", $point->id);
                         $preparedStatement->bindParam("remaining_points", $rem_pt);
                         $preparedStatement->bindParam("redeemed_points", $points_left);
+                        $preparedStatement->bindParam("redeemed_date",$date);
                         $preparedStatement->execute();
                         $points_left = 0;
                     }
@@ -235,6 +354,7 @@ function redeemUserPoints()
                     $merchant_id=$offer_details->merchant_id;
                     $offer_id =$offer_details->id;
                     $point_id = $offer_details->given_point_master_id;
+                    $needed_point_id = $offer_details->point_master_id;
                     $point = $offer_details->mpoints_given;
                     
                     $voucher_data = array();
@@ -271,6 +391,31 @@ function redeemUserPoints()
                     $point_data['merchant_id'] = $merchant_id;
                     $point_data['point_id'] = $point_id;                    
                     add(json_encode(array('save_data' => $point_data)),'points');
+                    $point_detail_data = array();
+                    $point_detail_data['offer_id'] = $offer_id;
+                    $point_detail_data['points'] = 0;
+                    $point_detail_data['source'] = 'earn from promo click';
+                    $point_detail_data['user_id'] = $user_id;
+                    $point_detail_data['date'] = date('Y-m-d h:i:s');
+                    $point_detail_data['type'] = 'P';
+                    $point_detail_data['remaining_points'] = 0;
+                    $point_detail_data['redeemed_points'] = $needed_point;
+                    $point_detail_data['merchant_id'] = $merchant_id;
+                    $point_detail_data['point_id'] = $needed_point_id;
+                    $point_detail_data['transaction_type'] = 1;
+                    add(json_encode(array('save_data' => $point_detail_data)),'point_details');
+                    $point_detail_data = array();
+                    $point_detail_data['offer_id'] = $offer_id;
+                    $point_detail_data['points'] = $point;
+                    $point_detail_data['source'] = 'earn from promo click';
+                    $point_detail_data['user_id'] = $user_id;
+                    $point_detail_data['date'] = date('Y-m-d h:i:s');
+                    $point_detail_data['type'] = 'P';
+                    $point_detail_data['remaining_points'] = $point;
+                    $point_detail_data['merchant_id'] = $merchant_id;
+                    $point_detail_data['point_id'] = $point_id; 
+                    $point_detail_data['transaction_type'] = 0;
+                    add(json_encode(array('save_data' => $point_detail_data)),'point_details');
                     
                     
                     
@@ -355,6 +500,8 @@ function getExpireSoonPoints($user_id){
     if(!empty($point_master_res)){    
         $pointsid = array_column($point_master_res, 'id');
         $point_data = array();
+        $nextsixdays = date('Y-m-d', strtotime(' +6 day'));
+        $today = date('Y-m-d');
         //echo '<pre>';
 
         
@@ -366,9 +513,11 @@ function getExpireSoonPoints($user_id){
                 $merchant_name = '';
                 $point_name = ''; 
                 $month_count = 0;
+                $week_count = 0;
                 $year_count = 0;
                 $expired_point = 0;
                 $available_point = 0;
+                $availableweek_point = 0;
                 /*$monthsql = "select * from point_master where MONTH(expire_date)='".$cur_month."' and id='".$point_id."'";
                 $point_master_month_res = findByQuery($monthsql);
                 if(!empty($point_master_month_res)){
@@ -393,22 +542,44 @@ function getExpireSoonPoints($user_id){
                 }else{
                     $merchant_name = 'mFoodGate';
                 }
-                $point_sql = "select * from points where user_id='".$user_id."' and point_id='".$point_id."'";
+                if(($point_val['expire_date'] >= $today) && ($point_val['expire_date'] <= $nextsixdays)){
+                    
+                }
+                $point_sql = "select * from point_details where user_id='".$user_id."' and point_id='".$point_id."'";
                 $point_res = findByQuery($point_sql);
                 //print_r($point_res);
                 if(!empty($point_res)){
+                    $total_point = 0;
+                    $redeem_point=0;
+                    $totalweek_point=0;
+                    $redeemweek_point=0;
                     //print_r($point_res);
                     $point_data['id']=$point_id;
                     $point_data['merchant_name']=$merchant_name;
                     $point_data['point_name']=$point_name;
-                    $point_data['merchant_name']=$merchant_name;                    
+                    $point_data['merchant_name']=$merchant_name; 
+                    
+                    if(($point_val['expire_date'] >= $today) && ($point_val['expire_date'] <= $nextsixdays)){
+                        foreach($point_res as $point_detail_val){
+                        //$total_point = $total_point + $point_detail_val['points'];
+                        $totalweek_point = $totalweek_point + $point_detail_val['points'];
+                        $redeemweek_point = $redeemweek_point + $point_detail_val['redeemed_points'];
+                    }                   
+                    $availableweek_point = $total_point-$redeem_point;
+                    $week_count = $availableweek_point;
+                    
+                }
                     
                     foreach($point_res as $point_detail_val){
                         //$total_point = $total_point + $point_detail_val['points'];
-                        $year_count = $year_count + $point_detail_val['remaining_points'];
-                    }                    
+                        $total_point = $total_point + $point_detail_val['points'];
+                        $redeem_point = $redeem_point + $point_detail_val['redeemed_points'];
+                    }                   
+                    $available_point = $total_point-$redeem_point;
+                        
                     //$point_data['year_count']=$year_count;
-                    $point_data['month_count']=$year_count;
+                    $point_data['month_count']=$available_point;
+                    $point_data['week_count']=$week_count;
                     
                     $rarray[]=$point_data;
                     $cnt=1;

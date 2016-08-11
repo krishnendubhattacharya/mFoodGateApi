@@ -245,6 +245,8 @@ $app->get('/expiresoonpoints/:user_id',  'getExpireSoonPoints');
 $app->get('/getUsersPoints/:user_id/:promo_id',  'getUsersPoints');
 $app->post('/redeemUserPoints',  'redeemUserPoints');
 $app->get('/swapInterestAccept/:siid',  'swapInterestAccept');
+$app->get('/myPointDetails/:point_id/:user_id',  'myPointDetails');
+
 
 /*************** Menus ***************/
 $app->post('/addMenu',  'addMenu');
