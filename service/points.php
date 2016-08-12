@@ -148,11 +148,13 @@ function getMyPoints($user_id){
             if($cnt == 1){
                 $rarray = array('status' => 'success','data' => $rarray); 
             }else{
-                $rarray = array('status' => 'error','data' => 'No Data found'); 
+                $rarray = array();
+                $rarray = array('status' => 'error','data' => $rarray); 
             }
         
     }else{
-        $rarray = array('status' => 'error','data' => 'No Data found'); 
+        $rarray = array();
+        $rarray = array('status' => 'error','data' => $rarray); 
     }
       
      
@@ -596,11 +598,13 @@ function getExpireSoonPoints($user_id){
             if($cnt == 1){
                 $rarray = array('status' => 'success','data' => $rarray); 
             }else{
-                $rarray = array('status' => 'error','data' => 'No Data found'); 
+                $rarray = array();
+                $rarray = array('status' => 'error','data' => $rarray); 
             }
         
     }else{
-        $rarray = array('status' => 'error','data' => 'No Data found'); 
+        $rarray = array();
+        $rarray = array('status' => 'error','data' => $rarray); 
     }
       
      

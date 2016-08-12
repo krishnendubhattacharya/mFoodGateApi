@@ -8,11 +8,11 @@ function getBannersClicked($banid,$userid=null)
         if(!empty($userid))
         {
             $add_details = findByIdArray($banid,'banners');
-            $already_exists_query = "SELECT * from points where type='B' and parent_id=".$add_details['id']." and user_id=".$userid;
+            $already_exists_query = "SELECT * from point_details where type='B' and parent_id=".$add_details['id']." and user_id=".$userid;
             $if_exist = findByQuery($already_exists_query);
-            //echo '<pre>';
+            echo '<pre>';
             //var_dump($add_details);
-            //var_dump($if_exist);
+            var_dump($if_exist);
             //var_dump($add_details);
             if(!empty($add_details) && ($add_details['target_click']>=$add_details['number_of_click']) && empty($if_exist))
             {
@@ -27,6 +27,20 @@ function getBannersClicked($banid,$userid=null)
                 $temp['redeemed_points'] = 0;
                 $temp['remaining_points'] = $add_details['mpoint_get_per_click'];
                 $t = add(json_encode(array('save_data' => $temp)),'points');
+                
+                $temp = array();
+                $temp['user_id'] = $userid;
+                $temp['points'] = $add_details['mpoint_get_per_click'];
+                $temp['source'] = "earn from banner click";
+                $temp['type'] = 'B';
+                $temp['parent_id'] = $add_details['id'];
+                $temp['date'] = $add_details['start_date'];
+                $temp['expire_date'] = $add_details['end_date'];
+                $temp['redeemed_points'] = 0;
+                $temp['remaining_points'] = $add_details['mpoint_get_per_click'];
+                $temp['transaction_type'] = 0;
+                $t = add(json_encode(array('save_data' => $temp)),'point_details');
+                
                 $rarray = array('type' => 'success', 'message' => 'Congratulation. You have got '.$add_details['mpoint_get_per_click'].' m-points.');
             }
             else {

@@ -8,7 +8,7 @@ function getAdsClicked($adid,$userid=null)
         if(!empty($userid))
         {
             $add_details = findByIdArray($adid,'advertisements');
-            $already_exists_query = "SELECT * from points where type='A' and parent_id=".$add_details['id']." and user_id=".$userid;
+            $already_exists_query = "SELECT * from point_details where type='A' and parent_id=".$add_details['id']." and user_id=".$userid;
             $if_exist = findByQuery($already_exists_query);
             if(!empty($add_details) && ($add_details['target_click']>=$add_details['number_of_click']) && empty($if_exist))
             {
@@ -23,6 +23,19 @@ function getAdsClicked($adid,$userid=null)
                 $temp['parent_id'] = $add_details['id'];
                 $temp['remaining_points'] = $add_details['mpoint_get_per_click'];
                 $t = add(json_encode(array('save_data' => $temp)),'points');
+                
+                $temp = array();
+                $temp['user_id'] = $userid;
+                $temp['points'] = $add_details['mpoint_get_per_click'];
+                $temp['source'] = "earn from adv click";
+                $temp['date'] = $add_details['start_date'];
+                $temp['expire_date'] = $add_details['end_date'];
+                $temp['redeemed_points'] = 0;
+                $temp['type'] = 'A';
+                $temp['parent_id'] = $add_details['id'];
+                $temp['remaining_points'] = $add_details['mpoint_get_per_click'];
+                $temp['transaction_type'] = 0;
+                $t = add(json_encode(array('save_data' => $temp)),'point_details');
                 $rarray = array('type' => 'success', 'message' => 'Congratulation. You have got '.$add_details['mpoint_get_per_click'].' m-points.');
             }
             else {
