@@ -1286,6 +1286,7 @@ function getGiftedByMe($userid){
 			$gives[$i]->voucher_name = $offer->title;
 			//$gives[$i]->resturant_name = (!empty($returant->title)?$returant->title:'');
 			$gives[$i]->offer_to_date = $todate;
+                        $offer->price = ($offer->price - (($offer->price * $offer->offer_percent)/100));
 			$gives[$i]->price = number_format($offer->price,2,'.',',');
                         if(!empty($toUser))
                         {                            
@@ -1388,6 +1389,7 @@ function getGiftedToMe($userid){
 			$gives[$i]->voucher_name = $offer->title;
 			//$gives[$i]->resturant_name = $returant->title;
 			$gives[$i]->offer_to_date = $todate;
+                        $offer->price = ($offer->price - (($offer->price * $offer->offer_percent)/100));
 			$gives[$i]->price = number_format($offer->price,2,'.',',');
 			$gives[$i]->friend = $toUser->first_name.' '.$toUser->last_name;
                         $gives[$i]->friend_email = $toUser->email;
