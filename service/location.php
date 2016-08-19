@@ -33,7 +33,7 @@ function getAllActiveLocation() {
            
 	//$sql = "SELECT locations.id, locations.name, lacation_category_map.category_id from locations LEFT JOIN lacation_category_map ON locations.id = lacation_category_map.location_id";
 	
-	$sql = "SELECT locations.id, locations.city, locations.country_id  FROM locations where locations.is_active=1";
+	$sql = "SELECT locations.id, locations.city, locations.country_id  FROM locations where locations.is_active=1 order by locations.city ASC";
 	
 	
 	try {

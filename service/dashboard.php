@@ -244,10 +244,10 @@
         
         $data=array('restaurant_count'=>$restaurant_count,'outlet_count'=>$outlet_count,'active_outlet_count'=>$active_outlet_count,'all_promo'=>$all_promo,'all_featured_promo'=>$all_featured_promo,'all_banner'=>$all_banner,'all_add'=>$all_add,'all_active_promo'=>$all_active_promo,'all_active_featured_promo'=>$all_active_featured_promo,'all_active_banner'=>$all_active_banner,'all_active_add'=>$all_active_add,'all_hot_promo'=>$all_hot_promo);
         $member_graph = array('all'=>$all_user_count,'active_user'=>$active_member_user_count,'inactive_user'=>$inactive_member_user_count,'male_user'=>$male_user_count,'female_user'=>$female_user_count,'purchase_member'=>$all_user_count);
-        $new_member_graph = array($first_month_text=>$first_count,$second_month_text=>$second_count,$third_month_text=>$third_count,$fourth_month_text=>$fourth_count,$fifth_month_text=>$fifth_count,$sixth_month_text=>$sixth_count);
-        $promo_graph = array($first_month_text=>$first_promo_count,$second_month_text=>$second_promo_count,$third_month_text=>$third_promo_count,$fourth_month_text=>$fourth_promo_count,$fifth_month_text=>$fifth_promo_count,$sixth_month_text=>$sixth_promo_count);
+        $new_member_graph = array('first'=>$first_count,'second'=>$second_count,'third'=>$third_count,'fourth'=>$fourth_count,'fifth'=>$fifth_count,'sixth'=>$sixth_count);
+        $promo_graph = array('first'=>$first_promo_count,'second'=>$second_promo_count,'third'=>$third_promo_count,'fourth'=>$fourth_promo_count,'fifth'=>$fifth_promo_count,'sixth'=>$sixth_promo_count);
 
-        $order_graph = array($first_month_text=>$first_order_count,$second_month_text=>$second_order_count,$third_month_text=>$third_order_count,$fourth_month_text=>$fourth_order_count,$fifth_month_text=>$fifth_order_count,$sixth_month_text=>$sixth_order_count);
+        $order_graph = array('first'=>$first_order_count,'second'=>$second_order_count,'third'=>$third_order_count,'fourth'=>$fourth_order_count,'fifth'=>$fifth_order_count,'sixth'=>$sixth_order_count);
         
         $month_name = array('first'=>$first_month_text,'second'=>$second_month_text,'third'=>$third_month_text,'fourth'=>$fourth_month_text,'fifth'=>$fifth_month_text,'sixth'=>$sixth_month_text);
         $rarray = array('type' => 'success', 'data' => $data,'member_graph'=>$member_graph,'new_member_graph'=>$new_member_graph,'promo_graph'=>$promo_graph,'order_graph'=>$order_graph,'month_name'=>$month_name);
