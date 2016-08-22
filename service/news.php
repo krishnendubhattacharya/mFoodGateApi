@@ -510,7 +510,7 @@ function addMerchantNews()
                 {
                     $temp = array();
                     $temp['news_id'] = $ret_details->id;
-                    $temp['restaurant_id'] = $restaurant;
+                    $temp['restaurant_id'] = $restaurant->id;
                     $s =  add(json_encode(array('save_data' =>$temp)),'news_restaurant_map');
                 }
             }
@@ -637,7 +637,7 @@ function addMerchantNews()
                 {
                     $temp = array();
                     $temp['news_id'] = $ret_details->id;
-                    $temp['restaurant_id'] = $restaurant;
+                    $temp['restaurant_id'] = $restaurant->id;
                     $s =  add(json_encode(array('save_data' =>$temp)),'news_restaurant_map');
                 }
             }

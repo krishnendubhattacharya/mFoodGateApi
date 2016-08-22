@@ -120,7 +120,7 @@ function getHotAds()
     
 function getAllAds() {
    
-	$sql = "SELECT *,B.id as id,B.title as title,R.title as res_title  FROM advertisements as B,users as M ,restaurants as R where B.merchant_id=M.id and B.restaurant_id=R.id";
+	$sql = "SELECT *,B.id as id,B.title as title  FROM advertisements as B";
     
     try {
         $db = getConnection();
@@ -136,6 +136,26 @@ function getAllAds() {
                         
                    return $t;
                 },$location);
+                foreach($location as $index=>$banner){
+                    $merchant_info = findByConditionArray(array('id' => $banner->merchant_id),'users');
+                    if(!empty($merchant_info)){
+                        //print_r($merchant_info);
+                        $location[$index]->merchant_name=$merchant_info[0]['merchant_name'];
+                        
+                        //exit;
+                    }else{
+                        $location[$index]->merchant_name='';
+                    }
+                    $restaurant_info = findByConditionArray(array('id' => $banner->restaurant_id),'restaurants');
+                    if(!empty($restaurant_info)){
+                        //print_r($merchant_info);
+                        $location[$index]->res_title=$restaurant_info[0]['title'];
+                        
+                        //exit;
+                    }else{
+                        $location[$index]->res_title='';
+                    }
+                }
                 $result = '{"type":"success","banner": ' . json_encode($location) . '}'; 
         }else{
                 $result = '{"type":"error","message":"No record found"}'; 
@@ -173,6 +193,7 @@ function addAds() {
 	$request = Slim::getInstance()->request();
 	$body = json_decode($request->getBody());
 	//print_r($body);exit;
+        $outlets = '';
 	if(isset($body->id)){
 	        unset($body->id);
 	}
@@ -219,15 +240,17 @@ function addAds() {
                       $data = add(json_encode(array('save_data' => $temp)),'advertisement_location_map');
                       //echo $data;
                 }
-
-                foreach($outlets as $outlet)
-                {
-                      $temp = array();
-                      $temp['advertisement_id'] = $banner_details->id;
-                      $temp['outlet_id']   = $outlet->id;
-                      $data = add(json_encode(array('save_data' => $temp)),'advertisement_outlet_map');
-                      //echo $data;
+                if(!empty($outlets)){
+                    foreach($outlets as $outlet)
+                    {
+                          $temp = array();
+                          $temp['advertisement_id'] = $banner_details->id;
+                          $temp['outlet_id']   = $outlet->id;
+                          $data = add(json_encode(array('save_data' => $temp)),'advertisement_outlet_map');
+                          //echo $data;
+                    }
                 }
+                
 		$result = '{"type":"success","message":"Added Succesfully"}'; 
 	}
 	else{
@@ -267,6 +290,7 @@ function updateAds($id) {
 	$request = Slim::getInstance()->request();
 	$body = json_decode($request->getBody());
 	//print_r($body);exit;
+        $outlets = '';
         $id = $body->id;
 	if(isset($body->id)){
 	        unset($body->id);
@@ -318,16 +342,18 @@ function updateAds($id) {
                     $data = add(json_encode(array('save_data' => $temp)),'advertisement_location_map');
                     //echo $data;
               }
-              deleteAll('advertisement_outlet_map',array('advertisement_id' => $id));
-              
-               foreach($outlets as $outlet)
-                {
-                      $temp = array();
-                      $temp['advertisement_id'] = $id;
-                      $temp['outlet_id']   = $outlet->id;
-                      $data = add(json_encode(array('save_data' => $temp)),'advertisement_outlet_map');
-                      //echo $data;
-                }
+              if(!empty($outlets)){
+                deleteAll('advertisement_outlet_map',array('advertisement_id' => $id));
+
+                 foreach($outlets as $outlet)
+                  {
+                        $temp = array();
+                        $temp['advertisement_id'] = $id;
+                        $temp['outlet_id']   = $outlet->id;
+                        $data = add(json_encode(array('save_data' => $temp)),'advertisement_outlet_map');
+                        //echo $data;
+                  }
+              }
               
 
             $result = '{"type":"success","message":"Updated Succesfully"}'; 

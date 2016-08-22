@@ -66,7 +66,7 @@ function getBannersClicked($banid,$userid=null)
 
 function getAllBanner() {
    
-	$sql = "SELECT *,B.id as id,R.title as res_title,B.title as title  FROM banners as B,users as M ,restaurants as R where B.merchant_id=M.id and B.restaurant_id=R.id";
+	$sql = "SELECT *,B.id as id,B.title as title  FROM banners as B";
     
     try {
         $db = getConnection();
@@ -82,6 +82,26 @@ function getAllBanner() {
                         
                    return $t;
                 },$location);
+                foreach($location as $index=>$banner){
+                    $merchant_info = findByConditionArray(array('id' => $banner->merchant_id),'users');
+                    if(!empty($merchant_info)){
+                        //print_r($merchant_info);
+                        $location[$index]->merchant_name=$merchant_info[0]['merchant_name'];
+                        
+                        //exit;
+                    }else{
+                        $location[$index]->merchant_name='';
+                    }
+                    $restaurant_info = findByConditionArray(array('id' => $banner->restaurant_id),'restaurants');
+                    if(!empty($restaurant_info)){
+                        //print_r($merchant_info);
+                        $location[$index]->res_title=$restaurant_info[0]['title'];
+                        
+                        //exit;
+                    }else{
+                        $location[$index]->res_title='';
+                    }
+                }
                 $result = '{"type":"success","banner": ' . json_encode($location) . '}'; 
         }else{
                 $result = '{"type":"error","message":"No record found"}'; 
@@ -237,6 +257,7 @@ function addBanner() {
 	
 	$request = Slim::getInstance()->request();
 	$body = json_decode($request->getBody());
+        $outlets = '';
 	//print_r($body);exit;
 	if(isset($body->id)){
 	        unset($body->id);
@@ -267,15 +288,17 @@ function addBanner() {
 		/* $user_details = add(json_encode($allinfo),'coupons');
 		$user_details = json_decode($user_details);*/
 		$banner_details = json_decode($location_details);
-		
-                foreach($outlets as $outlet)
-                {
-                    $temp = array();
-                    $temp['banner_id'] = $banner_details->id;
-                    $temp['outlet_id']   = $outlet->id;
-                    $data = add(json_encode(array('save_data' => $temp)),'banners_outlet_map');
-                    //echo $data;
+		if(!empty($outlets)){
+                   foreach($outlets as $outlet)
+                    {
+                        $temp = array();
+                        $temp['banner_id'] = $banner_details->id;
+                        $temp['outlet_id']   = $outlet->id;
+                        $data = add(json_encode(array('save_data' => $temp)),'banners_outlet_map');
+                        //echo $data;
+                    } 
                 }
+                
 		
 		$result = '{"type":"success","message":"Added Succesfully"}'; 
 	}
@@ -316,6 +339,7 @@ function updateBanner($id) {
 	
 	$request = Slim::getInstance()->request();
 	$body = json_decode($request->getBody());
+        $outlets = '';
 	//print_r($body);exit;
         $id = $body->id;
 	if(isset($body->id)){
@@ -347,16 +371,18 @@ function updateBanner($id) {
            
           if(!empty($location_details)){
               $restaurant_details = json_decode($location_details);
+              if(!empty($outlets)){
+                    deleteAll('banners_outlet_map',array('banner_id' => $id));
+                    foreach($outlets as $outlet)
+                      {
+                          $temp = array();
+                          $temp['banner_id'] = $id;
+                          $temp['outlet_id']   = $outlet->id;
+                          $data = add(json_encode(array('save_data' => $temp)),'banners_outlet_map');
+                          //echo $data;
+                      }
+              }
               
-              deleteAll('banners_outlet_map',array('banner_id' => $id));
-              foreach($outlets as $outlet)
-                {
-                    $temp = array();
-                    $temp['banner_id'] = $id;
-                    $temp['outlet_id']   = $outlet->id;
-                    $data = add(json_encode(array('save_data' => $temp)),'banners_outlet_map');
-                    //echo $data;
-                }
               //var_dump($location_details);
               //exit;
               
