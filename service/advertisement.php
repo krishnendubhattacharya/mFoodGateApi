@@ -342,8 +342,9 @@ function updateAds($id) {
                     $data = add(json_encode(array('save_data' => $temp)),'advertisement_location_map');
                     //echo $data;
               }
+              deleteAll('advertisement_outlet_map',array('advertisement_id' => $id));
               if(!empty($outlets)){
-                deleteAll('advertisement_outlet_map',array('advertisement_id' => $id));
+                
 
                  foreach($outlets as $outlet)
                   {

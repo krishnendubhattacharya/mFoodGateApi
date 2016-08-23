@@ -64,10 +64,17 @@
         $all_cart = findByConditionArray(array('user_id' => $user_id),'cart');
         if(!empty($all_cart))
         {
+            //print_r($all_cart);
             foreach($all_cart as $prod)
             {
+                $point_name='';
                 $temp_cart = array();
                 $offer = findByIdArray($prod['offer_id'],'offers');
+                if(!empty($offer['point_master_id'])){
+                    $point_details = findByIdArray($offer['point_master_id'],'point_master');
+                    if(!empty($point_details))
+                        $point_name = $point_details['name'];
+                }
                 if(!empty($offer) && ($offer['buy_count']<$offer['quantity']))
                 {
                     $temp_cart['offer_id'] = $offer['id'];
@@ -88,6 +95,17 @@
                     $temp_cart['restaurant_id'] = $offer['restaurant_id'];
                     $restaurant = findByIdArray($offer['restaurant_id'],'restaurants');
                     $temp_cart['restaurant_title'] = $restaurant['title'];
+                    $temp_cart['point_id'] = $offer['point_master_id'];
+                    $temp_cart['point_name'] = $point_name;                    
+                    $temp_cart['condtn'] = $offer['conditions'];  
+                    if($offer['conditions'] == 1){
+                        $temp_cart['payments'] = true;
+                        $temp_cart['paymentscash'] = true;
+                        
+                    }else{
+                        $temp_cart['payments'] = false;
+                        $temp_cart['paymentscash'] = true;
+                    }
                     $cart[] = $temp_cart;
                 }
             }

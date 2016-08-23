@@ -2586,6 +2586,7 @@ function getPromoDetails($id) {
         //echo $sql;
         $site_path = SITEURL;
         $offer_images = array();
+        $point_master_details=array();
         
 	try {
 		$db = getConnection();
@@ -2604,16 +2605,18 @@ function getPromoDetails($id) {
                     $offer->offer_to_date = date('m-d-Y',strtotime($offer->offer_to_date));
                             if(empty($offer->image)){
                                     $img = $site_path.'voucher_images/default.jpg';
-                                    //$offer->image = $img;
+                                    $offer->image = $img;
                             }
                             else{                            
                                     $img = $site_path."voucher_images/".$offer->image;
-                                    //$offer->image = $img;                            
+                                    $offer->image = $img;                            
                             }
                     $rid = 	$offer->restaurant_id;
                     $merchant_id = $offer->merchant_id;
+                    $point_master_id = $offer->point_master_id;
                     $merchantInfo = findByConditionArray(array('id' => $merchant_id),'users');
                     $promo_images = findByConditionArray(array('offer_id'=>$id),'offer_images');
+                    $point_master_details = findByConditionArray(array('id'=>$point_master_id),'point_master');
                     if(!empty($offer->image)){
                             $img = $site_path."voucher_images/".$offer->image;
                             $offer_images[0]['image'] = $img;
@@ -2698,7 +2701,7 @@ function getPromoDetails($id) {
                             $t['day'] = $days_array[$t['day']];
                             return $t;
                     },$offer_days);
-                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"merchantInfo":'.json_encode($merchantInfo).',"count":'.$count.',"categories" : '.json_encode($categories).',"promo_images" : '.json_encode($offer_images).',"offer_days":'.json_encode($offer_days).',"outlets" : '.json_encode($outlets).'}';
+                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"merchantInfo":'.json_encode($merchantInfo).',"count":'.$count.',"categories" : '.json_encode($categories).',"promo_images" : '.json_encode($offer_images).',"offer_days":'.json_encode($offer_days).',"outlets" : '.json_encode($outlets).',"point_details" : '.json_encode($point_master_details).'}';
 		}else{
 			$result =  '{"type":"error","message":"Sorry no promo found"}'; 
 		}

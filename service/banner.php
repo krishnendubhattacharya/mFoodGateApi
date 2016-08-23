@@ -371,8 +371,8 @@ function updateBanner($id) {
            
           if(!empty($location_details)){
               $restaurant_details = json_decode($location_details);
-              if(!empty($outlets)){
-                    deleteAll('banners_outlet_map',array('banner_id' => $id));
+              deleteAll('banners_outlet_map',array('banner_id' => $id));
+              if(!empty($outlets)){                    
                     foreach($outlets as $outlet)
                       {
                           $temp = array();
