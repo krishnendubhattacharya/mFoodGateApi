@@ -133,31 +133,39 @@
             if(!empty($all_promo_ids)){
                 $order_sql = "select * from order_details where offer_id in(".implode(',',$all_promo_ids).")  and user_id in(".implode(',',$all_member_ids).") and offer_price >= 1000";
                 $order_res = findByQuery($order_sql); 
-                $all_order_ids = array_column($order_res, 'id');                
+                $all_order_ids = array_column($order_res, 'id'); 
+                //number_format($resales[$i]->price,1,'.',',');
                 if(!empty($all_order_ids)){
-                    $first_order_sql = "select * from orders where MONTH(date) = '".$first_month."' and YEAR(date) = '".$first_year."' and id in(".implode(',',$all_order_ids).")"; 
+                    $first_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$first_month."' and YEAR(date) = '".$first_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $first_order_res = findByQuery($first_order_sql);
-                    $first_order_count = count($first_order_res);
+                    $first_order_count = $first_order_res[0]['sum'];
+                    $first_order_count = number_format($first_order_count,0,'.',',');
                     
-                    $second_order_sql = "select * from orders where MONTH(date) = '".$second_month."' and YEAR(date) = '".$second_year."' and id in(".implode(',',$all_order_ids).")"; 
+                    $second_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$second_month."' and YEAR(date) = '".$second_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $second_order_res = findByQuery($second_order_sql);
-                    $second_order_count = count($second_order_res);
+                    $second_order_count = $second_order_res[0]['sum'];
+                    $second_order_count = number_format($second_order_count,0,'.',',');
                     
-                    $third_order_sql = "select * from orders where MONTH(date) = '".$third_month."' and YEAR(date) = '".$third_year."' and id in(".implode(',',$all_order_ids).")"; 
+                    $third_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$third_month."' and YEAR(date) = '".$third_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $third_order_res = findByQuery($third_order_sql);
-                    $third_order_count = count($third_order_res);
+                    $third_order_count = $third_order_res[0]['sum'];
+                    $third_order_count = number_format($third_order_count,0,'.',',');
                     
-                    $fourth_order_sql = "select * from orders where MONTH(date) = '".$fourth_month."' and YEAR(date) = '".$fourth_year."' and id in(".implode(',',$all_order_ids).")"; 
+                    $fourth_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$fourth_month."' and YEAR(date) = '".$fourth_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $fourth_order_res = findByQuery($fourth_order_sql);
-                    $fourth_order_count = count($fourth_order_res);
+                    $fourth_order_count = $fourth_order_res[0]['sum'];
+                    $fourth_order_count = number_format($fourth_order_count,0,'.',',');
                     
-                    $fifth_order_sql = "select * from orders where MONTH(date) = '".$fifth_month."' and YEAR(date) = '".$fifth_year."' and id in(".implode(',',$all_order_ids).")"; 
+                    $fifth_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$fifth_month."' and YEAR(date) = '".$fifth_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $fifth_order_res = findByQuery($fifth_order_sql);
-                    $fifth_order_count = count($fifth_order_res);
+                    $fifth_order_count = $fifth_order_res[0]['sum'];
+                    $fifth_order_count = number_format($fifth_order_count,0,'.',',');
                     
-                    $sixth_order_sql = "select * from orders where MONTH(date) = '".$sixth_month."' and YEAR(date) = '".$sixth_year."' and id in(".implode(',',$all_order_ids).")"; 
-                    $sixth_order_res = findByQuery($sixth_order_sql);
-                    $sixth_order_count = count($sixth_order_res);
+                    $sixth_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$sixth_month."' and YEAR(date) = '".$sixth_year."' and id in(".implode(',',$all_order_ids).")"; 
+                    $sixth_order_res = findByQuery($sixth_order_sql);                    
+                    $sixth_order_count = $sixth_order_res[0]['sum'];
+                    $sixth_order_count = number_format($sixth_order_count,0,'.',',');
+                    //echo $sixth_order_count;
                     
                 }
                 

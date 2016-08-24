@@ -42,6 +42,7 @@
         $request = Slim::getInstance()->request();
 	$body = json_decode($request->getBody());
         $user_id = $body->user_id;
+        $point_id_array=array();
         if(isset($body->condition)){
             unset($body->condition);
         }
@@ -68,8 +69,12 @@
             foreach($all_cart as $prod)
             {
                 $point_name='';
+                $point_id='';
+                $point_needed = 0;
                 $temp_cart = array();
                 $offer = findByIdArray($prod['offer_id'],'offers');
+                $point_id = $offer['point_master_id'];
+                $point_needed = $offer['mpoints'];
                 if(!empty($offer['point_master_id'])){
                     $point_details = findByIdArray($offer['point_master_id'],'point_master');
                     if(!empty($point_details))
@@ -103,8 +108,51 @@
                         $temp_cart['paymentscash'] = true;
                         
                     }else{
-                        $temp_cart['payments'] = false;
-                        $temp_cart['paymentscash'] = true;
+                        if(!empty($point_id)){
+                            $point_sql = "select * from point_details where user_id='".$user_id."' and point_id='".$point_id."'";
+                            $point_res = findByQuery($point_sql);
+                            $available_point = 0;
+                            $total_point=0;
+                            $redeem_point=0;
+                            foreach($point_res as $point_detail_val){
+                                $total_point = $total_point + $point_detail_val['points'];
+                                $redeem_point = $redeem_point + $point_detail_val['redeemed_points'];
+                            }
+                            $available_point = $total_point-$redeem_point;
+                            //echo $available_point;
+                            
+                            if($available_point >= $point_needed){
+                                if(!empty($point_id_array)){
+                                    $temp_cart['payments'] = true;
+                                    $temp_cart['paymentscash'] = false;
+                                    $point_id_array[$point_id] = $available_point-$point_needed;
+                                }else{
+                                    if (array_key_exists($point_id,$point_id_array)){
+                                        if($point_id_array[$point_id] >= $point_needed){
+                                            $temp_cart['payments'] = true;
+                                            $temp_cart['paymentscash'] = false;
+                                            $point_id_array[$point_id] = $point_id_array[$point_id]-$point_needed;
+                                        }else{
+                                            $temp_cart['payments'] = false;
+                                            $temp_cart['paymentscash'] = true;
+                                        }
+                                    }else{
+                                        $temp_cart['payments'] = true;
+                                        $temp_cart['paymentscash'] = false;
+                                        $point_id_array[$point_id] = $available_point-$point_needed;
+                                    }
+                                }
+                                
+                            }else{
+                                $temp_cart['payments'] = false;
+                                $temp_cart['paymentscash'] = true;
+                            }
+                            
+                        }else{
+                            $temp_cart['payments'] = false;
+                            $temp_cart['paymentscash'] = true;
+                        }
+                        
                     }
                     $cart[] = $temp_cart;
                 }
@@ -158,9 +206,36 @@
             //echo $voucher_count.'c';
             if($item->quantity <= $remaining_promo){
                 if($item->quantity <= $max_purchased){
-                    $query = "UPDATE cart set quantity=".$item->quantity." where user_id=".$body->user_id." and offer_id=".$item->offer_id;
-                    updateByQuery($query);
-                    $rarray = array('type' => 'success', 'data' => 'ok');
+                    if($item->payments == true){
+                        $point_id = $item->point_id;
+                        $needed_point = $item->mpoints;
+                        $needed_point = $needed_point * $item->quantity;
+                        $point_name = $item->point_name;
+                        $point_sql = "select * from point_details where user_id='".$body->user_id."' and point_id='".$point_id."'";
+                        $point_res = findByQuery($point_sql);
+                        $available_point = 0;
+                        $total_point=0;
+                        $redeem_point=0;
+                        foreach($point_res as $point_detail_val){
+                            $total_point = $total_point + $point_detail_val['points'];
+                            $redeem_point = $redeem_point + $point_detail_val['redeemed_points'];
+                        }
+                        $available_point = $total_point-$redeem_point;
+                        if($available_point >= $needed_point){
+                            $query = "UPDATE cart set quantity=".$item->quantity." where user_id=".$body->user_id." and offer_id=".$item->offer_id;
+                            updateByQuery($query);
+                            $rarray = array('type' => 'success', 'data' => 'ok');
+                        }else{
+                            $rarray = array('type' => 'failure', 'data' => 'You dont have '.$needed_point.' '.$point_name.' point');
+                        }
+                        
+                    }else{
+                        $query = "UPDATE cart set quantity=".$item->quantity." where user_id=".$body->user_id." and offer_id=".$item->offer_id;
+                        updateByQuery($query);
+                        $rarray = array('type' => 'success', 'data' => 'ok');
+                    }
+                    
+                    
                 }else{
                     $rarray = array('type' => 'failure', 'data' => 'Quantity must be less than of maximum purchased of this promo');
                 }
