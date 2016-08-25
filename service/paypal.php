@@ -228,6 +228,9 @@ function success_payment()
                     $point_id = $offer_details->given_point_master_id;
                     $needed_point_id = $offer_details->point_master_id;
                     $point = $offer_details->mpoints_given;
+                    $given_point_details = findByConditionArray(array('id' => $point_id),'point_master');
+                    $given_point_exipre_date = $given_point_details[0]['expire_date'];
+                     
                     for($i=0;$i<$qty;$i++){
                         if($offer_details->conditions == 0){
                             $voucher_data = array();
@@ -277,7 +280,8 @@ function success_payment()
                                 $point_data['type'] = 'P';
                                 $point_data['remaining_points'] = $point;
                                 $point_data['merchant_id'] = $merchant_id;
-                                $point_data['point_id'] = $point_id;                    
+                                $point_data['point_id'] = $point_id;   
+                                $point_data['expire_date'] = $given_point_exipre_date;
                                 add(json_encode(array('save_data' => $point_data)),'points');
                                 
                                 $point_detail_data = array();
@@ -290,6 +294,7 @@ function success_payment()
                                 $point_detail_data['remaining_points'] = $point;
                                 $point_detail_data['merchant_id'] = $merchant_id;
                                 $point_detail_data['point_id'] = $point_id; 
+                                $point_detail_data['expire_date'] = $given_point_exipre_date;
                                 $point_detail_data['transaction_type'] = 0;
                                 add(json_encode(array('save_data' => $point_detail_data)),'point_details');
                             }

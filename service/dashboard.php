@@ -1759,7 +1759,7 @@
         //print_r($nextmonthpointsid);
         //print_r($curyearpointsid);
         if(!empty($pointsid)){
-            $generated_mpoint_sql = "select sum(points) as generated,sum(redeemed_points) as redeem,sum(remaining_points) as balance from points where merchant_id='".$merchant_id."' and point_id in(".implode(',',$pointsid).")";
+            $generated_mpoint_sql = "select sum(points) as generated,sum(redeemed_points) as redeem,sum(remaining_points) as balance from point_details where merchant_id='".$merchant_id."' and point_id in(".implode(',',$pointsid).")";
             $generated_mpoint_res = findByQuery($generated_mpoint_sql);
             //print_r($generated_mpoint_res);
             if(!empty($generated_mpoint_res)){
@@ -1771,7 +1771,7 @@
             
         }
         if(!empty($exppointsid)){
-            $expired_mpoint_sql = "select sum(remaining_points) as balance from points where merchant_id='".$merchant_id."' and point_id in(".implode(',',$exppointsid).")";
+            $expired_mpoint_sql = "select sum(remaining_points) as balance from point_details where merchant_id='".$merchant_id."' and point_id in(".implode(',',$exppointsid).")";
             $expired_mpoint_res = findByQuery($expired_mpoint_sql);
             //print_r($expired_mpoint_res);
             if(!empty($expired_mpoint_res)){                
@@ -1781,7 +1781,7 @@
             
         }
         if(!empty($nextmonthpointsid)){
-            $nextmonth_mpoint_sql = "select sum(remaining_points) as balance from points where merchant_id='".$merchant_id."' and point_id in(".implode(',',$nextmonthpointsid).")";
+            $nextmonth_mpoint_sql = "select sum(remaining_points) as balance from point_details where merchant_id='".$merchant_id."' and point_id in(".implode(',',$nextmonthpointsid).")";
             $nextmonth_mpoint_res = findByQuery($nextmonth_mpoint_sql);
             //print_r($nextmonth_mpoint_res);
             if(!empty($nextmonth_mpoint_res)){                
@@ -1791,7 +1791,7 @@
             
         }
         if(!empty($curyearpointsid)){
-            $curyear_mpoint_sql = "select sum(remaining_points) as balance from points where merchant_id='".$merchant_id."' and point_id in(".implode(',',$curyearpointsid).")";
+            $curyear_mpoint_sql = "select sum(remaining_points) as balance from point_details where merchant_id='".$merchant_id."' and point_id in(".implode(',',$curyearpointsid).")";
             $curyear_mpoint_res = findByQuery($curyear_mpoint_sql);
             //print_r($curyear_mpoint_res);
             if(!empty($curyear_mpoint_res)){                

@@ -298,6 +298,7 @@ $app->post('/addNewOfferImage',  'addNewOfferImage');
 $app->delete('/deleteOfferImage/:id',  'deleteOfferImage');
 $app->get('/checkOfferId/:id',  'checkOfferId');
 $app->post('/checkOffersQuantity',  'checkOffersQuantity');
+$app->post('/checkOffersPoint',  'checkOffersPoint');
 
 /***************** Point Master ************/
 $app->get('/getAllPointMaster',  'getAllPointMaster');

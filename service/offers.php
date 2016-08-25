@@ -250,6 +250,82 @@ function checkOffersQuantity()
     echo json_encode($rarray);
 }
 
+function checkOffersPoint()
+{
+    $rarray = array();
+    $request = Slim::getInstance()->request();
+    $body = $request->getBody();
+    $body = json_decode($body);
+    $user_id ='';
+    $all_cart = $body->cart;
+    $user_id = $body->user_id;
+    //print_r($body->cart);
+    //echo $body->user_id;
+    
+    //$offer_ids = $body->offer_ids;
+    //$offer_qty = $body->offer_qty;
+    $quantity_array=array();
+    $offer_id_array = array();
+    //print_r($offer_ids);
+    //print_r($offer_qty);
+    $offer_name = '';
+    $msg = '';
+    if(!empty($user_id)){
+        if(!empty($all_cart)){
+            $point_id_array =array();
+            $point_array =array();
+            foreach($all_cart as $cartkey=>$cartval){
+                if($cartval->payments == 1){
+                    if(array_key_exists($cartval->point_id,$point_id_array)){
+                        $point_array[$cartval->point_id]['id']=$cartval->point_id;
+                        $point_array[$cartval->point_id]['name']=$cartval->point_name;
+                        $point_array[$cartval->point_id]['amount']= $point_array[$cartval->point_id]['amount']+$cartval->mpoints;
+                        //$point_id_array[$cartval->point_id]=$cartval->point_name;
+                    }else{
+                        $point_array[$cartval->point_id]['id']=$cartval->point_id;
+                        $point_array[$cartval->point_id]['name']=$cartval->point_name;
+                        $point_array[$cartval->point_id]['amount']= $cartval->mpoints;
+                        $point_id_array[$cartval->point_id]=$cartval->point_name;
+                    }
+                }
+            }
+            
+            foreach($point_array as $point_key=>$point_val){
+                $point_id = $point_val['id'];
+                $point_name = $point_val['name'];
+                $point_amount = $point_val['amount'];
+                $point_sql = "select * from point_details where user_id='".$user_id."' and point_id='".$point_id."'";
+                $point_res = findByQuery($point_sql);
+                $available_point = 0;
+                $total_point=0;
+                $redeem_point=0;
+                foreach($point_res as $point_detail_val){
+                    $total_point = $total_point + $point_detail_val['points'];
+                    $redeem_point = $redeem_point + $point_detail_val['redeemed_points'];
+                }
+                $available_point = $total_point-$redeem_point;
+                if($available_point < $point_amount){
+                    if(empty($msg)){
+                        $msg= $point_amount.' '.$point_name.' point';
+                    }else{
+                        $msg= $msg.', '.$point_amount.' '.$point_name.' point';
+                    }
+                   
+                }
+            }
+        }
+    }   
+    
+    if(empty($msg)){
+        $rarray = array('type' => 'success', 'message' => 'ok');
+    }else{
+        if(!empty($msg)){
+            $rarray = array('type' => 'error','offer_ids'=>$offer_id_array, 'message' => 'You dont have '.$msg);
+        }        
+    }
+    echo json_encode($rarray);
+}
+
 function getOffersByRestaurant($restaurant_id)
 {
     $rarray = array();

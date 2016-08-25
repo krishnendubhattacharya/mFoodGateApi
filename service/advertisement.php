@@ -12,6 +12,8 @@ function getAdsClicked($adid,$userid=null)
             $if_exist = findByQuery($already_exists_query);
             if(!empty($add_details) && ($add_details['target_click']>=$add_details['number_of_click']) && empty($if_exist))
             {
+                $given_point_details = findByConditionArray(array('id' => $add_details['mpoint_name']),'point_master');
+                $given_point_exipre_date = $given_point_details[0]['expire_date'];
                 $temp = array();
                 $temp['user_id'] = $userid;
                 $temp['points'] = $add_details['mpoint_get_per_click'];
@@ -20,7 +22,7 @@ function getAdsClicked($adid,$userid=null)
                 //$temp['advertise_id'] = $add_details['id'];
                 $temp['source'] = "earn from adv click";
                 $temp['date'] = $add_details['start_date'];
-                $temp['expire_date'] = $add_details['end_date'];
+                $temp['expire_date'] = $given_point_exipre_date;
                 $temp['redeemed_points'] = 0;
                 $temp['type'] = 'A';
                 $temp['parent_id'] = $add_details['id'];
@@ -35,7 +37,7 @@ function getAdsClicked($adid,$userid=null)
                 //$temp['advertise_id'] = $add_details['id'];
                 $temp['source'] = "earn from adv click";
                 $temp['date'] = $add_details['start_date'];
-                $temp['expire_date'] = $add_details['end_date'];
+                $temp['expire_date'] = $given_point_exipre_date;
                 $temp['redeemed_points'] = 0;
                 $temp['type'] = 'A';
                 $temp['parent_id'] = $add_details['id'];

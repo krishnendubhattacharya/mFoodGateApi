@@ -285,7 +285,10 @@ function redeemUserPoints()
     $user_id = $body->user_id;
     $points = $body->points;
     $needed_point = $points;
+    $flag = 0;
     $carts = $body->cart;
+    //print_r($carts);
+    //exit;
     $offerr_id = $carts[0]->offer_id;
     $offer_detaill = json_decode(findById($offerr_id,'offers'));
     $mer_id=$offer_detaill->merchant_id;
@@ -298,17 +301,17 @@ function redeemUserPoints()
         $points_left = $points;
         $points_redeemed = 0;
         $date = date('Y-m-d H:i:s');
-        $sql = "SELECT * FROM points WHERE user_id=:user_id and remaining_points>0 and merchant_id=:mer_id";
+       /* $sql = "SELECT * FROM points WHERE user_id=:user_id and remaining_points>0 and merchant_id=:mer_id";
         $db = getConnection();
         $stmt = $db->prepare($sql); 
         $stmt->bindParam("user_id", $user_id);
         $stmt->bindParam("mer_id", $mer_id);
         //$stmt->bindParam("expire_date", $date);
         $stmt->execute();
-        $allpoints = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $allpoints = $stmt->fetchAll(PDO::FETCH_OBJ);*/
         //print_r($allpoints);
         //exit;
-        if(!empty($allpoints))
+        /*if(!empty($allpoints))
         {
             foreach($allpoints as $point)
             {
@@ -343,12 +346,17 @@ function redeemUserPoints()
                 }
                 
             }
-        }
-        if($points_left==0)
-        {
+        }*/
+        //if($points_left==0)
+        //{
             foreach($carts as $cart)
             {
+                //print_r($cart);
+                if($cart->payments== 1){
+                    
                     $offer_details = json_decode(findById($cart->offer_id,'offers'));
+                    //print_r($offer_details);
+                    //exit;
                     $merchant_id='';
                     $offer_id ='';
                     $point_id = '';
@@ -357,8 +365,15 @@ function redeemUserPoints()
                     $offer_id =$offer_details->id;
                     $point_id = $offer_details->given_point_master_id;
                     $needed_point_id = $offer_details->point_master_id;
+                    $needed_point = $offer_details->mpoints;
                     $point = $offer_details->mpoints_given;
-                    
+                    $given_point_details = findByConditionArray(array('id' => $point_id),'point_master');
+                    $given_point_exipre_date = $given_point_details[0]['expire_date'];
+                    $needed_point_details = findByConditionArray(array('id' => $needed_point_id),'point_master');
+                    $needed_point_exipre_date = $needed_point_details[0]['expire_date'];
+                    $qty = 0;
+                    $qty = $cart->quantity;
+                    for($i=0;$i<$qty;$i++){
                     $voucher_data = array();
                     $voucher_data['offer_id'] =$cart->offer_id;
                     $voucher_data['created_on'] = $offer_details->created_on;
@@ -391,6 +406,7 @@ function redeemUserPoints()
                     $point_data['type'] = 'P';
                     $point_data['remaining_points'] = $point;
                     $point_data['merchant_id'] = $merchant_id;
+                    $point_data['expire_date'] = $given_point_exipre_date;
                     $point_data['point_id'] = $point_id;                    
                     add(json_encode(array('save_data' => $point_data)),'points');
                     $point_detail_data = array();
@@ -404,6 +420,8 @@ function redeemUserPoints()
                     $point_detail_data['redeemed_points'] = $needed_point;
                     $point_detail_data['merchant_id'] = $merchant_id;
                     $point_detail_data['point_id'] = $needed_point_id;
+                    $point_detail_data['expire_date'] = $needed_point_exipre_date;
+                    $point_detail_data['redeemed_date'] = $date;
                     $point_detail_data['transaction_type'] = 1;
                     add(json_encode(array('save_data' => $point_detail_data)),'point_details');
                     $point_detail_data = array();
@@ -416,14 +434,22 @@ function redeemUserPoints()
                     $point_detail_data['remaining_points'] = $point;
                     $point_detail_data['merchant_id'] = $merchant_id;
                     $point_detail_data['point_id'] = $point_id; 
+                    $point_detail_data['expire_date'] = $given_point_exipre_date;
                     $point_detail_data['transaction_type'] = 0;
                     add(json_encode(array('save_data' => $point_detail_data)),'point_details');
-                    
+                    $flag = 1;
+                }
+            }                    
                     
                     
             }
+        //}
+        if($flag ==1){
+            $rarray = array('status' => 'success','data' => 'successfully redeemed');
+        }else{
+            $rarray = array('status' => 'error','data' => 'redeem error');
         }
-        $rarray = array('status' => 'success','data' => $points);
+        
     } catch (PDOException $ex) {
         $rarray = array('status' => 'error','error' => array('text' => $ex->getMessage()));
     }
