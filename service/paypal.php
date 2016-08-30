@@ -255,6 +255,7 @@ function success_payment()
                             $voucher_data['item_start_hour'] = $offer_details->item_start_hour;
                             $voucher_data['item_end_hour'] = $offer_details->item_end_hour;
                             $voucher_data['is_active'] = 1;
+                            $voucher_data['purchase_type'] = 0;
                             $s = add(json_encode(array('save_data' => $voucher_data)),'vouchers');
 					        $s = json_decode($s);
                    //print_r($s);  exit;       

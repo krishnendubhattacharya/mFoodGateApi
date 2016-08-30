@@ -376,6 +376,7 @@ $app->post('/deleteFromCart', 'deleteFromCart');
 $app->delete('/deleteCartByUser/:user_id', 'deleteCartByUser');
 $app->get('/getCartByUser/:user_id', 'getCartByUser');
 $app->post('/updateCartQuantity', 'updateCartQuantity');
+$app->post('/updateCheckType', 'updateCheckType');
 
 /******************* Voucher Pdf *****************/
 $app->get('/downloadVoucherPdf/:vid', 'downloadVoucherPdf');

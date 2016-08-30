@@ -383,6 +383,7 @@ function redeemUserPoints()
                     $voucher_data['from_date'] = $offer_details->offer_from_date;
                     $voucher_data['to_date'] = $offer_details->offer_to_date;
                     $voucher_data['is_active'] = 1;
+                    $voucher_data['purchase_type'] = 1;
                     $s = add(json_encode(array('save_data' => $voucher_data)),'vouchers');
                     $s = json_decode($s);
                     $owner_data = array();

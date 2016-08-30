@@ -24,6 +24,9 @@
                     {
                         $temp_cart['quantity'] = $offer['quantity']-$offer['buy_count'];
                     }
+                    
+                    $temp_cart['payments'] = $prod['point']==1?true:false;
+                    $temp_cart['paymentscash'] = $prod['price']==1?true:false;
                     $temp_cart['mpoints'] = $offer['mpoints'];
                     $temp_cart['image'] = SITEURL.'voucher_images/'.$offer['image'];
                     $temp_cart['restaurant_id'] = $offer['restaurant_id'];
@@ -55,9 +58,21 @@
                 if(empty($ifexist))
                 {
                     $temp = array();
+                    if($offer->paymentscash == 1){
+                        $offer->paymentscash = 1;
+                    }else{
+                        $offer->paymentscash =0;
+                    }
+                    if($offer->payments == 1){
+                        $offer->payments = 1;
+                    }else{
+                        $offer->payments =0;
+                    }
                     $temp['user_id'] = $user_id;
                     $temp['offer_id'] = $offer->offer_id;
                     $temp['quantity'] = $offer->quantity;
+                    $temp['price'] = $offer->paymentscash;
+                    $temp['point'] = $offer->payments;
                     add(json_encode(array('save_data' => $temp)),'cart');
                 }
             }
@@ -154,6 +169,10 @@
                         }
                         
                     }
+                    $pc = $temp_cart['paymentscash']?1:0 ;
+                    $p = $temp_cart['payments']?1:0 ;
+                    $query = "UPDATE cart set price=".$pc.", point=".$p." where user_id=".$user_id." and offer_id=".$offer['id'];
+                updateByQuery($query);
                     $cart[] = $temp_cart;
                 }
             }
@@ -244,6 +263,43 @@
             }           
             
         }
+        echo json_encode($rarray);
+        
+    }
+    
+    function updateCheckType()
+    {
+        $request = Slim::getInstance()->request();
+	$body = json_decode($request->getBody());
+        //print_r($body);
+        //exit;
+        $rarray =array();
+        if(!empty($body->item))
+        {
+            foreach($body->item as $bodykey=>$bodyval){
+                if($bodyval->payments == 1){
+                    $payment = 1;
+                }else{
+                    $payment = 0;
+                }
+                
+                if($bodyval->paymentscash == 1){
+                    $paymentcash = 1;
+                }else{
+                    $paymentcash = 0;
+                }
+                //$item = $body->item;
+                $offer_id = $bodyval->offer_id;       
+                $query = "UPDATE cart set price=".$paymentcash.", point=".$payment." where user_id=".$body->user_id." and offer_id=".$bodyval->offer_id;
+                updateByQuery($query);
+            }
+            
+            //foreach()
+            
+                      
+            
+        }
+        $rarray = array('type' => 'success', 'data' => 'ok');
         echo json_encode($rarray);
         
     }
