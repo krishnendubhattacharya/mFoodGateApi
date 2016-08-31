@@ -210,8 +210,10 @@ function getEvenDetails($id)
     $event_details = json_decode($event_details);
     if(!empty($event_details))
     {
-        $event_details->from_date = date('m/d/Y', strtotime($event_details->from_date));
-        $event_details->to_date = date('m/d/Y', strtotime($event_details->to_date));
+        $event_details->from_date = date('m-d-Y h:i:s a ', strtotime($event_details->from_date));
+        $event_details->to_date = date('m-d-Y h:i:s a', strtotime($event_details->to_date));
+        $event_details->offer_from_date  = date('m-d-Y', strtotime($event_details->offer_from_date ));
+        $event_details->offer_to_date  = date('m-d-Y', strtotime($event_details->offer_to_date ));
         if(!empty($event_details->image))
             $event_details->image = SITEURL.'event_images/'.$event_details->image;
         else
