@@ -7,6 +7,8 @@ function addSwap(){
 	$offer_id = $body->offer_id;
 	$user_id = $body->user_id;
 	$newdate = date('Y-m-d');
+        $typedata='';
+        $areadata='';
         
     //echo $voucher_id.'|'.$offer_id.'|'.$user_id;exit;
     $sql = "SELECT * FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and vouchers.to_date >=:date and voucher_owner.is_active='1' and voucher_owner.to_user_id=:user_id and vouchers.id=:voucher_id";
@@ -33,6 +35,17 @@ function addSwap(){
 				$isswap = $stmt->fetchObject();  
 				if(empty($isswap))
 				{
+                                        if(isset($body->typedata))
+                                        {
+                                            $typedata = $body->typedata;
+                                            unset($body->typedata);
+                                        }
+                                        if(isset($body->areadata))
+                                        {
+                                            $areadata = $body->areadata;
+                                            unset($body->areadata);
+                                        }
+                                        
 					$body->is_active = 1;
 					$body->voucher_price = $vouchers->price;
 					$body->voucher_expire_date = $vouchers->to_date;
@@ -42,7 +55,28 @@ function addSwap(){
 					//echo '<pre>';print_r($allinfo);
 					$swap = add(json_encode($allinfo),'swap');
 					if(!empty($swap)){
-						$swap = json_decode($swap);
+                                            $swap = json_decode($swap);
+                                            if(!empty($typedata))
+                                            {
+                                                $temp=array();
+                                                foreach($typedata as $typedat)
+                                                {
+                                                    //print_r($typedata);
+                                                    $temp['save_data'] = array('swap_id' => $swap->id,'voucher_id' => $voucher_id,'category_id' => $typedat->id);
+                                                    $s = add(json_encode($temp),'swap_category_map');
+                                                    //var_dump
+                                                }
+                                            }
+                                            if(!empty($areadata))
+                                            {
+                                                $temp=array();
+                                                foreach($areadata as $typedat)
+                                                {
+                                                    $temp['save_data'] = array('swap_id' => $swap->id,'voucher_id' => $voucher_id,'location_id' => $typedat->id);
+                                                    add(json_encode($temp),'swap_location_map');
+                                                }
+                                            }
+						
 						$result = '{"type":"success","message":"Voucher posted for swap successfully."}'; 
 					}
 					else{
@@ -101,7 +135,7 @@ function swaplist() {
 function mySwapList($uid) {     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent,vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id, swap.posted_on  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent,vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id, swap.posted_on, swap.offering_end_date  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id=:uid";
 	
 	try {
 		$db = getConnection();
@@ -117,6 +151,12 @@ function mySwapList($uid) {
 			
 			$posted_on = date('d M, Y', strtotime($vouchers[$i]->posted_on));
 		    $vouchers[$i]->posted_on = $posted_on;
+                        if($vouchers[$i]->offering_end_date == "0000-00-00 00:00:00"){
+                            $vouchers[$i]->offering_end_date = "";
+                        }else{
+                            $vouchers[$i]->offering_end_date = date('d M, Y', strtotime($vouchers[$i]->offering_end_date));
+                        }
+                    
 			
 			if(!empty($vouchers[$i]->image))
 			{
@@ -136,7 +176,11 @@ function mySwapList($uid) {
 			}else{
 				$vouchers[$i]->high_bid = 0;
 			}
+                        $netprice = ($vouchers[$i]->price - ($vouchers[$i]->price * $vouchers[$i]->offer_percent)/100);                      
+                        
+                        
                         $vouchers[$i]->price = number_format($vouchers[$i]->price,1,'.',',');
+                        $vouchers[$i]->netprice = number_format($netprice,1,'.',',');
 		    
 		}
 		$db = null;
@@ -152,7 +196,7 @@ function otherSwapList($uid) {
     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id,swap.posted_on   FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id !=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.offering_end_date   FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id !=:uid";
 	
 	try {
 		$db = getConnection();
@@ -165,6 +209,11 @@ function otherSwapList($uid) {
 		for($i=0;$i<$count;$i++){
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
+                    if($vouchers[$i]->offering_end_date == "0000-00-00 00:00:00"){
+                        $vouchers[$i]->offering_end_date = "";
+                    }else{
+                        $vouchers[$i]->offering_end_date = date('d M, Y', strtotime($vouchers[$i]->offering_end_date));
+                    }
 			$vouchers[$i]->posted_on = date('d M,Y',strtotime($vouchers[$i]->posted_on));
                     if(!empty($vouchers[$i]->image))
                     {
@@ -187,7 +236,7 @@ function myBidSwapList($uid) {
         $is_active = 1;  
 	$newdate = date('Y-m-d');
 		
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.voucher_id  FROM vouchers, swap, offers, interested_swap where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.user_id=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.voucher_id,swap.offering_end_date  FROM vouchers, swap, offers, interested_swap where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.user_id=:uid";
 	
 	try {
 		$db = getConnection();
@@ -195,18 +244,27 @@ function myBidSwapList($uid) {
         $stmt->bindParam("uid", $uid);		
 		$stmt->execute();
 		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+                //print_r($vouchers);
+                
 		$count = $stmt->rowCount();
 		//my_voucher.price, swap_voucher.price
 		for($i=0;$i<$count;$i++){
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
+                    
+                    if($vouchers[$i]->offering_end_date == "0000-00-00 00:00:00"){
+                        $vouchers[$i]->offering_end_date = "";
+                    }else{
+                        $vouchers[$i]->offering_end_date = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+                    }
 			$vouchers[$i]->posted_on = date('d M, Y',strtotime($vouchers[$i]->posted_on));
 			$vouchers[$i]->swap_voucher = findByIdArray($vouchers[$i]->voucher_id,'vouchers');
 			$vouchers[$i]->swap_offer = findByIdArray($vouchers[$i]->swap_voucher['offer_id'],'offers');
+                        //print_r($vouchers[$i]->swap_voucher);
 			$vouchers[$i]->my_voucher = findByIdArray($vouchers[$i]->my_voucher_id,'vouchers');
 			$vouchers[$i]->my_offer = findByIdArray($vouchers[$i]->my_voucher['offer_id'],'offers');
-                        $vouchers[$i]->swap_voucher->price = number_format($vouchers[$i]->swap_voucher->price,1,'.',',');
-                        $vouchers[$i]->my_voucher->price = number_format($vouchers[$i]->my_voucher->price,1,'.',',');
+                        $vouchers[$i]->swap_voucher['price'] = number_format($vouchers[$i]->swap_voucher['price'],1,'.',',');
+                        $vouchers[$i]->my_voucher['price'] = number_format($vouchers[$i]->my_voucher['price'],1,'.',',');
 			
                     if(!empty($vouchers[$i]->image))
                     {
@@ -214,6 +272,7 @@ function myBidSwapList($uid) {
                     }
 		    
 		}
+                //exit;
 		$db = null;
 		$vouchers =  json_encode($vouchers); 
 		$result = '{"type":"success","data":'.$vouchers.',"count":'.$count.'}'; 
