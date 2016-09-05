@@ -757,4 +757,66 @@ function swapInterestAccept($siid){
 	//echo $first_voucher_id.'|'.$second_voucher_id.'|'.$first_user_id.'|'.$second_user_id.'|';
 
 }
+
+function getSwapVoucherDetail($sid) {  
+    
+        $is_active = 1;  
+	$newdate = date('Y-m-d');
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.offering_end_date,swap.offering_start_date,swap.description  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.id =:sid";
+	
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);
+                $stmt->bindParam("sid", $sid);		
+		$stmt->execute();
+		$vouchers = $stmt->fetchAll(PDO::FETCH_OBJ);  
+		$count = $stmt->rowCount();
+		
+		for($i=0;$i<$count;$i++){
+		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
+		    $vouchers[$i]->expire_date = $todate;
+                    if($vouchers[$i]->offering_end_date == "0000-00-00 00:00:00"){
+                        $vouchers[$i]->offering_end_date = "";
+                    }else{
+                        $vouchers[$i]->offering_end_date = date('d M, Y', strtotime($vouchers[$i]->offering_end_date));
+                    }
+                    if($vouchers[$i]->offering_start_date == "0000-00-00 00:00:00"){
+                        $vouchers[$i]->offering_start_date = "";
+                    }else{
+                        $vouchers[$i]->offering_start_date = date('d M, Y', strtotime($vouchers[$i]->offering_start_date));
+                    }
+			$vouchers[$i]->posted_on = date('d M,Y',strtotime($vouchers[$i]->posted_on));
+                    if(!empty($vouchers[$i]->image))
+                    {
+                        $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
+                    }                    
+                    $netprice = ($vouchers[$i]->price-($vouchers[$i]->price*$vouchers[$i]->offer_percent)/100);
+                    $vouchers[$i]->price = number_format($vouchers[$i]->price,1,'.',',');
+                    $vouchers[$i]->netprice = number_format($netprice,1,'.',',');
+                    //$vouchers[$i]->categories = json_decode(findByCondition(array('swap_id'=>$vouchers[$i]->id),'swap_category_map'));
+                    //$vouchers[$i]->locations = json_decode(findByCondition(array('swap_id'=>$vouchers[$i]->id),'swap_location_map'));
+                    $vouchers[$i]->locations = array();
+                    $locations = findByConditionArray(array('swap_id' => $sid),'swap_location_map');
+                    foreach($locations as $cat)
+                    {
+                        $vouchers[$i]->locations[] = findByIdArray($cat['location_id'],'locations');
+                    }
+
+                    $vouchers[$i]->categories = array();
+                    $category = findByConditionArray(array('swap_id' => $sid),'swap_category_map');
+                    foreach($category as $cat)
+                    {
+                        $vouchers[$i]->categories[] = findByIdArray($cat['category_id'],'category');
+                    }
+                    
+		    
+		}
+		$db = null;
+		$vouchers =  json_encode($vouchers); 
+		$result = '{"type":"success","data":'.$vouchers.',"count":'.$count.'}'; 
+	} catch(PDOException $e) {
+		$result = '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo  $result;
+}
 ?>

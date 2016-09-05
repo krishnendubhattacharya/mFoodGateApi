@@ -142,6 +142,7 @@ $app->get('/getDetailsVoucherBid/:id', 'getDetailsVoucherBid');
 $app->post('/updateVoucherBid', 'updateVoucherBid');
 $app->get('/ownresellList/:id','getResellListPostOwn');
 $app->get('/othersresellList/:id','getResellListPostOthers');
+$app->get('/getResellVoucherDetail/:id','getResellVoucherDetail');
 $app->get('/bidders/:id/:userid','getBidderList');
 $app->post('/bids', 'addBid');
 
@@ -238,6 +239,7 @@ $app->get('/swaplist', 'swaplist');
 
 $app->get('/interestedSwapList/:id', 'interestedSwapList');
 $app->get('/swapdetails/:sid', 'swapdetails'); 
+$app->get('/getSwapVoucherDetail/:sid', 'getSwapVoucherDetail');
 $app->post('/swapinterest', 'swapinterest');
 /**********points Call*********/
 $app->get('/mypoints/:user_id',  'getMyPoints');
