@@ -73,6 +73,8 @@
                     $temp['quantity'] = $offer->quantity;
                     $temp['price'] = $offer->paymentscash;
                     $temp['point'] = $offer->payments;
+                    $temp['resell'] = $offer->isresell;
+                    $temp['resell_id'] = $offer->resell_id;
                     add(json_encode(array('save_data' => $temp)),'cart');
                 }
             }
@@ -102,6 +104,8 @@
                     $temp_cart['offer_price'] = $offer['offer_price'];
                     $temp_cart['offer_title'] = $offer['title'];
                     $temp_cart['price'] = $offer['price'];
+                    $temp_cart['resell'] = $prod['resell'];
+                    $temp_cart['resell_id'] = $prod['resell_id'];
                     if($prod['quantity']<$offer['quantity']-$offer['buy_count'])
                     {
                         $temp_cart['quantity'] = $prod['quantity'];

@@ -684,7 +684,7 @@ function getMyMembershipExpireSoon($user_id){
 function getResellListPostOwn($userid){
             $current_date = date('Y-m-d');
             $resales = array();
-            $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id,voucher_resales.voucher_id, voucher_resales.created_on, voucher_resales.price, voucher_resales.points, voucher_resales.status, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.item_expire_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id=:user_id";
+            $sql = "SELECT offers.title,offers.id as offer_id, voucher_resales.id as voucher_resale_id,voucher_resales.voucher_id, voucher_resales.created_on, voucher_resales.price, voucher_resales.points, voucher_resales.status, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.item_expire_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id=:user_id";
 	   	
 	   
         try {
@@ -750,7 +750,7 @@ function getResellListPostOwn($userid){
 function getResellListPostOthers($userid){
 	$current_date = date('Y-m-d');
 	 $resales = array();
-	   	 $sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price,voucher_resales.created_on, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price  FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.item_expire_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";   	
+	   	 $sql = "SELECT offers.title,offers.id as offer_id, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price,voucher_resales.created_on, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price  FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.item_expire_date) >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";   	
 	   	 //$sql = "SELECT offers.title, voucher_resales.id as voucher_resale_id, voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.price as voucher_price, max(voucher_bids.bid_price) as max_bid_price FROM offers, voucher_resales,voucher_bids, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and voucher_bids.voucher_resale_id = voucher_resales.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id!=:user_id";
 	   
     try {
@@ -791,7 +791,7 @@ function getResellListBidOwn($userid){
 	 $resales = array();
 	   	 //$sql = "SELECT voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price FROM voucher_resales, vouchers WHERE voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and vouchers.user_id=:user_id";
 	   	 
-	   	 $sql = "SELECT voucher_bids.id as bid_id,voucher_bids.voucher_id,voucher_bids.created_on,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points as bid_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, voucher_resales.status, vouchers.to_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price,vouchers.to_date as expire_date, offers.title FROM voucher_bids, voucher_resales, vouchers, offers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and offers.id = vouchers.offer_id and vouchers.item_expire_date >=:current_date and voucher_resales.is_active ='1' and voucher_bids.user_id=:user_id";
+	   	 $sql = "SELECT voucher_bids.id as bid_id,voucher_bids.voucher_id,voucher_bids.created_on,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points as bid_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, voucher_resales.status, vouchers.to_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price,vouchers.to_date as expire_date, offers.title,offers.id as offer_id FROM voucher_bids, voucher_resales, vouchers, offers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and offers.id = vouchers.offer_id and vouchers.item_expire_date >=:current_date and voucher_resales.is_active ='1' and voucher_bids.user_id=:user_id";
 	   	
 	   
 	   
@@ -4397,6 +4397,158 @@ function getResellVoucherDetail($rid){
 	    $result =  '{"error":{"message":'. $e->getMessage() .'}}'; 
 	}
 	echo  $result;
+}
+
+function getResellPromoDetails($id,$rsid) {     
+
+        $sql = "SELECT * from offers where offers.id=:id";
+        //echo $rid;
+        //exit;
+        
+        //echo $sql;
+        $site_path = SITEURL;
+        $offer_images = array();
+        $point_master_details=array();
+        $point_master_id = 0;
+        
+	try {
+		$db = getConnection();
+		$stmt = $db->prepare($sql);	
+		$stmt->bindParam("id", $id);
+		
+		$stmt->execute();
+		$offer = $stmt->fetchObject();  
+		$count = $stmt->rowCount();
+		if($count>0)
+		{
+                    $offer->created_on = date('m-d-Y',strtotime($offer->created_on));
+                    $offer->offer_from_date = date('m-d-Y',strtotime($offer->offer_from_date));
+                    $todate = date('M d,Y H:i:s', strtotime($offer->offer_to_date));
+		    $offer->expire_date = $todate;
+                    $offer->offer_to_date = date('m-d-Y',strtotime($offer->offer_to_date));
+                            if(empty($offer->image)){
+                                    $img = $site_path.'voucher_images/default.jpg';
+                                    $offer->image = $img;
+                            }
+                            else{                            
+                                    $img = $site_path."voucher_images/".$offer->image;
+                                    $offer->image = $img;       
+                                    $offer_images[0]['image'] = $img;
+                            }
+                    $rid = 	$offer->restaurant_id;
+                    $merchant_id = $offer->merchant_id;
+                    $resellInfo = findByConditionArray(array('id' => $rsid),'voucher_resales');
+                    //echo '<pre>';
+                    //var_dump($rid) ;
+                    //print_r($resellInfo);
+                    //exit;
+                    if(!empty($resellInfo)){
+                        $point_master_id = $resellInfo[0]['point_id'];
+                        $offer->operator = $resellInfo[0]['operator'];
+                        $resell_user_id = $resellInfo[0]['user_id'];
+                        $offer->resell_price = $resellInfo[0]['price'];
+                        $offer->resell_point = $resellInfo[0]['points'];
+                        $offer->resell_point_id = $resellInfo[0]['point_id'];
+                        $offer->resell_id = $rsid;
+                    }else{
+                        $offer->operator = '';
+                    }                    
+                    $merchantInfo = findByConditionArray(array('id' => $merchant_id),'users');
+                    $resellUserInfo = findByConditionArray(array('id' => $resell_user_id),'users');
+                    $promo_images = findByConditionArray(array('offer_id'=>$id),'offer_images');
+                    $point_master_details = findByConditionArray(array('id'=>$point_master_id),'point_master');
+                    if(!empty($offer->image)){
+                            //$img = $site_path."voucher_images/".$offer->image;
+                            //$offer_images[0]['image'] = $img;
+                    }
+                        if(!empty($promo_images))
+                        {     
+                                $prmcount = count($promo_images);
+                                for($i=0;$i<$prmcount;$i++){
+                                        $image = $site_path."voucher_images/".$promo_images[$i]['image'];
+                                        $offer_images[$i+1]['image'] = $image;
+                                }  
+                                
+                        }
+                        
+                    /*$sql = "SELECT * from restaurants where restaurants.id=:rid";	
+                    $db = getConnection();
+                    $stmt = $db->prepare($sql);	
+                    $stmt->bindParam("rid", $rid);
+                    $stmt->execute();
+                    $restaurants = $stmt->fetchObject();
+                            if(empty($restaurants->logo)){
+                                    $img = $site_path.'restaurant_images/default.jpg';
+                                    $restaurants->logo = $img;
+                            }
+                            else{                            
+                                    $img = $site_path."restaurant_images/".$restaurants->logo;
+                                    $restaurants->logo = $img;                            
+                            }
+                    $db = null;*/
+                    //echo '<pre>';print_r($offer);print_r($restaurants);exit;
+                    $offer = json_encode($offer);
+                    //$restaurants = json_encode($restaurants);
+                    $restaurants = findByConditionArray(array('offer_id' => $id),'offer_restaurent_map');
+                    //print_r($restaurants);
+                    //exit;
+                    $categories = findByConditionArray(array('offer_id' => $id),'offer_category_map');
+                    $outlets = findByConditionArray(array('offer_id' => $id),'offer_outlet_map');
+                    if(!empty($restaurants)){
+                        foreach($restaurants as $index=>$restaurantInfo){
+                                $restaurant_id = '';
+                                $sql = '';
+                                $restaurant_id = $restaurantInfo['restaurent_id'];
+                                $sql = "SELECT * from restaurants where restaurants.id=:id";
+                                $db = getConnection();
+		                $stmt = $db->prepare($sql);	
+		                $stmt->bindParam("id", $restaurant_id);
+		
+		                $stmt->execute();
+		                $resDetail = $stmt->fetchObject();
+		                $db=null;
+		                $restaurants[$index]['title']=$resDetail->title;
+		                $restaurants[$index]['sub_title']=$resDetail->sub_title;
+		                $restaurants[$index]['description']=$resDetail->description;
+		                $restaurants[$index]['outlets']=array();
+		                if(!empty($outlets)){
+		                        foreach($outlets as $key=>$outletInfo){
+                                                $outlet_id = '';
+                                                $sql = ''; 
+                                                $outlet_id = $outletInfo['outlet_id'];
+                                                $sql = "SELECT * from outlets where outlets.id=:id and outlets.restaurant_id=:resid";
+                                                $db = getConnection();
+		                                $stmt = $db->prepare($sql);	
+		                                $stmt->bindParam("id", $outlet_id);
+		                                $stmt->bindParam("resid", $restaurant_id);
+		
+		                                $stmt->execute();
+		                                $outletDetail = $stmt->fetchObject();
+		                                $db=null;
+		                                if(!empty($outletDetail)){
+		                                        $outlet_count = count($restaurants[$index]['outlets']);
+		                                        $restaurants[$index]['outlets'][$outlet_count]= $outletDetail;
+		                                }		                                
+                                                
+		                        }
+		                }		                
+                        }
+                    }
+                    
+                    $offer_days = findByConditionArray(array('offer_id' => $id),'offer_days_map');
+                    $days_array = array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
+                    $offer_days = array_map(function($t) use ($days_array){
+                            $t['day'] = $days_array[$t['day']];
+                            return $t;
+                    },$offer_days);
+                    $result = '{"type":"success","offer":'.$offer.',"restaurants":'.json_encode($restaurants).',"merchantInfo":'.json_encode($merchantInfo).',"count":'.$count.',"categories" : '.json_encode($categories).',"promo_images" : '.json_encode($offer_images).',"offer_days":'.json_encode($offer_days).',"outlets" : '.json_encode($outlets).',"point_details" : '.json_encode($point_master_details).',"resell_user_details" : '.json_encode($resellUserInfo).'}';
+		}else{
+			$result =  '{"type":"error","message":"Sorry no promo found"}'; 
+		}
+	} catch(PDOException $e) {
+		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
+	}
+	echo $result;
 }
 
 

@@ -168,6 +168,8 @@ function cart_checkout(){
                 $temp_details['price'] = $temp['price'];
                 $temp_details['offer_price'] = $temp['offer_price'];
                 $temp_details['quantity'] = $temp['quantity'];
+                $temp_details['resell'] = $temp['isresell'];
+                $temp_details['resell_id'] = $temp['resell_id'];
                
                 add(json_encode(array('save_data' => $temp_details)),'order_details');
             }
@@ -218,7 +220,7 @@ function success_payment()
                 {
                         $qty = $order_detail->quantity;
                     $offer_details = json_decode(findById($order_detail->offer_id,'offers'));
-                    print_r($offer_details);
+                    //print_r($offer_details);
                     $merchant_id='';
                     $offer_id ='';
                     $point_id = '';
@@ -230,7 +232,7 @@ function success_payment()
                     $point = $offer_details->mpoints_given;
                     $given_point_details = findByConditionArray(array('id' => $point_id),'point_master');
                     $given_point_exipre_date = $given_point_details[0]['expire_date'];
-                     
+                     if($order_detail->resell == 0){
                     for($i=0;$i<$qty;$i++){
                         if($offer_details->conditions == 0){
                             $voucher_data = array();
@@ -305,6 +307,45 @@ function success_payment()
                     /********* Update Offer *************/
                     $up_query = "UPDATE offers SET buy_count=buy_count+".$order_detail->quantity." where id=".$order_detail->offer_id;
                     updateByQuery($up_query);
+                }elseif($order_detail->resell == 1){
+                    $resell_id = $order_detail->resell_id;
+                    $resellInfo = findByConditionArray(array('id' => $resell_id),'voucher_resales');
+                    $resell_point_id = $resellInfo[0]['point_id'];
+                    $resell_user_id = $resellInfo[0]['user_id'];
+                    $resell_price = $resellInfo[0]['price'];
+                    $to_user_id = $order_detail->user_id;
+                    $resellUserInfo = findByConditionArray(array('id' => $resell_user_id),'users');
+                    $toUserInfo = findByConditionArray(array('id' => $to_user_id),'users');
+                    $resell_user_email = $resellUserInfo[0]['email'];
+                    $to_user_email = $toUserInfo[0]['email'];
+                    $mCashInfo = findByConditionArray(array('name' => 'mCash'),'point_master');
+                    $money_point = $mCashInfo[0]['money_point'];
+                    $point_val = $mCashInfo[0]['value'];
+                    $mCashExpireDate = $mCashInfo[0]['expire_date'];
+                    $mCashPointId = $mCashInfo[0]['id'];
+                    $total_point = round($resell_price/$point_val);
+                    
+                    //$resellPointInfo = findByConditionArray(array('id' => $resell_point_id),'point_master');
+                    
+                    if($money_point == 1){
+                        $point_detail_data = array();
+                        $point_detail_data['offer_id'] = 0;
+                        $point_detail_data['points'] = $total_point;
+                        $point_detail_data['source'] = 'earn from promo click';
+                        $point_detail_data['user_id'] = $resell_user_id;
+                        $point_detail_data['date'] = date('Y-m-d h:i:s');
+                        $point_detail_data['type'] = 'P';
+                        $point_detail_data['remaining_points'] = $total_point;
+                        $point_detail_data['merchant_id'] = 0;
+                        $point_detail_data['point_id'] = $mCashPointId; 
+                        $point_detail_data['expire_date'] = $mCashExpireDate;
+                        $point_detail_data['transaction_type'] = 0;
+                        add(json_encode(array('save_data' => $point_detail_data)),'point_details');
+                        
+                    }
+                    
+                    
+                }
                     
                 }
                 

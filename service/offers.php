@@ -50,6 +50,7 @@ function checkExpiredOffers()
 
     $body = json_decode($body);
     $offer_ids = $body->offer_ids;
+    $is_resell = $body->cartisresell;
     $user_id = $body->user_id;
     $check_offer=array();
     $rejectted_offer=array();

@@ -353,6 +353,7 @@ function redeemUserPoints()
             {
                 //print_r($cart);
                 if($cart->payments== 1){
+                    if($cart->resell== 0){
                     
                     $offer_details = json_decode(findById($cart->offer_id,'offers'));
                     //print_r($offer_details);
@@ -438,6 +439,65 @@ function redeemUserPoints()
                     $point_detail_data['expire_date'] = $given_point_exipre_date;
                     $point_detail_data['transaction_type'] = 0;
                     add(json_encode(array('save_data' => $point_detail_data)),'point_details');
+                    $flag = 1;
+                }
+                }elseif($cart->isresell== 1){
+                    $resell_id = $cart->resell_id;
+                    $resellInfo = findByConditionArray(array('id' => $resell_id),'voucher_resales');
+                    $resell_point_id = $resellInfo[0]['point_id'];
+                    $resell_user_id = $resellInfo[0]['user_id'];
+                    $resell_price = $resellInfo[0]['price'];
+                    $resell_point = $resellInfo[0]['points'];
+                    $to_user_id = $user_id;
+                    $resellUserInfo = findByConditionArray(array('id' => $resell_user_id),'users');
+                    $toUserInfo = findByConditionArray(array('id' => $to_user_id),'users');
+                    $resell_user_email = $resellUserInfo[0]['email'];
+                    $to_user_email = $toUserInfo[0]['email'];
+                    $mCashInfo = findByConditionArray(array('name' => 'mCash'),'point_master');
+                    $money_point = $mCashInfo[0]['money_point'];
+                    $point_val = $mCashInfo[0]['value'];
+                    $mCashExpireDate = $mCashInfo[0]['expire_date'];
+                    $mCashPointId = $mCashInfo[0]['id'];
+                    $total_point = round($resell_price/$point_val);
+                    
+                    $resellPointInfo = findByConditionArray(array('id' => $resell_point_id),'point_master');
+                    
+                    //$resell_point_val = $mCashInfo[0]['value'];
+                    $resellExpireDate = $resellPointInfo[0]['expire_date'];                    
+                    
+                    //$resellPointInfo = findByConditionArray(array('id' => $resell_point_id),'point_master');
+                    $point_detail_data = array();
+                    $point_detail_data['offer_id'] = 0;
+                    $point_detail_data['points'] = 0;
+                    $point_detail_data['source'] = 'earn from promo click';
+                    $point_detail_data['user_id'] = $user_id;
+                    $point_detail_data['date'] = date('Y-m-d h:i:s');
+                    $point_detail_data['type'] = 'P';
+                    $point_detail_data['remaining_points'] = 0;
+                    $point_detail_data['redeemed_points'] = $resell_point;
+                    $point_detail_data['merchant_id'] = 0;
+                    $point_detail_data['point_id'] = $resell_point_id;
+                    $point_detail_data['expire_date'] = $resellExpireDate;
+                    $point_detail_data['redeemed_date'] = $date;
+                    $point_detail_data['transaction_type'] = 1;
+                    add(json_encode(array('save_data' => $point_detail_data)),'point_details');
+                    
+                    if($money_point == 1){
+                        $point_detail_data = array();
+                        $point_detail_data['offer_id'] = 0;
+                        $point_detail_data['points'] = $total_point;
+                        $point_detail_data['source'] = 'earn from promo click';
+                        $point_detail_data['user_id'] = $resell_user_id;
+                        $point_detail_data['date'] = date('Y-m-d h:i:s');
+                        $point_detail_data['type'] = 'P';
+                        $point_detail_data['remaining_points'] = $total_point;
+                        $point_detail_data['merchant_id'] = 0;
+                        $point_detail_data['point_id'] = $mCashPointId; 
+                        $point_detail_data['expire_date'] = $mCashExpireDate;
+                        $point_detail_data['transaction_type'] = 0;
+                        add(json_encode(array('save_data' => $point_detail_data)),'point_details');
+                        
+                    }
                     $flag = 1;
                 }
             }                    

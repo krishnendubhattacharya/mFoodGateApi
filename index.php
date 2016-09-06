@@ -152,6 +152,7 @@ $app->get('/offerdetail/:id', 'getOfferDetail');
 $app->post('/offerImageUpload', 'offerImageUpload');
 $app->get('/getAllResellList', 'getAllResellList');
 $app->get('/getPromoDetails/:id','getPromoDetails');
+$app->get('/getResellPromoDetails/:id/:rid','getResellPromoDetails');
 $app->get('/getPromoDetailsAdmin/:id','getPromoDetailsAdmin');
 $app->get('/getRelatedPromo/:id','getRelatedPromo');
 $app->get('/getMyMembership/:userid','getMyMembership');
