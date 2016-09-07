@@ -168,7 +168,7 @@ function cart_checkout(){
                 $temp_details['price'] = $temp['price'];
                 $temp_details['offer_price'] = $temp['offer_price'];
                 $temp_details['quantity'] = $temp['quantity'];
-                $temp_details['resell'] = $temp['isresell'];
+                $temp_details['resell'] = $temp['resell'];
                 $temp_details['resell_id'] = $temp['resell_id'];
                
                 add(json_encode(array('save_data' => $temp_details)),'order_details');
@@ -318,12 +318,24 @@ function success_payment()
                     $toUserInfo = findByConditionArray(array('id' => $to_user_id),'users');
                     $resell_user_email = $resellUserInfo[0]['email'];
                     $to_user_email = $toUserInfo[0]['email'];
+                    $to_user_name = $toUserInfo[0]['first_name'].' '.$toUserInfo[0]['last_name'];
+                    $resell_user_name = $resellUserInfo[0]['first_name'].' '.$resellUserInfo[0]['last_name'];
                     $mCashInfo = findByConditionArray(array('name' => 'mCash'),'point_master');
                     $money_point = $mCashInfo[0]['money_point'];
                     $point_val = $mCashInfo[0]['value'];
                     $mCashExpireDate = $mCashInfo[0]['expire_date'];
                     $mCashPointId = $mCashInfo[0]['id'];
                     $total_point = round($resell_price/$point_val);
+                    $resell_voucher_id = $resellInfo[0]['voucher_id'];
+                    $resellownerInfo = findByConditionArray(array('voucher_id' => $resell_voucher_id,'is_active' => 1),'voucher_owner');
+                    $voucher_owner_id = $resellownerInfo[0]['id'];
+                    $save_data = array();
+                    $save_data['save_data']['resell_type'] = 0;
+                    $voucher_owner_edit = edit(json_encode($save_data),'voucher_owner',$voucher_owner_id);
+                    
+                    $save_data = array();
+                    $save_data['save_data']['ispayment'] = 0;
+                    $voucher_owner_edit = edit(json_encode($save_data),'voucher_resales',$resell_id);
                     
                     //$resellPointInfo = findByConditionArray(array('id' => $resell_point_id),'point_master');
                     
@@ -343,6 +355,42 @@ function success_payment()
                         add(json_encode(array('save_data' => $point_detail_data)),'point_details');
                         
                     }
+                    
+                    $from = ADMINEMAIL;
+                    //$to = $saveresales->email;
+                    $to = $to_user_email;  //'nits.ananya15@gmail.com';
+                    $subject ='Payment successfully';
+                    $body ='<html><body><p>Dear '.$to_user_name.',</p>
+
+                            <p>You  have successfully made payment for resell voucher<br />
+                            
+                            <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
+                            <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
+
+                            <p>Thanks,<br />
+                            mFood&nbsp;Team</p>
+
+                            <p>&nbsp;</p></body></html>';
+
+                    sendMail($to,$subject,$body);
+
+                    $from = ADMINEMAIL;
+                    //$to = $saveresales->email;
+                    $to1 = $resell_user_email;  //'nits.ananya15@gmail.com';
+                    $subject1 =$to_user_name.' has successfully made payment for your voucher';
+                    $body1 ='<html><body><p>Dear '.$resell_user_name.',</p>
+
+                            <p> '.$to_user_name. ' has successfully made payment for your voucher<br />
+                            
+                            <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
+                            <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
+
+                            <p>Thanks,<br />
+                            mFood&nbsp;Team</p>
+
+                            <p>&nbsp;</p></body></html>';
+
+                    sendMail($to1,$subject1,$body1);
                     
                     
                 }

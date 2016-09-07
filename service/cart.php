@@ -73,8 +73,10 @@
                     $temp['quantity'] = $offer->quantity;
                     $temp['price'] = $offer->paymentscash;
                     $temp['point'] = $offer->payments;
-                    $temp['resell'] = $offer->isresell;
+                    $temp['resell'] = $offer->resell;
                     $temp['resell_id'] = $offer->resell_id;
+                    $temp['resell_price'] = $offer->price;
+                    $temp['resell_mpoint'] = $offer->mpoints;
                     add(json_encode(array('save_data' => $temp)),'cart');
                 }
             }
@@ -101,9 +103,17 @@
                 {
                     $temp_cart['offer_id'] = $offer['id'];
                     $temp_cart['offer_percent'] = $offer['offer_percent'];
-                    $temp_cart['offer_price'] = $offer['offer_price'];
+                    
                     $temp_cart['offer_title'] = $offer['title'];
-                    $temp_cart['price'] = $offer['price'];
+                    if($prod['resell'] == 1){
+                        $temp_cart['price'] = $prod['resell_price'];
+                        $temp_cart['mpoints'] = $prod['resell_mpoint'];
+                        $temp_cart['offer_price'] = $prod['resell_price'];
+                    }else{
+                        $temp_cart['price'] = $offer['price'];
+                        $temp_cart['mpoints'] = $offer['mpoints'];
+                        $temp_cart['offer_price'] = $offer['offer_price'];
+                    }
                     $temp_cart['resell'] = $prod['resell'];
                     $temp_cart['resell_id'] = $prod['resell_id'];
                     if($prod['quantity']<$offer['quantity']-$offer['buy_count'])
@@ -114,7 +124,7 @@
                     {
                         $temp_cart['quantity'] = $offer['quantity']-$offer['buy_count'];
                     }
-                    $temp_cart['mpoints'] = $offer['mpoints'];
+                    
                     $temp_cart['image'] = SITEURL.'voucher_images/'.$offer['image'];
                     $temp_cart['restaurant_id'] = $offer['restaurant_id'];
                     $restaurant = findByIdArray($offer['restaurant_id'],'restaurants');

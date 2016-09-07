@@ -167,6 +167,7 @@ $app->get('/getGiftedToMe/:userid', 'getGiftedToMe');
 $app->get('/getGiftedByMe/:userid', 'getGiftedByMe');
 $app->get('/getPromoList',  'getPromoList');
 $app->get('/getExpireSoonPromoList',  'getExpireSoonPromoList');
+$app->get('/checkResellPayment',  'checkResellPayment');
 $app->post('/addMerchant',  'addMerchant');
 /***********Restuarant Call***********/
 $app->get('/getFeaturedResturantHome', 'getFeaturedResturantHome');

@@ -286,7 +286,7 @@ function interestedSwapList($uid) {
         $is_active = 1;  
 	$newdate = date('Y-m-d');
 		
-        $sql = "SELECT offers.title,users.first_name, users.last_name, users.email, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers, interested_swap, users where users.id=interested_swap.user_id and interested_swap.voucher_id=vouchers.id and offers.id=vouchers.offer_id and interested_swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.swap_id=:uid";
+        $sql = "SELECT offers.title,users.first_name, users.last_name, users.email, offers.price, offers.offer_percent, offers.offer_to_date, offers.image, swap.id as swap_id, swap.offering_end_date, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id  FROM vouchers, swap, offers, interested_swap, users where users.id=interested_swap.user_id and interested_swap.voucher_id=vouchers.id and offers.id=vouchers.offer_id and interested_swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.swap_id=:uid";
 	
 	try {
 		$db = getConnection();
@@ -299,6 +299,12 @@ function interestedSwapList($uid) {
 		for($i=0;$i<$count;$i++){
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
+                    if($vouchers[$i]->offering_end_date == "0000-00-00 00:00:00"){
+                        $vouchers[$i]->offering_end_date = "";
+                    }else{
+                        $vouchers[$i]->offering_end_date = date('d M, Y', strtotime($vouchers[$i]->offering_end_date));
+                    }
+                    $vouchers[$i]->price = number_format($vouchers[$i]->price,1,'.',',');
                     if(!empty($vouchers[$i]->image))
                     {
                         $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;

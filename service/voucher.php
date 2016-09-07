@@ -386,7 +386,7 @@ function resaleCancel(){
     $vid = $body->id;
     $resale_details = array();
     //echo $vid;exit;
-    $sql = "SELECT * FROM voucher_resales WHERE id=:id and is_sold=1";
+    $sql = "SELECT * FROM voucher_resales WHERE id=:id";
     try {
 	    $db = getConnection();
 	    $stmt = $db->prepare($sql);  
@@ -1024,6 +1024,7 @@ function saveVoucherResale(){
 	    		$arr['is_active'] = 0;
 				//$arr['buy_price'] = $buy_price;
 	    		$arr['sold_date'] = date('Y-m-d h:i:s');
+                        $arr['resell_type'] = 2;
 	    		$allinfo['save_data'] = $arr;
 			$old_owner_details = edit(json_encode($allinfo),'voucher_owner',$ownerid);
 			//print_r($old_owner_details);exit;
@@ -1032,6 +1033,8 @@ function saveVoucherResale(){
 				$arr1['is_sold'] = '1';
 				$arr1['voucher_bid_id'] = $bidid;
 				$arr1['sold_on'] =  date('Y-m-d h:i:s');
+                                $arr1['accept_date'] =  date('Y-m-d h:i:s');
+                                $arr1['ispayment'] =  1;
 				$resaleinfo['save_data'] = $arr1;
 				$voucher_resales = edit(json_encode($resaleinfo),'voucher_resales',$resaleid);
 				if($voucher_resales){
@@ -1052,6 +1055,8 @@ function saveVoucherResale(){
 						$data['is_active'] = '1';
 						$data['buy_price'] = $buy_price;
 						$data['purchased_date'] = date('Y-m-d h:i:s');
+                                                $data['resell_type'] = 1;
+                                                $data['owner_id'] = $ownerid;
 						$newinfo['save_data'] = $data;
 						$new_owner_details  = add(json_encode($newinfo),'voucher_owner');
 						if(!empty($new_owner_details)){
@@ -1075,6 +1080,28 @@ function saveVoucherResale(){
 							    <p>&nbsp;</p></body></html>';
 							    
 						    sendMail($to,$subject,$body);
+                                                    
+                                                    $from = ADMINEMAIL;
+						    //$to = $saveresales->email;
+						    $to1 = $fromUser->email;  //'nits.ananya15@gmail.com';
+						    $subject1 ='Successfully sold the voucher';
+						    $body1 ='<html><body><p>Dear '.$fromUser->first_name.' '.$fromUser->last_name.',</p>
+
+							    <p> You have successfully sold voucher to '.$toUser->first_name.' '.$toUser->last_name. '<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$new->voucher_view_id.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$new->price.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Sell Price :</span>'.$new->buy_price.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
+
+							    <p>Thanks,<br />
+							    mFood&nbsp;Team</p>
+
+							    <p>&nbsp;</p></body></html>';
+							    
+						    sendMail($to1,$subject1,$body1);
+                                                    
+                                                    
 						  	$result = '{"type":"success","message":"You have sold the voucher successfully" }';
 						  }
 					}
@@ -4438,6 +4465,15 @@ function getResellPromoDetails($id,$rsid) {
                     $rid = 	$offer->restaurant_id;
                     $merchant_id = $offer->merchant_id;
                     $resellInfo = findByConditionArray(array('id' => $rsid),'voucher_resales');
+                    $resellBidInfo = findByConditionArray(array('voucher_resale_id' => $rsid,'is_accepted'=>1),'voucher_bids');
+                    if(!empty($resellBidInfo)){
+                        $offer->resell_bidder = $resellBidInfo[0]['user_id'];
+                    }else{
+                        $offer->resell_bidder = 0;
+                    }
+                    //echo '<pre>';
+                    //print_r($resellBidInfo);
+                    //exit;
                     //echo '<pre>';
                     //var_dump($rid) ;
                     //print_r($resellInfo);
@@ -4549,6 +4585,63 @@ function getResellPromoDetails($id,$rsid) {
 		$result =  '{"type":"error","message":'. $e->getMessage() .'}'; 
 	}
 	echo $result;
+}
+
+function checkResellPayment() {
+    $cur_date = date('Y-m-d',strtotime("-3 days"));
+    //echo $cur_date;
+    $sql = "select * from voucher_resales where is_sold=1 and ispayment=1 and DATE(sold_on) <= '".$cur_date."'";
+    $res = findByQuery($sql);
+    //echo '<pre>';
+    //print_r($res);
+    if(!empty($res)){
+        foreach($res as $key=>$val){
+            $voucher_id='';
+            $resell_id='';
+            $voucher_id = $val['voucher_id'];
+            $resell_id = $val['id'];
+            //echo $resell_id;
+            
+            $voucherownerInfo = findByConditionArray(array('voucher_id' => $voucher_id,'is_active' => 1),'voucher_owner');
+            //print_r($voucherownerInfo);
+            
+            if(!empty($voucherownerInfo)){
+                $last_owner_id = $voucherownerInfo[0]['owner_id'];
+                $owner_id = $voucherownerInfo[0]['id'];
+                //echo $last_owner_id;
+                //echo $owner_id;
+                //exit;
+                $save_data = array();
+                $save_data['save_data']['is_active'] = 0;
+                $voucher_owner_edit = edit(json_encode($save_data),'voucher_owner',$owner_id);
+                
+                //print_r($voucher_owner_edit);
+                //exit;
+                
+                $save_data = array();
+                $save_data['save_data']['is_active'] = 1;
+                $save_data['save_data']['resell_type'] = 0;
+                $last_voucher_owner_edit = edit(json_encode($save_data),'voucher_owner',$last_owner_id);
+                
+            }
+            
+            //$voucherresellInfo = findByConditionArray(array('id' => $resell_id),'voucher_resales');
+            //if(!empty($voucherresellInfo)){
+                $save_data = array();
+                $save_data['save_data']['is_sold'] = 0;
+                $voucher_owner_edit = edit(json_encode($save_data),'voucher_resales',$resell_id);
+            //}
+                
+            $voucherResellBidInfo = findByConditionArray(array('voucher_resale_id' => $resell_id,'is_accepted'=>1),'voucher_bids');
+            if(!empty($voucherResellBidInfo)){
+                $bid_id = $voucherResellBidInfo[0]['id'];
+                $save_data = array();
+                $save_data['save_data']['is_accepted'] = 0;
+                $voucher_owner_bid_edit = edit(json_encode($save_data),'voucher_bids',$bid_id);
+            }
+            
+        }
+    }
 }
 
 
