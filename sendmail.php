@@ -34,7 +34,7 @@ function sendMail($to,$subject,$body) {
                 $mail->SMTPAuth   =  $SmtpAuthentication;     // enable SMTP authentication
                 $mail->Port       = $SmtpPort;             // set the SMTP port
                 $mail->Host       = $SmtpHost;           // SMTP server
-                //$mail->SMTPSecure = "ssl";
+                $mail->SMTPSecure = "tls";
                 $mail->Username   =  $SmtpUsername; // SMTP account username
                 $mail->Password   = $SmtpPassword; // SMTP account password
         }

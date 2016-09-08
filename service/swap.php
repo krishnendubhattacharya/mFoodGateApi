@@ -35,6 +35,12 @@ function addSwap(){
 				$isswap = $stmt->fetchObject();  
 				if(empty($isswap))
 				{
+                                    $arr = array();
+                                                
+                                    //$arr['buy_price'] = $buy_price;
+                                    $arr['save_data']['voucher_status'] = 1;
+                                    //$allinfo['save_data'] = $arr;
+                                    $voucher_edit = edit(json_encode($arr),'vouchers',$voucher_id);
                                         if(isset($body->typedata))
                                         {
                                             $typedata = $body->typedata;
@@ -431,9 +437,10 @@ function swapCancel(){
 	$request = Slim::getInstance()->request();
     $body = json_decode($request->getBody());
     $vid = $body->id;
+    $voucher_id = $body->voucher_id;
     $resale_details = array();
     //echo $vid;exit;
-    $sql = "SELECT * FROM swap WHERE id=:id and is_active=1";
+    $sql = "SELECT * FROM swap WHERE id=:id";
     try {
 	    $db = getConnection();
 	    $stmt = $db->prepare($sql);  
@@ -446,7 +453,14 @@ function swapCancel(){
 	    if($resale_count==0){
 			$body->is_active = 0;
 			$allinfo['save_data'] = $body;
-			$resale_details = edit(json_encode($allinfo),'swap',$vid);
+                        $arr = array();
+                                                
+                        //$arr['buy_price'] = $buy_price;
+                        $arr['save_data']['voucher_status'] = 0;
+                        //$allinfo['save_data'] = $arr;
+                        $voucher_edit = edit(json_encode($arr),'vouchers',$voucher_id);
+			//$resale_details = edit(json_encode($allinfo),'swap',$vid);
+                        $resale_details=delete('swap',$vid);
 			if(!empty($resale_details)){
 				$resale_details = json_decode($resale_details);
 				$result = '{"type":"success","message":"Your have successfully cancel swap Voucher." }'; 
@@ -461,6 +475,17 @@ function swapCancel(){
        } catch(PDOException $e) {
 	    $result = '{"type":"error","message":'. $e->getMessage() .'}';
 	}
+	echo  $result;
+}
+
+function swapBidCancel(){
+	$request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $vid = $body->id;
+    //$voucher_id = $body->voucher_id;
+    $result1 =  delete('interested_swap',$vid);
+    $result = '{"type":"success","message":"Your have successfully cancelled your bid." }';
+    
 	echo  $result;
 }
 
@@ -683,6 +708,7 @@ function swapInterestAccept($siid){
 	        $first_user_id = '';
 	        $second_user_id = $siid_details->user_id;
 	        $swap_id = $siid_details->swap_id;
+                
 	        
 	        $sql = "SELECT * from swap where id=:sid";
 	        $db = getConnection();
@@ -692,6 +718,14 @@ function swapInterestAccept($siid){
 	        $swap_details = $stmt->fetchObject();
 	        $second_voucher_id = $swap_details->voucher_id;	        
 	        $first_user_id = $swap_details->user_id;
+                
+                $firstUserInfo = findByConditionArray(array('id' => $first_user_id),'users');
+                $secondUserInfo = findByConditionArray(array('id' => $second_user_id),'users');
+                $firstUseremail = $firstUserInfo[0]['email'];
+                $secondUseremail = $secondUserInfo[0]['email'];
+                
+                $firstUsername = $firstUserInfo[0]['first_name'].' '.$firstUserInfo[0]['last_name'];
+                $secondUsername = $firstUserInfo[0]['first_name'].' '.$firstUserInfo[0]['last_name'];
 	        
 	        $sql = "SELECT * from voucher_owner where to_user_id=:user_id and voucher_id=:voucher_id and is_active=1";
 	        $db = getConnection();
@@ -753,6 +787,39 @@ function swapInterestAccept($siid){
 			$editinfo = array();
 			$editinfo['save_data'] = $arr2;
 			$voucher_owner_edit = edit(json_encode($editinfo),'voucher_owner',$second_owner_id);
+                        $from = ADMINEMAIL;
+								//$to = $saveresales->email;
+                        $to = $firstUseremail;  //'nits.ananya15@gmail.com';
+                        $subject ='Successfully Swap';
+                        $body ='<html><body><p>Dear '.$firstUsername.',</p>
+
+                                <p>You have successfully swaped you voucher with the voucher of '.$secondUsername.'<br />
+                                
+                                <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
+                                <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
+
+                                <p>Thanks,<br />
+                                mFood&nbsp;Team</p>
+
+                                <p>&nbsp;</p></body></html>';
+                                //echo $to.'|'.$subject.'|'.$body;
+                        sendMail($to,$subject,$body);
+                        
+                        $to1 = $secondUseremail;  //'nits.ananya15@gmail.com';
+                        $subject1 ='Successfully Swap';
+                        $body1 ='<html><body><p>Dear '.$secondUsername.',</p>
+
+                                <p>You have successfully swaped you voucher with the voucher of '.$firstUsername.'<br />
+                                
+                                <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
+                                <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
+
+                                <p>Thanks,<br />
+                                mFood&nbsp;Team</p>
+
+                                <p>&nbsp;</p></body></html>';
+                                //echo $to.'|'.$subject.'|'.$body;
+                        sendMail($to1,$subject1,$body1);
 	        }
 	        if(!empty($owner_details) && !empty($second_owner_details)){
 	                $result = '{"type":"success","message":"Swap successfully done." }';

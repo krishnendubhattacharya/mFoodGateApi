@@ -108,7 +108,7 @@ function getExpireSoonVoucher($user_id) {
 
 function getVoucherUserMerchentDetail($vid){
   //  $sql = "SELECT * FROM vouchers, offers, users where vouchers.offer_id = offers.id and vouchers.user_id = users.id and vouchers.id=:id";
-    $sql = "SELECT vouchers.offer_id, vouchers.view_id, vouchers.price, vouchers.created_on, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id, offers.item_start_date, offers.item_expire_date, offers.item_start_hour, offers.item_end_hour, offers.including_holidays FROM vouchers , offers WHERE vouchers.offer_id=offers.id and vouchers.id=:id";
+    $sql = "SELECT vouchers.offer_id, vouchers.view_id, vouchers.price, vouchers.created_on, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date,vouchers.voucher_status, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id, offers.item_start_date, offers.item_expire_date, offers.item_start_hour, offers.item_end_hour, offers.including_holidays FROM vouchers , offers WHERE vouchers.offer_id=offers.id and vouchers.id=:id";
     $offerId ='';
     $offer_image = array();
     $restaurant_details = array();
@@ -384,9 +384,10 @@ function resaleCancel(){
 	$request = Slim::getInstance()->request();
     $body = json_decode($request->getBody());
     $vid = $body->id;
+    $voucher_id = $body->voucher_id;
     $resale_details = array();
     //echo $vid;exit;
-    $sql = "SELECT * FROM voucher_resales WHERE id=:id";
+    $sql = "SELECT * FROM voucher_resales WHERE id=:id and is_sold=1";
     try {
 	    $db = getConnection();
 	    $stmt = $db->prepare($sql);  
@@ -397,9 +398,16 @@ function resaleCancel(){
 	    $stmt=null;
 	    $db=null;
 	    if($resale_count==0){
+                        $arr = array();
+                                                
+                        //$arr['buy_price'] = $buy_price;
+                        $arr['save_data']['voucher_status'] = 0;
+                        //$allinfo['save_data'] = $arr;
+                        $voucher_edit = edit(json_encode($arr),'vouchers',$voucher_id);
 			$body->is_active = 0;
 			$allinfo['save_data'] = $body;
-			$resale_details = edit(json_encode($allinfo),'voucher_resales',$vid);
+			//$resale_details = edit(json_encode($allinfo),'voucher_resales',$vid);
+                        $resale_details=delete('voucher_resales',$vid);
 			if(!empty($resale_details)){
 				$resale_details = json_decode($resale_details);
 				$result = '{"type":"success","message":"Your have successfully cancel reselling Voucher." }'; 
@@ -414,6 +422,21 @@ function resaleCancel(){
        } catch(PDOException $e) {
 	    $result = '{"type":"error","message":'. $e->getMessage() .'}';
 	}
+	echo  $result;
+}
+
+function bidCancel(){
+	$request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $vid = $body->id;
+    $voucher_id = $body->voucher_id;
+    $result1 =  delete('voucher_bids',$vid);
+    $result = '{"type":"success","message":"Your have successfully cancelled your bid." }'; 
+    
+    
+    //echo $vid;exit;
+    
+    
 	echo  $result;
 }
 
@@ -509,6 +532,11 @@ function addResale(){
 			$body->created_on = date('Y-m-d h:i:s');
 			$body->is_sold = 0;
 			$body->is_active = 1;
+                        
+                        $allinfo = array();
+			//$allinfo['save_data'] = (array)$body;
+			$allinfo['save_data']['voucher_status'] = 1;
+			$voucher_edit = edit(json_encode($allinfo),'vouchers',$vid);
                          
                         $allinfo = array();
 			$allinfo['save_data'] = (array)$body;
@@ -1170,7 +1198,15 @@ function giftVoucher(){
 					$arr['sold_date'] = date('Y-m-d h:i:s');
 					$allinfo['save_data'] = $arr;
 					$old_owner_details = edit(json_encode($allinfo),'voucher_owner',$ownerid);
+                                        
 					if($old_owner_details){
+                                            
+                                                $arr = array();
+                                                
+                                                //$arr['buy_price'] = $buy_price;
+                                                $arr['save_data']['voucher_status'] = 1;
+                                                //$allinfo['save_data'] = $arr;
+                                                $voucher_edit = edit(json_encode($arr),'vouchers',$body->vid);
 						$data = array();
 						$data['voucher_id'] = $body->vid;
 						$data['offer_id'] = $offerid;

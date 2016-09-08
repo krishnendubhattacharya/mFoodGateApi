@@ -1,7 +1,11 @@
 <?php
-define("ADMINEMAIL","postmaster@codelaamaa.com");
+/*define("ADMINEMAIL","postmaster@codelaamaa.com");
 define("EMAILPASSWORD","CodeLaamaa99@");
 define("MAILSERVER","box669.bluehost.com");
+define("MAILPORT","587");*/
+define("ADMINEMAIL","info@natit.us");
+define("EMAILPASSWORD","Natit2016");
+define("MAILSERVER","smtp.gmail.com");
 define("MAILPORT","587");
 //define("ISSSL",true);
 define("SITEURL","http://107.170.152.166/mFoodGateAPI/");

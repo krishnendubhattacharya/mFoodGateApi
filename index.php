@@ -138,6 +138,7 @@ $app->get('/vourcherdetail/:id', 'getVoucherUserMerchentDetail');
 $app->get('/resellVoucherDetail/:vid/:resellid', 'resellVoucherDetail');
 $app->post('/resale', 'addResale');
 $app->post('/resaleCancel', 'resaleCancel');
+$app->post('/bidCancel', 'bidCancel');
 $app->get('/getDetailsVoucherBid/:id', 'getDetailsVoucherBid');
 $app->post('/updateVoucherBid', 'updateVoucherBid');
 $app->get('/ownresellList/:id','getResellListPostOwn');
