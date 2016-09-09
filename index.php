@@ -267,6 +267,7 @@ $app->get('/getWebsiteMenuSliderImages/:res_id','getWebsiteMenuSliderImages');
 /*************** Events  *************/
 $app->post('/eventFilesUpload',  'eventFilesUpload');
 $app->get('/getEventsByUser/:user_id',  'getEventsByUser');
+$app->get('/getEventsDealByUser/:user_id',  'getEventsDealByUser');
 $app->post('/addEvent',  'addEvent');
 $app->put('/updateEvent/:id', 'updateEvent');
 $app->get('/getEvenDetails/:id', 'getEvenDetails');
@@ -274,6 +275,7 @@ $app->get('/getImagesByEvent/:id', 'getImagesByEvent');
 $app->post('/addEventImage',  'addEventImage');
 $app->get('/getActiveEvents',  'getActiveEvents');
 $app->get('/getMerchantsRelatedEvents/:id',  'getMerchantsRelatedEvents'); 
+$app->delete('/deleteEventImage/:id','deleteEventImage');
 
 /*************** Event Bids ****************/
 $app->get('/getEventBidsWithUser/:event_id', 'getEventBidsWithUser');

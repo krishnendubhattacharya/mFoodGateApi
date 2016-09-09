@@ -2,6 +2,7 @@
     function getCartByUser($user_id)
     {
         $cart =  array();
+        $point_name='';
         $all_cart = findByConditionArray(array('user_id' => $user_id),'cart');
         if(!empty($all_cart))
         {
@@ -16,6 +17,11 @@
                     $temp_cart['offer_price'] = $offer['offer_price'];
                     $temp_cart['offer_title'] = $offer['title'];
                     $temp_cart['price'] = $offer['price'];
+                    if(!empty($offer['point_master_id'])){
+                        $point_details = findByIdArray($offer['point_master_id'],'point_master');
+                        if(!empty($point_details))
+                            $point_name = $point_details['name'];
+                    }
                     if($prod['quantity']<$offer['quantity']-$offer['buy_count'])
                     {
                         $temp_cart['quantity'] = $prod['quantity'];
@@ -24,7 +30,8 @@
                     {
                         $temp_cart['quantity'] = $offer['quantity']-$offer['buy_count'];
                     }
-                    
+                    $temp_cart['point_id'] = $offer['point_master_id'];
+                    $temp_cart['point_name'] = $point_name; 
                     $temp_cart['payments'] = $prod['point']==1?true:false;
                     $temp_cart['paymentscash'] = $prod['price']==1?true:false;
                     $temp_cart['mpoints'] = $offer['mpoints'];
