@@ -14,9 +14,9 @@
                 {
                     $temp_cart['offer_id'] = $offer['id'];
                     $temp_cart['offer_percent'] = $offer['offer_percent'];
-                    $temp_cart['offer_price'] = $offer['offer_price'];
+                    //$temp_cart['offer_price'] = $offer['offer_price'];
                     $temp_cart['offer_title'] = $offer['title'];
-                    $temp_cart['price'] = $offer['price'];
+                    //$temp_cart['price'] = $offer['price'];
                     if(!empty($offer['point_master_id'])){
                         $point_details = findByIdArray($offer['point_master_id'],'point_master');
                         if(!empty($point_details))
@@ -30,11 +30,27 @@
                     {
                         $temp_cart['quantity'] = $offer['quantity']-$offer['buy_count'];
                     }
+                    if($prod['resell'] == 1){
+                        $temp_cart['price'] = $prod['resell_price'];
+                        $temp_cart['mpoints'] = $prod['resell_mpoint'];
+                        $temp_cart['offer_price'] = $prod['resell_price'];
+                    }else{
+                        $temp_cart['price'] = $offer['price'];
+                        $temp_cart['mpoints'] = $offer['mpoints'];
+                        $temp_cart['offer_price'] = $offer['offer_price'];
+                    }
+                    $temp_cart['resell'] = $prod['resell'];
+                    $temp_cart['resell_id'] = $prod['resell_id'];
+                    
                     $temp_cart['point_id'] = $offer['point_master_id'];
                     $temp_cart['point_name'] = $point_name; 
                     $temp_cart['payments'] = $prod['point']==1?true:false;
                     $temp_cart['paymentscash'] = $prod['price']==1?true:false;
-                    $temp_cart['mpoints'] = $offer['mpoints'];
+                    //$temp_cart['mpoints'] = $offer['mpoints'];
+                    if($offer['mpoints'] == 0){
+                        $temp_cart['paymentscash'] = true;
+                        $temp_cart['payments'] = false;
+                    }
                     $temp_cart['image'] = SITEURL.'voucher_images/'.$offer['image'];
                     $temp_cart['restaurant_id'] = $offer['restaurant_id'];
                     $restaurant = findByIdArray($offer['restaurant_id'],'restaurants');
@@ -190,7 +206,11 @@
                         }
                         
                     }
-                    $pc = $temp_cart['paymentscash']?1:0 ;
+                    if($offer['mpoints'] == 0){
+                        $temp_cart['paymentscash'] = true;
+                        $temp_cart['payments'] = false;
+                    }
+                    $pc = $temp_cart['paymentscash']?1:0 ;                    
                     $p = $temp_cart['payments']?1:0 ;
                     $query = "UPDATE cart set price=".$pc.", point=".$p." where user_id=".$user_id." and offer_id=".$offer['id'];
                 updateByQuery($query);
