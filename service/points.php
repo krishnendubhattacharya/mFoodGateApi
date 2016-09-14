@@ -383,6 +383,16 @@ function redeemUserPoints()
                     $voucher_data['offer_percent'] = $offer_details->offer_percent;
                     $voucher_data['from_date'] = $offer_details->offer_from_date;
                     $voucher_data['to_date'] = $offer_details->offer_to_date;
+                    if($offer_details->start_date_type=='P')
+                    {
+                        $voucher_data['item_start_date'] = date('Y-m-d');
+                        $voucher_data['item_expire_date'] = date('Y-m-d', strtotime("+".$offer_details->valid_days." days"));
+                    }
+                    else
+                    {
+                        $voucher_data['item_start_date'] = $offer_details->item_start_date;
+                        $voucher_data['item_expire_date'] = $offer_details->item_expire_date;
+                    }
                     $voucher_data['is_active'] = 1;
                     $voucher_data['purchase_type'] = 1;
                     $s = add(json_encode(array('save_data' => $voucher_data)),'vouchers');
