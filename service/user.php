@@ -182,11 +182,36 @@ function getUser($id) {
            // print_r($body->locations);
            // exit;
             $body->categories = json_decode(findByCondition(array('user_id'=>$id),'merchant_category_map'));
+            foreach($body->categories as $k=>$cat)
+            {
+                    $categoryname = findByIdArray($cat->category_id,'category');
+                    $body->categories[$k]->category = $categoryname['name'];
+                    
+            }
 	    $user_details = json_encode($body);
 	    $result = '{"type":"success","user_details":'.$user_details.'}';
 	}
 	
 	echo $result;
+}
+
+function userRelatedPoint($id) {
+    
+    $cur_date = date('Y-m-d');    
+    $point_master_sql = "select * from point_master where DATE(expire_date)>='".$cur_date."'";
+    $point_master_res = findByQuery($point_master_sql);
+    echo '<pre>';
+    print_r($point_master_res);
+    foreach($point_master_res as $point_master_key => $point_master_val){
+        
+    }
+    //$sqlpoint = "SELECT * FROM point_details where user_id='".$id."' order by date asc";
+    //$hotPromo = findByQuery($sqlpoint);
+	    
+    //$result = '{"type":"success","user_details":'.$user_details.'}';
+	
+	
+    //echo $result;
 }
 
 function getCustomer($id) {

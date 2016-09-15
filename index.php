@@ -74,6 +74,7 @@ $app->get('/getUserByEmail/:email','getUserByEmail');
 $app->post('/addSubUser','addSubUser');
 $app->get('/getAllSubUserByUser/:id','getAllSubUserByUser');
 $app->post('/updateSubUser','updateSubUser');
+$app->get('/userRelatedPoint/:id','userRelatedPoint');
 
 $app->post('/fbloginuser', 'fbLoginUser');
 $app->post('/profileimageupload', 'profileImageUpload');
