@@ -141,7 +141,7 @@ function swaplist() {
 function mySwapList($uid) {     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent,vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id, swap.posted_on, swap.offering_end_date  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent,vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id, swap.posted_on, swap.offering_end_date  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id=:uid and swap.is_completed=0";
 	
 	try {
 		$db = getConnection();
@@ -202,7 +202,7 @@ function otherSwapList($uid) {
     
         $is_active = 1;  
 	$newdate = date('Y-m-d');
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.offering_end_date   FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id !=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.offering_end_date   FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id !=:uid and swap.is_completed=0";
 	
 	try {
 		$db = getConnection();
@@ -242,7 +242,7 @@ function myBidSwapList($uid) {
         $is_active = 1;  
 	$newdate = date('Y-m-d');
 		
-        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.voucher_id,swap.offering_end_date  FROM vouchers, swap, offers, interested_swap where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.user_id=:uid";
+        $sql = "SELECT offers.title, offers.price, offers.offer_percent, vouchers.item_expire_date as offer_to_date, offers.image, swap.id as swap_id, interested_swap.id, interested_swap.voucher_url, interested_swap.voucher_id as my_voucher_id, swap.voucher_id as to_voucher_id, swap.user_id, swap.offer_id,swap.posted_on,swap.voucher_id,swap.offering_end_date  FROM vouchers, swap, offers, interested_swap where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.id=interested_swap.swap_id and interested_swap.user_id=:uid and swap.is_completed=0";
 	
 	try {
 		$db = getConnection();
@@ -822,6 +822,10 @@ function swapInterestAccept($siid){
                         sendMail($to1,$subject1,$body1);
 	        }
 	        if(!empty($owner_details) && !empty($second_owner_details)){
+                        $arr3 = array();
+			$arr3['is_completed'] = 1;
+			$editswapinfo['save_data'] = $arr3;
+			$voucher_swap_edit = edit(json_encode($editswapinfo),'swap',$swap_id);
 	                $result = '{"type":"success","message":"Swap successfully done." }';
 	        }
 	        echo  $result;

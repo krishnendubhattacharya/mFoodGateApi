@@ -200,18 +200,117 @@ function userRelatedPoint($id) {
     $cur_date = date('Y-m-d');    
     $point_master_sql = "select * from point_master where DATE(expire_date)>='".$cur_date."'";
     $point_master_res = findByQuery($point_master_sql);
-    echo '<pre>';
-    print_r($point_master_res);
+    $user_points = array();
+    $user_voucher_info = array();
+    //echo date('Y-m-d', strtotime("+"."7 days"));
+    //echo '<pre>';
+    //print_r($point_master_res);
     foreach($point_master_res as $point_master_key => $point_master_val){
+        $point_id='';
+        $point_name='';
+        $point_expire_date=date('d M Y',  strtotime($point_master_val['expire_date']));
+        $point_id = $point_master_val['id'];
+        $point_name = $point_master_val['name'];
+        $sqlpoint = "SELECT * FROM point_details where user_id='".$id."' and point_id = '".$point_id."' order by date desc";
+        $point_res = findByQuery($sqlpoint);
+        if(!empty($point_res)){
+            $total_remaining_point = 0;
+            $total_point = 0;
+            $total_redeem_point = 0;
+            $available_point = 0;
+            $point_data = array();
+            $last_point_date = date('d M Y',  strtotime($point_res[0]['date']));
+            foreach($point_res as $point_key=>$point_val){
+                $total_point = $total_point + $point_val['remaining_points'];
+                $total_redeem_point = $total_redeem_point + $point_val['redeemed_points'];
+                $total_remaining_point = $total_point - $total_redeem_point;
+            }
+            $point_data['point_id'] = $point_id;
+            $point_data['point_name'] = $point_name;
+            $point_data['point_expire_date'] = $point_expire_date;
+            $point_data['last_point_date'] = $last_point_date;
+            $point_data['total_remaining_point'] = $total_remaining_point;
+            $user_points[] = $point_data;
+        }
         
     }
-    //$sqlpoint = "SELECT * FROM point_details where user_id='".$id."' order by date asc";
-    //$hotPromo = findByQuery($sqlpoint);
+    //print_r($user_points);
+    $user_points = json_encode($user_points);
+    
+    $voucher_sql = "SELECT vouchers.id as voucher_id,vouchers.offer_id as offer_id, vouchers.item_expire_date as voucher_expire_date  FROM vouchers, voucher_owner, offers where vouchers.offer_id=offers.id and voucher_owner.voucher_id=vouchers.id and DATE(vouchers.item_expire_date) >= '".$cur_date."' and voucher_owner.is_active=1 and voucher_owner.to_user_id='".$id."' and offers.offer_type_id!=3 order by vouchers.item_expire_date asc";
+    $voucher_res = findByQuery($voucher_sql);
+    $active_voucher = count($voucher_res);
+    $nearest_active_voucher = '';
+    if(!empty($voucher_res)){
+        $nearest_active_voucher = date('d M Y', strtotime($voucher_res[0]['voucher_expire_date']));
+    }
+    
+    
+    $resell_sql = "SELECT offers.title,offers.id as offer_id, voucher_resales.id as voucher_resale_id,voucher_resales.voucher_id, voucher_resales.created_on, voucher_resales.price, voucher_resales.points, voucher_resales.status, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date as expire_date, vouchers.item_expire_date as voucher_expire_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price FROM offers, voucher_resales, vouchers WHERE offers.id = vouchers.offer_id and voucher_resales.voucher_id = vouchers.id and DATE(vouchers.item_expire_date) >='".$cur_date."' and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and voucher_resales.user_id='".$id."' order by vouchers.item_expire_date asc";
+    $resell_res = findByQuery($resell_sql);
+    $resell_voucher = count($resell_res);
+    $nearest_active_resell_voucher = '';
+    if(!empty($resell_res)){
+        $nearest_active_resell_voucher = date('d M Y', strtotime($resell_res[0]['voucher_expire_date']));
+    }
+    
+    
+    $swap_sql = "SELECT offers.title, offers.price, offers.offer_percent,vouchers.item_expire_date as voucher_expire_date, offers.image, swap.id, swap.voucher_id, swap.user_id, swap.offer_id, swap.posted_on, swap.offering_end_date  FROM vouchers, swap, offers where swap.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.is_active=1 and swap.user_id='".$id."' and swap.is_completed=0";
+    $swap_res = findByQuery($swap_sql);
+    $swap_voucher = count($swap_res);
+    $nearest_active_swap_voucher = '';
+    if(!empty($swap_res)){
+        $nearest_active_swap_voucher =date('d M Y', strtotime($swap_res[0]['voucher_expire_date']));
+    }    
+    
+    $membership_sql = "SELECT member_user_map.membership_end_date  FROM member_user_map where member_user_map.user_id='".$id."' and DATE(member_user_map.membership_end_date)>='".$cur_date."' order by member_user_map.membership_end_date asc";
+    $membership_res = findByQuery($membership_sql);
+    //print_r($membership_res);
+    $membership_voucher = count($membership_res);
+    $nearest_active_membership_voucher = '';
+    if(!empty($membership_res)){
+        $nearest_active_membership_voucher = date('d M Y', strtotime($membership_res[0]['membership_end_date']));
+    }
+    
+    $event_sql = "SELECT events.offer_to_date  FROM events where events.user_id='".$id."' and events.status='O' and DATE(events.offer_to_date)>='".$cur_date."' order by events.offer_to_date asc";
+    $event_res = findByQuery($event_sql);
+    //print_r($event_res);
+    $event_voucher = count($event_res);
+    $nearest_active_event_voucher = '';
+    if(!empty($event_res)){
+        $nearest_active_event_voucher = date('d M Y', strtotime($event_res[0]['offer_to_date']));
+    }
+    //echo $event_voucher;
+    //echo $nearest_active_event_voucher;
+    
+    $cart_sql = "SELECT cart.id,cart.offer_id,offers.item_expire_date  FROM cart,offers where cart.offer_id=offers.id and cart.user_id='".$id."' order by offers.item_expire_date asc";
+    $cart_res = findByQuery($cart_sql);
+    //print_r($cart_res);
+    $cart_voucher = count($cart_res);
+    $nearest_active_cart_voucher = '';
+    if(!empty($cart_res)){
+        $nearest_active_cart_voucher = date('d M Y', strtotime($cart_res[0]['item_expire_date']));
+    }
+    $user_voucher_info['active_voucher'] = $active_voucher;
+    $user_voucher_info['nearest_active_voucher'] = $nearest_active_voucher;
+    $user_voucher_info['resell_voucher'] = $resell_voucher;
+    $user_voucher_info['nearest_active_resell_voucher'] = $nearest_active_resell_voucher;
+    $user_voucher_info['swap_voucher'] = $swap_voucher;
+    $user_voucher_info['nearest_active_swap_voucher'] = $nearest_active_swap_voucher;
+    $user_voucher_info['membership_voucher'] = $membership_voucher;
+    $user_voucher_info['nearest_active_membership_voucher'] = $nearest_active_membership_voucher;
+    $user_voucher_info['event_voucher'] = $event_voucher;
+    $user_voucher_info['nearest_active_event_voucher'] = $nearest_active_event_voucher;
+    $user_voucher_info['event_voucher'] = $event_voucher;
+    $user_voucher_info['nearest_active_event_voucher'] = $nearest_active_event_voucher;
+    $user_voucher_info['cart_voucher'] = $cart_voucher;
+    $user_voucher_info['nearest_active_cart_voucher'] = $nearest_active_cart_voucher;
+    $user_voucher_info = json_encode($user_voucher_info);
 	    
-    //$result = '{"type":"success","user_details":'.$user_details.'}';
+    $result = '{"type":"success","user_point_details":'.$user_points.',"user_voucher_details":'.$user_voucher_info.'}';
 	
 	
-    //echo $result;
+    echo $result;
 }
 
 function getCustomer($id) {
