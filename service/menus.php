@@ -63,7 +63,8 @@
                     else {
                         $t->is_featured = 'No';
                     }
-                    $t->price = number_format($t->price,1,'.',',');;
+                    $t->formatprice = number_format($t->price,1,'.',',');
+                    
                     // Data binding in angularJs is automatic synchronisation of data between model and view 
                     //$t->type = ($t->type=='C'?'Credit':'Debit');
                     //$t->date = date('m/d/Y',  strtotime($t->date));
