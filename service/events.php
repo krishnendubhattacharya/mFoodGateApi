@@ -353,16 +353,25 @@ function getEvenDetails($id)
 {
     $event_details = findById($id,'events');
     $event_details = json_decode($event_details);
+    $mul_image=array();
+    
     if(!empty($event_details))
     {
         $event_details->from_date = date('m-d-Y h:i:s a ', strtotime($event_details->from_date));
         $event_details->to_date = date('m-d-Y h:i:s a', strtotime($event_details->to_date));
         $event_details->offer_from_date  = date('m-d-Y', strtotime($event_details->offer_from_date ));
         $event_details->offer_to_date  = date('m-d-Y', strtotime($event_details->offer_to_date ));
+        //$event_details->mulimg = array();
         if(!empty($event_details->image))
+        {
             $event_details->image = SITEURL.'event_images/'.$event_details->image;
+            $mul_image[]['image'] = $event_details->image;
+        }
         else
-            $event_details->image = SITEURL.'event_images/default.png';
+        {    
+        	  $event_details->image = SITEURL.'event_images/default.png';
+            $mul_image[]['image'] = $event_details->image;
+        }    
         
         if($event_details->status == 'O')
             $event_details->status = 'Open';
@@ -371,6 +380,21 @@ function getEvenDetails($id)
         else
             $event_details->status = 'Completed';
         
+         $condition = array('event_id' => $id);
+	    $result = findByCondition($condition,'event_images');
+	    
+	    $result = json_decode($result);
+	    //echo '<pre>';print_r($result);
+	    if(!empty($result))
+	    {
+	    		foreach($result as $key=>$val){
+	    			$mul_image[]['image'] = SITEURL.'event_images/'.$val->image;
+			}
+		   
+	    }
+	    $event_details->mulimg = $mul_image;
+	    
+        
         $event_details->user_details = findByIdArray($event_details->user_id,'users');
         $event_details->locations = array();
         $locations = findByConditionArray(array('event_id' => $id),'event_location_map');
@@ -378,6 +402,8 @@ function getEvenDetails($id)
         {
             $event_details->locations[] = findByIdArray($cat['location_id'],'locations');
         }
+        
+        
         
         $event_details->categories = array();
         $category = findByConditionArray(array('event_id' => $id),'event_category_map');
@@ -589,10 +615,21 @@ function getMerchantsRelatedEvents($id)
                                     for($i=0;$i<$count;$i++){
                                             $created_on = date('m/d/Y', strtotime($points[$i]['created_on']));
                                             $points[$i]['created_on'] = $created_on;
-                                            $from_date = date('m/d/Y', strtotime($points[$i]['from_date']));
-                                            $points[$i]['from_date'] = $from_date;
-                                            $to_date = date('m/d/Y', strtotime($points[$i]['to_date']));
-                                            $points[$i]['to_date'] = $to_date;
+                                            
+                                            $from_date = date('m/d/Y', strtotime($points[$i]['offer_from_date']));
+                                            $points[$i]['offer_from_date'] = $from_date;
+                                            
+                                            $to_date = date('m/d/Y', strtotime($points[$i]['offer_to_date']));
+                                            $points[$i]['offer_to_date'] = $to_date;
+                                            
+                                            $event_date = date('m/d/Y', strtotime($points[$i]['from_date']));
+                                            $points[$i]['event_date'] = $event_date;
+                                            
+                                            $event_start_time = date('h:i A', strtotime($points[$i]['from_date']));
+                                            $points[$i]['event_start_time'] = $event_start_time;
+                                            
+                                            $event_end_time = date('h:i A', strtotime($points[$i]['to_date']));
+                                            $points[$i]['event_end_time'] = $event_end_time;
                                             if(!empty($points[$i]['image']))
                                                 $points[$i]['image_url'] = SITEURL.'event_images/'.$points[$i]['image'];
 
@@ -634,6 +671,84 @@ function getMerchantsRelatedEvents($id)
         {
             $rarray = array('type' => 'error', 'message' => 'Merchant not found.');
         }
+    }
+    echo json_encode($rarray);
+}
+
+
+function getMyEvents($id)
+{
+    $rarray = array();
+    $events = array();
+    $loc_events = array();
+    $cat_events = array();
+    if($id)
+    {
+        $sql = "SELECT events.id, events.title, events.created_on, events.offer_from_date, events.offer_to_date, events.from_date, events.to_date, events.status, events.image, event_bids.price  FROM events, event_bids  WHERE event_bids.event_id = events.id and event_bids.user_id='".$id."'";
+        
+                        //$event_in  = str_repeat('?,', count($events) - 1) . '?';
+                        //$sql = "SELECT * FROM events WHERE id in(".implode(',',$events).")";
+                        
+                        //$db = getConnection();
+                        //$stmt = $db->prepare($sql); 
+                        //$stmt->bindParam("user_id", $user_id);
+                       // $stmt->execute($events);
+                        $points = findByQuery($sql);
+			//print_r($points);
+			//exit;
+
+                                    $count = count($points);
+
+                                    for($i=0;$i<$count;$i++){
+                                            $created_on = date('m/d/Y', strtotime($points[$i]['created_on']));
+                                            $points[$i]['created_on'] = $created_on;
+                                            
+                                            $from_date = date('m/d/Y', strtotime($points[$i]['offer_from_date']));
+                                            $points[$i]['offer_from_date'] = $from_date;
+                                            
+                                            $to_date = date('m/d/Y', strtotime($points[$i]['offer_to_date']));
+                                            $points[$i]['offer_to_date'] = $to_date;
+                                            
+                                            $event_date = date('m/d/Y', strtotime($points[$i]['from_date']));
+                                            $points[$i]['event_date'] = $event_date;
+                                            
+                                            $event_start_time = date('h:i A', strtotime($points[$i]['from_date']));
+                                            $points[$i]['event_start_time'] = $event_start_time;
+                                            
+                                            $event_end_time = date('h:i A', strtotime($points[$i]['to_date']));
+                                            $points[$i]['event_end_time'] = $event_end_time;
+                                            
+                                            $points[$i]['price'] = number_format($points[$i]['price'],2,'.',',');
+                                            if(!empty($points[$i]['image']))
+                                                $points[$i]['image_url'] = SITEURL.'event_images/'.$points[$i]['image'];
+
+                                            if($points[$i]['status'] == 'O')
+                                                $points[$i]['status'] = 'Open';
+                                            else if($points[$i]['status'] == 'E')
+                                                $points[$i]['status'] = 'Expired';
+                                            else
+                                                $points[$i]['status'] = 'Completed';
+                                            
+                                    }	
+                                    /*if(!empty($points))
+                        {
+                            $points = array_map(function($t,$k){
+                                $t->sl = $k+1;
+                                //$t->type = ($t->type=='C'?'Credit':'Debit');
+                                                $t->date = date('m/d/Y',  strtotime($t->date));
+                                $t->expire_date = date('m/d/Y',  strtotime($t->expire_date));
+                                return $t;
+                            }, $points,  array_keys($points));
+                        }*/
+                        $rarray = array('status' => 'success','data' => $points);
+                    //}
+                    
+                
+                
+               
+            
+            
+        
     }
     echo json_encode($rarray);
 }

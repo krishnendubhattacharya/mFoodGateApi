@@ -276,6 +276,7 @@ $app->get('/getImagesByEvent/:id', 'getImagesByEvent');
 $app->post('/addEventImage',  'addEventImage');
 $app->get('/getActiveEvents',  'getActiveEvents');
 $app->get('/getMerchantsRelatedEvents/:id',  'getMerchantsRelatedEvents'); 
+$app->get('/getMyEvents/:id',  'getMyEvents');
 $app->delete('/deleteEventImage/:id','deleteEventImage');
 
 /*************** Event Bids ****************/
