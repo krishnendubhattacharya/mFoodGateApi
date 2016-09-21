@@ -152,6 +152,47 @@ function addEvent()
           exit;
     }
     
+function addTemplate() 
+    {
+        $request = Slim::getInstance()->request();
+	   $body = json_decode($request->getBody());
+        $from_user_id = $body->eventdata->user_id;
+        $from_user_detail = findByConditionArray(array('id' => $from_user_id),'users');
+        $from_user_name = $from_user_detail[0]['first_name'].' '.$from_user_detail[0]['last_name'];
+        //echo $from_user_name;
+        //print_r($body);
+        //exit;
+        
+        /*if($body->eventdata->is_active)
+        {
+            $body->eventdata->is_active = 1;
+        }
+        else
+        {
+            $body->eventdata->is_active = 0;
+        }*/
+        $body->eventdata->created_on = date('Y-m-d H:i:s');
+        
+        
+        
+       
+        $allinfo['save_data'] = $body->eventdata;
+      echo '<pre>';  print_r($allinfo);
+
+        //$allinfo['unique_data'] = $unique_field;
+	$cat_details  = json_decode(add(json_encode($allinfo),'event_templates'));
+        //var_dump($cat_details);
+        //exit;
+        if(!empty($cat_details)){	
+         $result = '{"type":"success","message":"Added Successfully"}'; 
+	  }
+	  else{
+	       $result = '{"type":"error","message":"Not Added"}'; 
+	  }
+          echo $result;
+          exit;
+    }    
+    
     
 function updateEvent($id) {
 	$request = Slim::getInstance()->request();
@@ -222,6 +263,36 @@ function updateEvent($id) {
 	echo $result;
 	
 }
+
+function updateTemplate($id) {
+	$request = Slim::getInstance()->request();
+	
+	$body = $request->getBody();
+	$body = json_decode($body);
+       
+        $user_id = $id;
+		
+                
+        if(isset($body->eventdata->id))
+            unset($body->eventdata->id);
+        
+        //print_r($body);
+        //exit;
+        if(empty($body->eventdata->image))
+            unset($body->eventdata->image);
+        
+        if(isset($body->eventdata->imageurl))
+            unset($body->eventdata->imageurl);
+        
+	$allinfo['save_data'] = $body->eventdata;
+        //print_r($allinfo);
+        //exit;
+	$result = edit(json_encode($allinfo),'event_templates',$id);
+     
+	$result = '{"type":"success","message":"Updated Succesfully"}';
+	echo $result;
+	
+}
     
 function getEventsByUser($user_id)  
     {
@@ -279,6 +350,45 @@ function getEventsByUser($user_id)
         echo json_encode($rarray);
         exit;
     }
+    
+function getTemplateByUser($user_id)  
+    {
+        $rarray = array();
+        try
+        {
+            $sql = "SELECT * FROM event_templates WHERE user_id=:user_id ORDER BY id DESC";
+            $db = getConnection();
+            $stmt = $db->prepare($sql); 
+            $stmt->bindParam("user_id", $user_id);
+            $stmt->execute();
+            $points = $stmt->fetchAll(PDO::FETCH_OBJ);
+            
+			$count = $stmt->rowCount();
+		
+			for($i=0;$i<$count;$i++){
+				$created_on = date('m/d/Y', strtotime($points[$i]->created_on));
+				$points[$i]->created_on = $created_on;
+				
+				
+                                if(!empty($points[$i]->image))
+                                    $points[$i]->image_url = SITEURL.'template_images/'.$points[$i]->image;
+                                    
+                                if($points[$i]->is_active == '1')
+                                    $points[$i]->status = 'Active';
+                                else if($points[$i]->is_active == '0')
+                                    $points[$i]->status = 'Inactive';
+                                
+                                
+			}	
+			
+            $rarray = array('status' => 'success','data' => $points);
+        }
+        catch(PDOException $e) {
+            $rarray = array('status' => 'error','error' => array('text' => $e->getMessage()));
+        } 
+        echo json_encode($rarray);
+        exit;
+    }    
     
 function getEventsDealByUser($user_id)  
     {
@@ -344,6 +454,16 @@ function eventFilesUpload()
     if(!empty($_FILES['files']['tmp_name']['0']))
     {
         move_uploaded_file($_FILES['files']['tmp_name']['0'], 'event_images/'.$_FILES['files']['name']['0']);
+        echo json_encode($_FILES['files']['name']['0']);
+        exit;
+    }
+}
+
+function templateFilesUpload()
+{
+    if(!empty($_FILES['files']['tmp_name']['0']))
+    {
+        move_uploaded_file($_FILES['files']['tmp_name']['0'], 'template_images/'.$_FILES['files']['name']['0']);
         echo json_encode($_FILES['files']['name']['0']);
         exit;
     }
@@ -441,6 +561,25 @@ function getImagesByEvent($id)
     }
 }
 
+function getImagesByEventTemplate($id)
+{
+    $condition = array('event_template_id' => $id);
+    $result = findByCondition($condition,'event_template_images');
+    $result = json_decode($result);
+    if(!empty($result))
+    {
+        $result = array_map(function($t){
+            $t->image_url = SITEURL.'template_images/'.$t->image;
+            return $t;
+        },$result);
+        echo json_encode(array('status' => 'success','data' =>$result));
+    }
+    else
+    {
+        echo json_encode(array('status' => 'error','message' => 'No data found'));
+    }
+}
+
 function addEventImage()
 {
     $request = Slim::getInstance()->request();
@@ -449,6 +588,29 @@ function addEventImage()
 	   
     //$allinfo['unique_data'] = $unique_field;
     $location_details  = add(json_encode($allinfo),'event_images');
+    //var_dump($location_details);
+    //exit;
+    if(!empty($location_details)){
+      /* $user_details = add(json_encode($allinfo),'coupons');
+      $user_details = json_decode($user_details);*/
+
+      $result = '{"type":"success","message":"Added Succesfully"}'; 
+    }
+    else{
+         $result = '{type:"error",message:"Not Added"}'; 
+    }
+    echo $result;
+    exit;
+}
+
+function addEventTemplateImage()
+{
+    $request = Slim::getInstance()->request();
+    $body = json_decode($request->getBody());
+    $allinfo['save_data'] = $body;
+	   
+    //$allinfo['unique_data'] = $unique_field;
+    $location_details  = add(json_encode($allinfo),'event_template_images');
     //var_dump($location_details);
     //exit;
     if(!empty($location_details)){
@@ -755,6 +917,10 @@ function getMyEvents($id)
 
 function deleteEventImage($id) {
        $result =  delete('event_images',$id);
+       echo $result;	
+}
+function deleteEventTemplateImage($id) {
+       $result =  delete('event_template_images',$id);
        echo $result;	
 }
 ?>

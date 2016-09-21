@@ -267,10 +267,13 @@ $app->get('/getWebsiteMenuSliderImages/:res_id','getWebsiteMenuSliderImages');
 
 /*************** Events  *************/
 $app->post('/eventFilesUpload',  'eventFilesUpload');
+$app->post('/templateFilesUpload',  'templateFilesUpload');
 $app->get('/getEventsByUser/:user_id',  'getEventsByUser');
+$app->get('/getTemplateByUser/:user_id',  'getTemplateByUser');
 $app->get('/getEventsDealByUser/:user_id',  'getEventsDealByUser');
 $app->post('/addEvent',  'addEvent');
 $app->put('/updateEvent/:id', 'updateEvent');
+$app->put('/updateTemplate/:id', 'updateTemplate');
 $app->get('/getEvenDetails/:id', 'getEvenDetails');
 $app->get('/getImagesByEvent/:id', 'getImagesByEvent');
 $app->post('/addEventImage',  'addEventImage');
@@ -278,7 +281,10 @@ $app->get('/getActiveEvents',  'getActiveEvents');
 $app->get('/getMerchantsRelatedEvents/:id',  'getMerchantsRelatedEvents'); 
 $app->get('/getMyEvents/:id',  'getMyEvents');
 $app->delete('/deleteEventImage/:id','deleteEventImage');
-
+$app->post('/addTemplate',  'addTemplate');
+$app->get('/getImagesByEventTemplate/:id', 'getImagesByEventTemplate');
+$app->post('/addEventTemplateImage',  'addEventTemplateImage');
+$app->delete('/deleteEventTemplateImage/:id','deleteEventTemplateImage');
 /*************** Event Bids ****************/
 $app->get('/getEventBidsWithUser/:event_id', 'getEventBidsWithUser');
 $app->get('/acceptEventBid/:event_id/:bid_id', 'acceptEventBid');
