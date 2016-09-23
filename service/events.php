@@ -469,6 +469,66 @@ function templateFilesUpload()
     }
 }
 
+function getEventTemplate($id,$eid) 
+{
+    $event_details = findById($id,'event_templates');
+    $event_details = json_decode($event_details);
+    $mul_image=array();
+    if(!empty($event_details))
+    {
+        $event_details->created_on = date('m-d-Y h:i:s a ', strtotime($event_details->created_on));
+        if(!empty($event_details->image))
+        {
+            $event_details->image = SITEURL.'template_images/'.$event_details->image;
+            $mul_image[]['image'] = $event_details->image;
+        }
+        else
+        {    
+        	  $event_details->image = SITEURL.'template_images/default.png';
+            $mul_image[] = $event_details->image;
+        }    
+         $condition = array('event_template_id' => $id);
+    	    $result = findByCondition($condition,'event_template_images');
+         $result = json_decode($result);
+	    //echo '<pre>';print_r($result);
+	    if(!empty($result))
+	    {
+	    		foreach($result as $key=>$val){
+	    			$mul_image[] = SITEURL.'template_images/'.$val->image;
+			}
+	    }
+	    $event_details->mulimg = $mul_image;
+	    
+	    
+	    ////////////////////Event Fetch////////////
+		$eve = findById($eid,'events');
+		$eve = json_decode($eve);
+		$eve->startDate = date('m-d-Y', strtotime($eve->from_date));
+		$eve->endDate = date('m-d-Y', strtotime($eve->to_date));
+		$eve->startTime  = date('H:i a', strtotime($eve->from_date ));
+		$eve->endTime  = date('H:i a', strtotime($eve->to_date ));
+		$eve->name  = $eve->title;
+		$uid  = $eve->user_id;
+		////////User Fetch//////////
+		$usr = findById($uid,'users');
+		$usr = json_decode($usr);
+		$eve->username = $usr->first_name.' '.$usr->last_name;
+		
+		$event_details->content = str_replace(array('<Member_Name>','<Event_Name>','<Event_Start_Date>','<Event_Start_Time>','<Event_End_Date>','<Event_End_Time>'),array($eve->username,$eve->name,$eve->startDate,$eve->startTime,$eve->endDate,$eve->endTime),$event_details->content);
+        
+    
+	    
+	    
+         echo json_encode(array('status' => 'success','data' =>$event_details));
+    }
+    else
+    {
+        echo json_encode(array('status' => 'error','message' => 'No data found'));
+    }
+    //echo $event_details;
+    exit;
+}
+
 function getEvenDetails($id) 
 {
     $event_details = findById($id,'events');

@@ -3,7 +3,9 @@ function addEventBid()
 {
     $request = Slim::getInstance()->request();
     $body = json_decode($request->getBody());
-    
+    //echo '<pre>';print_r($body);exit;
+    $imageBid = $body->imagebid;
+    unset($body->imagebid);
     $event_id = $body->event_id;
     $user_id = $body->user_id;
     
@@ -25,10 +27,15 @@ function addEventBid()
             //print_r($allinfo);
 
             //$allinfo['unique_data'] = $unique_field;
-            $cat_details  = add(json_encode($allinfo),'event_bids');
-            //echo $cat_details;
+            $cat_details = add(json_encode($allinfo),'event_bids');
+            $cat_details = json_decode($cat_details);
             //exit;
             if(!empty($cat_details)){	
+                foreach($imageBid as $k=>$v)
+                {
+                	$temp['save_data'] = array('event_bid_id' => $cat_details->id,'image' => $v);
+                    $s = add(json_encode($temp),'event_bid_images');
+                }
                 $result = '{"type":"success","message":"You have bidded Succesfully"}'; 
               }
               else{

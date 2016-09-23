@@ -1,4 +1,31 @@
 <?php 
+
+function getMerchantOutletsByRestaurant($id)
+{    
+    $rarray = array();
+    $conditions = array();
+    $conditions['restaurant_id'] = $id;
+    $restaurants = findByConditionArray($conditions,'merchantoutlets');
+    if(!empty($restaurants))
+    {
+        $restaurants = array_map(function($t){
+            $location = findByIdArray( $t['location_id'],'locations');
+            $t['city'] =  $location['city'];
+            $t['imageurl'] = SITEURL.'merchantoutlet_images/'.$t['image'];
+            return $t;
+        }, $restaurants);
+        for($i=0;$i<count($restaurants);$i++){
+            $restaurants[$i]['locations'] = json_decode(findByCondition(array('outlet_id'=>$restaurants[$i]['id']),'merchantoutlet_location_map'));
+        }
+        $rarray = array('type' => 'success', 'data' => $restaurants);
+    }
+    else
+    {
+        $rarray = array('type' => 'error', 'message' => 'No outlets found');
+    }
+    echo json_encode($rarray);
+}
+
 function addMerchantOutlet()
 {
     $rarray = array();
