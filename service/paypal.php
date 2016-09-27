@@ -42,11 +42,19 @@ function cart_checkout(){
             $temp = (array)$temp;
             
             $item1 = new Item();
-            $item1->setName($temp['offer_title'].' : '.$temp['restaurant_title'])
-                ->setCurrency('USD')
-                ->setQuantity($temp['quantity'])
-                ->setSku($temp['offer_id']) // Similar to `item_number` in Classic API
-                ->setPrice($temp['offer_price']);
+            if($temp['event'] == 1){
+                $item1->setName($temp['offer_title'].' : Event')
+                    ->setCurrency('USD')
+                    ->setQuantity($temp['quantity'])
+                    ->setSku($temp['event_id']) // Similar to `item_number` in Classic API
+                    ->setPrice($temp['offer_price']);
+            }else{
+                $item1->setName($temp['offer_title'].' : '.$temp['restaurant_title'])
+                    ->setCurrency('USD')
+                    ->setQuantity($temp['quantity'])
+                    ->setSku($temp['offer_id']) // Similar to `item_number` in Classic API
+                    ->setPrice($temp['offer_price']);
+            }
             $items[] = $item1;
         }
         /*$item2 = new Item();
@@ -170,6 +178,10 @@ function cart_checkout(){
                 $temp_details['quantity'] = $temp['quantity'];
                 $temp_details['resell'] = $temp['resell'];
                 $temp_details['resell_id'] = $temp['resell_id'];
+                $temp_details['event'] = $temp['event'];
+                $temp_details['event_id'] = $temp['event_id'];
+                $temp_details['event_price'] = $temp['event_price'];
+                $temp_details['event_bid_id'] = $temp['event_bid_id'];
                
                 add(json_encode(array('save_data' => $temp_details)),'order_details');
             }
@@ -218,6 +230,7 @@ function success_payment()
                 
                 foreach($order_details as $order_detail)
                 {
+                    if($order_detail->event == 0){
                         $qty = $order_detail->quantity;
                     $offer_details = json_decode(findById($order_detail->offer_id,'offers'));
                     //print_r($offer_details);
@@ -393,6 +406,43 @@ function success_payment()
                     sendMail($to1,$subject1,$body1);
                     
                     
+                }
+                }else{
+                    $event_id = $order_detail->event_id;
+                    $bid_id = $order_detail->event_bid_id;
+                    $temp = array();
+                    $temp['event_id'] = $event_id;
+                    editByField(json_encode(array('save_data' => array('is_accepted' => 2))),'event_bids',$temp);
+                    $t = edit(json_encode(array('save_data' => array('is_accepted' => 1))),'event_bids',$bid_id);
+                    edit(json_encode(array('save_data' => array('status' => 'C'))),'events',$event_id);
+                    $bidInfo = findByConditionArray(array('id' => $bid_id),'event_bids');                    
+                    $bid_user_id = $bidInfo[0]['user_id'];
+                    
+                    $from_user_id = $order_detail->user_id;
+                    $bidUserInfo = findByConditionArray(array('id' => $bid_user_id),'users');
+                    $fromUserInfo = findByConditionArray(array('id' => $from_user_id),'users');
+                    $bid_user_email = $bidUserInfo[0]['email'];
+                    $from_user_email = $fromUserInfo[0]['email'];
+                    $from_user_name = $fromUserInfo[0]['first_name'].' '.$fromUserInfo[0]['last_name'];
+                    $bid_user_name = $bidUserInfo[0]['first_name'].' '.$bidUserInfo[0]['last_name'];
+                    $from = ADMINEMAIL;
+                    //$to = $saveresales->email;
+                    $to1 = $bid_user_email;  
+                    //$to1 = 'nits.anup@gmail.com';
+                    $subject1 =$from_user_name.' accept the event that you have bidded and successfully made payment for the event';
+                    $body1 ='<html><body><p>Dear '.$bid_user_name.',</p>
+
+                            <p> '.$from_user_name. ' accept the event that you have bidded and successfully made payment for the event<br />
+                            
+                            <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
+                            <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
+
+                            <p>Thanks,<br />
+                            mFood&nbsp;Team</p>
+
+                            <p>&nbsp;</p></body></html>';
+
+                    sendMail($to1,$subject1,$body1);
                 }
                     
                 }

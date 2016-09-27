@@ -8,6 +8,32 @@
         {
             foreach($all_cart as $prod)
             {
+                if($prod['event'] == 1){
+                    $event = findByIdArray($prod['event_id'],'events');
+                    $temp_cart = array();
+                    $temp_cart['offer_id'] = 0;
+                    $temp_cart['offer_percent'] = 0;
+                    $temp_cart['price'] = $prod['event_price'];
+                    $temp_cart['mpoints'] = 0;
+                    $temp_cart['offer_price'] = $prod['event_price'];
+                    $temp_cart['resell'] = 0;
+                    $temp_cart['resell_id'] = 0;
+                    $temp_cart['quantity'] = 1;
+                    $temp_cart['image'] = SITEURL.'event_images/'.$event['image'];
+                    $temp_cart['restaurant_id'] = 0;
+                    $temp_cart['restaurant_title'] = 'Event';
+                    $temp_cart['point_id'] = 0;
+                    $temp_cart['point_name'] = '';                    
+                    $temp_cart['condtn'] = 0; 
+                    $temp_cart['payments'] = false;
+                    $temp_cart['paymentscash'] = true;
+                    $temp_cart['event'] = 1;
+                    $temp_cart['event_id'] = $prod['event_id'];
+                    $temp_cart['event_price'] = $prod['event_price'];
+                    $temp_cart['event_bid_id'] = $prod['event_bid_id'];
+                    $temp_cart['offer_title'] = $event['title'];
+                    $cart[] = $temp_cart;
+                }else{
                 $temp_cart = array();
                 $offer = findByIdArray($prod['offer_id'],'offers');
                 if(!empty($offer) && ($offer['buy_count']<$offer['quantity']))
@@ -44,6 +70,10 @@
                     
                     $temp_cart['point_id'] = $offer['point_master_id'];
                     $temp_cart['point_name'] = $point_name; 
+                    $temp_cart['event'] = 0;
+                    $temp_cart['event_id'] = 0;
+                    $temp_cart['event_price'] = 0;
+                    $temp_cart['event_bid_id'] = 0;
                     $temp_cart['payments'] = $prod['point']==1?true:false;
                     $temp_cart['paymentscash'] = $prod['price']==1?true:false;
                     //$temp_cart['mpoints'] = $offer['mpoints'];
@@ -57,6 +87,7 @@
                     $temp_cart['restaurant_title'] = $restaurant['title'];
                     $cart[] = $temp_cart;
                 }
+            }
             }
         }
         echo json_encode($cart);
@@ -72,35 +103,55 @@
         if(isset($body->condition)){
             unset($body->condition);
         }
+        //print_r($body->cart);
+        //exit;
         if(!empty($body->cart))
         {  
             foreach($body->cart as $offer)
             {
-                $query = "SELECT * from cart where user_id=$user_id and offer_id=".$offer->offer_id;
-                $ifexist = findByQuery($query);
-                if(empty($ifexist))
-                {
+                if($offer->event == 1){
                     $temp = array();
-                    if($offer->paymentscash == 1){
-                        $offer->paymentscash = 1;
-                    }else{
-                        $offer->paymentscash =0;
-                    }
-                    if($offer->payments == 1){
-                        $offer->payments = 1;
-                    }else{
-                        $offer->payments =0;
-                    }
                     $temp['user_id'] = $user_id;
                     $temp['offer_id'] = $offer->offer_id;
-                    $temp['quantity'] = $offer->quantity;
-                    $temp['price'] = $offer->paymentscash;
-                    $temp['point'] = $offer->payments;
-                    $temp['resell'] = $offer->resell;
-                    $temp['resell_id'] = $offer->resell_id;
-                    $temp['resell_price'] = $offer->price;
-                    $temp['resell_mpoint'] = $offer->mpoints;
+                    $temp['quantity'] = 1;
+                    $temp['price'] = 1;
+                    $temp['point'] = 0;
+                    $temp['resell'] = 0;
+                    $temp['resell_id'] = 0;
+                    $temp['resell_price'] = 0;
+                    $temp['resell_mpoint'] = 0;
+                    $temp['event'] = $offer->event;
+                    $temp['event_id'] = $offer->event_id;
+                    $temp['event_price'] = $offer->event_price;
+                    $temp['event_bid_id'] = $offer->event_bid_id;
                     add(json_encode(array('save_data' => $temp)),'cart');
+                }else{
+                    $query = "SELECT * from cart where user_id=$user_id and offer_id=".$offer->offer_id;
+                    $ifexist = findByQuery($query);
+                    if(empty($ifexist))
+                    {
+                        $temp = array();
+                        if($offer->paymentscash == 1){
+                            $offer->paymentscash = 1;
+                        }else{
+                            $offer->paymentscash =0;
+                        }
+                        if($offer->payments == 1){
+                            $offer->payments = 1;
+                        }else{
+                            $offer->payments =0;
+                        }
+                        $temp['user_id'] = $user_id;
+                        $temp['offer_id'] = $offer->offer_id;
+                        $temp['quantity'] = $offer->quantity;
+                        $temp['price'] = $offer->paymentscash;
+                        $temp['point'] = $offer->payments;
+                        $temp['resell'] = $offer->resell;
+                        $temp['resell_id'] = $offer->resell_id;
+                        $temp['resell_price'] = $offer->price;
+                        $temp['resell_mpoint'] = $offer->mpoints;
+                        add(json_encode(array('save_data' => $temp)),'cart');
+                    }
                 }
             }
         }
@@ -110,6 +161,32 @@
             //print_r($all_cart);
             foreach($all_cart as $prod)
             {
+                if($prod['event'] == 1){
+                    $event = findByIdArray($prod['event_id'],'events');
+                    $temp_cart = array();
+                    $temp_cart['offer_id'] = 0;
+                    $temp_cart['offer_percent'] = 0;
+                    $temp_cart['price'] = $prod['event_price'];
+                    $temp_cart['mpoints'] = 0;
+                    $temp_cart['offer_price'] = $prod['event_price'];
+                    $temp_cart['resell'] = 0;
+                    $temp_cart['resell_id'] = 0;
+                    $temp_cart['quantity'] = 1;
+                    $temp_cart['image'] = SITEURL.'event_images/'.$event['image'];;
+                    $temp_cart['restaurant_id'] = 0;
+                    $temp_cart['restaurant_title'] = 'Event';
+                    $temp_cart['point_id'] = 0;
+                    $temp_cart['point_name'] = '';                    
+                    $temp_cart['condtn'] = 0; 
+                    $temp_cart['payments'] = false;
+                    $temp_cart['paymentscash'] = true;
+                    $temp_cart['event'] = 1;
+                    $temp_cart['event_id'] = $prod['event_id'];
+                    $temp_cart['event_price'] = $prod['event_price'];
+                    $temp_cart['event_bid_id'] = $prod['event_bid_id'];
+                    $temp_cart['offer_title'] = $event['title'];
+                    $cart[] = $temp_cart;
+                }else{
                 $point_name='';
                 $point_id='';
                 $point_needed = 0;
@@ -155,6 +232,10 @@
                     $temp_cart['point_id'] = $offer['point_master_id'];
                     $temp_cart['point_name'] = $point_name;                    
                     $temp_cart['condtn'] = $offer['conditions'];  
+                    $temp_cart['event'] = 0;
+                    $temp_cart['event_id'] = 0;
+                    $temp_cart['event_price'] = 0;
+                    $temp_cart['event_bid_id'] = 0;
                     if($offer['conditions'] == 1){
                         $temp_cart['payments'] = true;
                         $temp_cart['paymentscash'] = true;
@@ -217,6 +298,7 @@
                     $cart[] = $temp_cart;
                 }
             }
+            }
         }
         echo json_encode($cart);
         
@@ -226,7 +308,12 @@
     {
         $request = Slim::getInstance()->request();
 	$body = json_decode($request->getBody());
-        $qry = "SELECT * from cart where user_id=".$body->user_id." and offer_id=".$body->offer_id;
+        if($body->event_promo == 'p'){
+            $qry = "SELECT * from cart where user_id=".$body->user_id." and offer_id=".$body->offer_id;
+        }else{
+            $qry = "SELECT * from cart where user_id=".$body->user_id." and event_id=".$body->offer_id;
+        }
+        
         $details = findByQuery($qry,'one');
         if(!empty($details))
         {

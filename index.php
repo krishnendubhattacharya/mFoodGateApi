@@ -275,6 +275,7 @@ $app->post('/addEvent',  'addEvent');
 $app->put('/updateEvent/:id', 'updateEvent');
 $app->put('/updateTemplate/:id', 'updateTemplate');
 $app->get('/getEvenDetails/:id', 'getEvenDetails');
+$app->get('/getIsBidEvent/:id/:uid', 'getIsBidEvent');
 $app->get('/getImagesByEvent/:id', 'getImagesByEvent');
 $app->post('/addEventImage',  'addEventImage');
 $app->get('/getActiveEvents',  'getActiveEvents');
@@ -290,6 +291,7 @@ $app->get('/getEventTemplate/:id/:eid',  'getEventTemplate');
 $app->get('/getEventBidsWithUser/:event_id', 'getEventBidsWithUser');
 $app->get('/acceptEventBid/:event_id/:bid_id', 'acceptEventBid');
 $app->post('/addEventBid', 'addEventBid');
+$app->get('/getEventBidDetail/:id','getEventBidDetail');
 
 /**************** Locations **************/
 $app->get('/getAllLocations',  'getAllLocations');

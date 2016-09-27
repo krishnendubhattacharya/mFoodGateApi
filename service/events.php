@@ -463,6 +463,17 @@ function templateFilesUpload()
 {
     if(!empty($_FILES['files']['tmp_name']['0']))
     {
+          /*$length = 6;
+          $chars =  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.'0123456789';
+		$str = '';
+		$max = strlen($chars) - 1;
+		for ($i=0; $i < $length; $i++)
+			$str .= $chars[rand(0, $max)];
+			
+        $filename = $_FILES['files']['name']['0'];
+        $filename = explode('.',$filename);
+        $imgname = $filename[0].$str.'.'.$filename[1];
+        $_FILES['files']['name']['0'] = $imgname;*/
         move_uploaded_file($_FILES['files']['tmp_name']['0'], 'template_images/'.$_FILES['files']['name']['0']);
         echo json_encode($_FILES['files']['name']['0']);
         exit;
@@ -529,6 +540,21 @@ function getEventTemplate($id,$eid)
     exit;
 }
 
+function getIsBidEvent($id,$uid) 
+{
+    $eveBid = findByConditionArray(array('event_id'=>$id,'user_id'=>$uid),'event_bids');
+    //echo 'Event_id:'.$points[$i]['id'].'| UserId:'.$merchant_id.'<br>';
+    //echo '<pre>';print_r($eveBid);
+    if(!empty($eveBid))
+    {
+    		$isBid = true;
+    }else{
+    		$isBid = false;
+    }
+    echo json_encode(array('status' => 'success','data' =>$isBid));
+    exit;
+}    
+
 function getEvenDetails($id) 
 {
     $event_details = findById($id,'events');
@@ -574,9 +600,10 @@ function getEvenDetails($id)
 	    }
 	    $event_details->mulimg = $mul_image;
 	    
-        
+	            
         $event_details->user_details = findByIdArray($event_details->user_id,'users');
         $event_details->locations = array();
+        
         $locations = findByConditionArray(array('event_id' => $id),'event_location_map');
         foreach($locations as $cat)
         {
@@ -821,9 +848,9 @@ function getMerchantsRelatedEvents($id)
 			//print_r($events);
                 if(!empty($events))
                 {
-                    
+                    $tdt = date('Y-m-d H:i:s');
                         //$event_in  = str_repeat('?,', count($events) - 1) . '?';
-                        $sql = "SELECT * FROM events WHERE id in(".implode(',',$events).")";
+                        $sql = "SELECT * FROM events WHERE id in(".implode(',',$events).") and offer_to_date > '".$tdt."' and status Not in('C','E')";
                         //$db = getConnection();
                         //$stmt = $db->prepare($sql); 
                         //$stmt->bindParam("user_id", $user_id);
@@ -835,6 +862,16 @@ function getMerchantsRelatedEvents($id)
                                     $count = count($points);
 
                                     for($i=0;$i<$count;$i++){
+                                            $eveBid = findByConditionArray(array('event_id'=>$points[$i]['id'],'user_id'=>$merchant_id),'event_bids');
+                                            //echo 'Event_id:'.$points[$i]['id'].'| UserId:'.$merchant_id.'<br>';
+                                            //echo '<pre>';print_r($eveBid);
+                                            if(!empty($eveBid))
+                                            {
+                                            		$points[$i]['is_bid'] = true;
+                                            }else{
+                                            		$points[$i]['is_bid'] = false;
+                                            }
+                                            
                                             $created_on = date('m/d/Y', strtotime($points[$i]['created_on']));
                                             $points[$i]['created_on'] = $created_on;
                                             
@@ -856,11 +893,17 @@ function getMerchantsRelatedEvents($id)
                                                 $points[$i]['image_url'] = SITEURL.'event_images/'.$points[$i]['image'];
 
                                             if($points[$i]['status'] == 'O')
-                                                $points[$i]['status'] = 'Open';
-                                            else if($points[$i]['status'] == 'E')
-                                                $points[$i]['status'] = 'Expired';
+                                            {
+                                                if($points[$i]['is_bid']){
+                                                	$points[$i]['status'] = 'Bid';
+                                                }
+                                                else{
+                                                	$points[$i]['status'] = 'Open';
+                                                }
+                                            }else if($points[$i]['status'] == 'E')
+                                            {    $points[$i]['status'] = 'Expired'; }
                                             else
-                                                $points[$i]['status'] = 'Completed';
+                                            {    $points[$i]['status'] = 'Completed'; }
                                             $points[$i]['categories'] = json_decode(findByCondition(array('event_id'=>$points[$i]['id']),'event_category_map'));
                                             $points[$i]['locations'] = json_decode(findByCondition(array('event_id'=>$points[$i]['id']),'event_location_map'));
                                     }	
