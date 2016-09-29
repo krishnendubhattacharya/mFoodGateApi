@@ -287,6 +287,7 @@ $app->get('/getImagesByEventTemplate/:id', 'getImagesByEventTemplate');
 $app->post('/addEventTemplateImage',  'addEventTemplateImage');
 $app->delete('/deleteEventTemplateImage/:id','deleteEventTemplateImage');
 $app->get('/getEventTemplate/:id/:eid',  'getEventTemplate');
+$app->delete('/deleteEventTemplate/:id', 'deleteEventTemplate');
 /*************** Event Bids ****************/
 $app->get('/getEventBidsWithUser/:event_id', 'getEventBidsWithUser');
 $app->get('/acceptEventBid/:event_id/:bid_id', 'acceptEventBid');

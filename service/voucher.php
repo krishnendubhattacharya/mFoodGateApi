@@ -728,10 +728,16 @@ function getResellListPostOwn($userid){
 	    $db=null;
 	    if(!empty($resales)){
 			for($i=0;$i<$list_count;$i++){
+			    $today = date('Y-m-d');
+			    $checkdate = date('Y-m-d', strtotime($resales[$i]->expire_date));
 			    $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
                             $resales[$i]->created_on = date('d M, Y', strtotime($resales[$i]->created_on));
 			    $resales[$i]->expire_date = $todate;
-				if($resales[$i]->is_sold=='1')
+				if($checkdate<$today)
+				{
+					$resales[$i]->status = 'Expired';
+				}
+				else if($resales[$i]->is_sold=='1')
 				{
 					$resales[$i]->status = 'Closed';
 				}else if($resales[$i]->status==''){
@@ -794,6 +800,14 @@ function getResellListPostOthers($userid){
 	    $db=null;
 	    if(!empty($resales)){
 	    		for($i=0;$i<$list_count;$i++){
+			    $today = date('Y-m-d');
+			    $checkdate = date('Y-m-d', strtotime($resales[$i]->expire_date));
+			    if($checkdate<$today)
+				{
+					$resales[$i]->Status = 'Expired';
+				}else{
+					$resales[$i]->Status = '';
+				}
 			    $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
 			    $resales[$i]->expire_date = $todate;
                             $resales[$i]->created_on = date('d M, Y', strtotime($resales[$i]->created_on));
@@ -837,6 +851,8 @@ function getResellListBidOwn($userid){
 	    //print_r($resales);
 	    if(!empty($resales)){
 	                for($i=0;$i<$resale_count;$i++){
+			    $today = date('Y-m-d');
+			    $checkdate = date('Y-m-d', strtotime($resales[$i]->expire_date));
 			    $todate = date('d M, Y', strtotime($resales[$i]->to_date));
 			    $resales[$i]->to_date = $todate;
 				$expire_date = date('d M, Y', strtotime($resales[$i]->expire_date));
@@ -846,7 +862,11 @@ function getResellListBidOwn($userid){
                                     $resales[$i]->created_on = date('d M, Y', strtotime($resales[$i]->created_on));
                                 }
 			    $resales[$i]->expire_date = $expire_date;
-			    if(($resales[$i]->is_accepted == 1) && ($resales[$i]->is_sold == 1)){
+			    if($checkdate<$today)
+				{
+					$resales[$i]->Status = 'Expired';
+				}
+				else if(($resales[$i]->is_accepted == 1) && ($resales[$i]->is_sold == 1)){
 			        $resales[$i]->Status = 'Accepted';
 			    }else if(($resales[$i]->is_accepted == 0) && ($resales[$i]->is_sold == 1)){
 			        $resales[$i]->Status = 'Closed';

@@ -152,9 +152,19 @@ function mySwapList($uid) {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
+		    $today = date('Y-m-d');
+		    $checkdate = date('Y-m-d', strtotime($vouchers[$i]->offer_to_date));
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
 			
+			if($checkdate<$today)
+				{
+					$vouchers[$i]->Status = 'Expired';
+				}
+				else{
+			        $vouchers[$i]->Status = '';
+			    }
+			    
 			$posted_on = date('d M, Y', strtotime($vouchers[$i]->posted_on));
 		    $vouchers[$i]->posted_on = $posted_on;
                         if($vouchers[$i]->offering_end_date == "0000-00-00 00:00:00"){
@@ -213,8 +223,18 @@ function otherSwapList($uid) {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
+		    $today = date('Y-m-d');
+		    $checkdate = date('Y-m-d', strtotime($vouchers[$i]->offer_to_date));
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
+		    if($checkdate<$today)
+				{
+					$vouchers[$i]->Status = 'Expired';
+				}
+				else{
+			        $vouchers[$i]->Status = '';
+			    }
+			    
                     if($vouchers[$i]->offering_end_date == "0000-00-00 00:00:00"){
                         $vouchers[$i]->offering_end_date = "";
                     }else{
@@ -255,9 +275,19 @@ function myBidSwapList($uid) {
 		$count = $stmt->rowCount();
 		//my_voucher.price, swap_voucher.price
 		for($i=0;$i<$count;$i++){
+		    $today = date('Y-m-d');
+		    $checkdate = date('Y-m-d', strtotime($vouchers[$i]->offer_to_date));
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
 		    $vouchers[$i]->expire_date = $todate;
-                    
+               
+               if($checkdate<$today)
+				{
+					$vouchers[$i]->Status = 'Expired';
+				}
+				else{
+			        $vouchers[$i]->Status = '';
+			    }
+			         
                     if($vouchers[$i]->offering_end_date == "0000-00-00 00:00:00"){
                         $vouchers[$i]->offering_end_date = "";
                     }else{

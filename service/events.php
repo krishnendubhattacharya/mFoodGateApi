@@ -177,7 +177,7 @@ function addTemplate()
         
        
         $allinfo['save_data'] = $body->eventdata;
-      echo '<pre>';  print_r($allinfo);
+      //echo '<pre>';  print_r($allinfo);
 
         //$allinfo['unique_data'] = $unique_field;
 	$cat_details  = json_decode(add(json_encode($allinfo),'event_templates'));
@@ -863,6 +863,11 @@ function getMerchantsRelatedEvents($id)
 
                                     for($i=0;$i<$count;$i++){
                                             $eveBid = findByConditionArray(array('event_id'=>$points[$i]['id'],'user_id'=>$merchant_id),'event_bids');
+                                            $sql = "SELECT Max(price) as price FROM event_bids WHERE event_id = ".$points[$i]['id']."";
+                        				    $maxp = findByQuery($sql);
+                                            //echo '<pre>';print_r($maxp);
+                                            $points[$i]['bid_price'] = number_format($maxp[0]['price'],2,'.',',');
+                                            
                                             //echo 'Event_id:'.$points[$i]['id'].'| UserId:'.$merchant_id.'<br>';
                                             //echo '<pre>';print_r($eveBid);
                                             if(!empty($eveBid))
@@ -1024,6 +1029,11 @@ function deleteEventImage($id) {
 }
 function deleteEventTemplateImage($id) {
        $result =  delete('event_template_images',$id);
+       echo $result;	
+}
+
+function deleteEventTemplate($id) {
+       $result =  delete('event_templates',$id);
        echo $result;	
 }
 ?>
