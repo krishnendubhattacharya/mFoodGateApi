@@ -55,6 +55,8 @@ function addSwap(){
 					$body->is_active = 1;
 					$body->voucher_price = $vouchers->price;
 					$body->voucher_expire_date = $vouchers->to_date;
+                                        $body->offering_start_date = $body->offering_start_date.' 23:59:59';
+                                        $body->offering_end_date = $body->offering_end_date.' 23:59:59';
 					$body->posted_on = date('Y-m-d H:i:s');
 					$allinfo['save_data'] = $body;
 					
@@ -223,6 +225,9 @@ function otherSwapList($uid) {
 		$count = $stmt->rowCount();
 		
 		for($i=0;$i<$count;$i++){
+                    $swap_id = $vouchers[$i]->id;
+                    $swap_interested = findByConditionArray(array('user_id' => $uid,'swap_id' => $swap_id),'interested_swap');
+                    if(empty($swap_interested)){
 		    $today = date('Y-m-d');
 		    $checkdate = date('Y-m-d', strtotime($vouchers[$i]->offer_to_date));
 		    $todate = date('d M, Y', strtotime($vouchers[$i]->offer_to_date));
@@ -246,7 +251,9 @@ function otherSwapList($uid) {
                         $vouchers[$i]->image_url = SITEURL.'voucher_images/'.$vouchers[$i]->image;
                     }
                     $vouchers[$i]->price = number_format($vouchers[$i]->price,1,'.',',');
-                    
+                }else{
+                    unset($vouchers[$i]);
+                }
 		    
 		}
 		$db = null;
@@ -357,7 +364,7 @@ function interestedSwapList($uid) {
 }
 
 function swapdetails($sid) {     
-        $sql = "SELECT vouchers.offer_id, swap.id as sid, swap.voucher_id, swap.offer_id, swap.user_id, vouchers.view_id, vouchers.price, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id FROM vouchers , offers, swap WHERE vouchers.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.id=:sid";
+        $sql = "SELECT vouchers.offer_id, swap.id as sid, swap.voucher_id, swap.offer_id, swap.user_id, swap.offering_start_date, swap.offering_end_date, vouchers.view_id, vouchers.price, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id FROM vouchers , offers, swap WHERE vouchers.offer_id=offers.id and vouchers.id=swap.voucher_id and swap.id=:sid";
     $offerId ='';
     $offer_image = array();
     $restaurant_details = array();
@@ -374,6 +381,18 @@ function swapdetails($sid) {
 		    $to_date = date('d M,Y', strtotime($vouchers->to_date));
 			//$offer_to_date = date('d M,Y', strtotime($vouchers->offer_to_date));
 			$vouchers->to_date = $to_date;
+                        if($vouchers->offering_start_date == "0000-00-00 00:00:00"){
+                            $vouchers->swap_start_date = '';
+                        }else{
+                            $vouchers->swap_start_date = date('m-d-Y',strtotime($vouchers->offering_start_date));
+                        }
+                        if($vouchers->offering_end_date == "0000-00-00 00:00:00"){
+                            $vouchers->swap_end_date = '';
+                            $vouchers->swap_expire_date = '';
+                        }else{
+                            $vouchers->swap_end_date = date('m-d-Y',strtotime($vouchers->offering_end_date));
+                            $vouchers->swap_expire_date = date('M d,Y H:i:s',strtotime($vouchers->offering_end_date));
+                        }
 			if(empty($vouchers->image)){
 			    $image = $site_path.'voucher_images/default.jpg';
 			    $vouchers->image = $image;

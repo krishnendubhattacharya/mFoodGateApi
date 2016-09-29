@@ -309,6 +309,10 @@ function getEventsByUser($user_id)
 			$count = $stmt->rowCount();
 		
 			for($i=0;$i<$count;$i++){
+				$today = date('Y-m-d');
+				$checkdate = date('Y-m-d', strtotime($points[$i]->offer_from_date));
+				
+				
 				$created_on = date('m/d/Y', strtotime($points[$i]->created_on));
 				$points[$i]->created_on = $created_on;
 				$from_date = date('m/d/Y h:i a', strtotime($points[$i]->from_date));
@@ -323,7 +327,9 @@ function getEventsByUser($user_id)
                                 if(!empty($points[$i]->image))
                                     $points[$i]->image_url = SITEURL.'event_images/'.$points[$i]->image;
                                     
-                                if($points[$i]->status == 'O')
+                                if($checkdate<$today)
+                                	$points[$i]->status = 'Expired';
+                                else if($points[$i]->status == 'O')
                                     $points[$i]->status = 'Open';
                                 else if($points[$i]->status == 'E')
                                     $points[$i]->status = 'Expired';
@@ -407,6 +413,11 @@ function getEventsDealByUser($user_id)
 			$count = $stmt->rowCount();
 		
 			for($i=0;$i<$count;$i++){
+				$today = date('Y-m-d');
+				$checkdate = date('Y-m-d', strtotime($points[$i]->offer_from_date));
+				
+				
+				
 				$created_on = date('m/d/Y', strtotime($points[$i]->created_on));
 				$points[$i]->created_on = $created_on;
 				$from_date = date('m/d/Y h:i a', strtotime($points[$i]->from_date));
@@ -421,7 +432,9 @@ function getEventsDealByUser($user_id)
                                 if(!empty($points[$i]->image))
                                     $points[$i]->image_url = SITEURL.'event_images/'.$points[$i]->image;
                                     
-                                if($points[$i]->status == 'O')
+                                if($checkdate<$today)
+                                	$points[$i]->status = 'Expired';
+                                else if($points[$i]->status == 'O')
                                     $points[$i]->status = 'Open';
                                 else if($points[$i]->status == 'E')
                                     $points[$i]->status = 'Expired';
@@ -563,6 +576,9 @@ function getEvenDetails($id)
     
     if(!empty($event_details))
     {
+          $today = date('Y-m-d');
+		$checkdate = date('Y-m-d', strtotime($event_details->offer_to_date));
+		
         $event_details->from_date = date('m-d-Y h:i:s a ', strtotime($event_details->from_date));
         $event_details->to_date = date('m-d-Y h:i:s a', strtotime($event_details->to_date));
         $event_details->offer_from_date  = date('m-d-Y', strtotime($event_details->offer_from_date ));
@@ -577,9 +593,11 @@ function getEvenDetails($id)
         {    
         	  $event_details->image = SITEURL.'event_images/default.png';
             $mul_image[]['image'] = $event_details->image;
-        }    
-        
-        if($event_details->status == 'O')
+        } 
+           
+        if($checkdate<$today)
+            $event_details->status = 'Expired';
+        else if($event_details->status == 'O')
             $event_details->status = 'Open';
         else if($event_details->status == 'E')
             $event_details->status = 'Expired';
@@ -863,6 +881,10 @@ function getMerchantsRelatedEvents($id)
 
                                     for($i=0;$i<$count;$i++){
                                             $eveBid = findByConditionArray(array('event_id'=>$points[$i]['id'],'user_id'=>$merchant_id),'event_bids');
+                                            $today = date('Y-m-d');
+									$checkdate = date('Y-m-d', strtotime($points[$i]['offer_to_date']));
+									
+                                            
                                             $sql = "SELECT Max(price) as price FROM event_bids WHERE event_id = ".$points[$i]['id']."";
                         				    $maxp = findByQuery($sql);
                                             //echo '<pre>';print_r($maxp);
@@ -897,18 +919,23 @@ function getMerchantsRelatedEvents($id)
                                             if(!empty($points[$i]['image']))
                                                 $points[$i]['image_url'] = SITEURL.'event_images/'.$points[$i]['image'];
 
-                                            if($points[$i]['status'] == 'O')
+                                            if($checkdate<$today)
                                             {
-                                                if($points[$i]['is_bid']){
-                                                	$points[$i]['status'] = 'Bid';
-                                                }
-                                                else{
-                                                	$points[$i]['status'] = 'Open';
-                                                }
-                                            }else if($points[$i]['status'] == 'E')
-                                            {    $points[$i]['status'] = 'Expired'; }
-                                            else
-                                            {    $points[$i]['status'] = 'Completed'; }
+                                            		$points[$i]['status'] = 'Expired';
+                                            }else{
+		                                       if($points[$i]['status'] == 'O')
+		                                       {
+		                                           if($points[$i]['is_bid']){
+		                                           	$points[$i]['status'] = 'Bid';
+		                                           }
+		                                           else{
+		                                           	$points[$i]['status'] = 'Open';
+		                                           }
+		                                       }else if($points[$i]['status'] == 'E')
+		                                       {    $points[$i]['status'] = 'Expired'; }
+		                                       else
+		                                       {    $points[$i]['status'] = 'Completed'; }
+                                            }
                                             $points[$i]['categories'] = json_decode(findByCondition(array('event_id'=>$points[$i]['id']),'event_category_map'));
                                             $points[$i]['locations'] = json_decode(findByCondition(array('event_id'=>$points[$i]['id']),'event_location_map'));
                                     }	
@@ -970,6 +997,10 @@ function getMyEvents($id)
                                     $count = count($points);
 
                                     for($i=0;$i<$count;$i++){
+                                            $today = date('Y-m-d');
+									$checkdate = date('Y-m-d', strtotime($points[$i]['offer_to_date']));
+									
+									
                                             $created_on = date('m/d/Y', strtotime($points[$i]['created_on']));
                                             $points[$i]['created_on'] = $created_on;
                                             
@@ -992,7 +1023,9 @@ function getMyEvents($id)
                                             if(!empty($points[$i]['image']))
                                                 $points[$i]['image_url'] = SITEURL.'event_images/'.$points[$i]['image'];
 
-                                            if($points[$i]['status'] == 'O')
+                                            if($checkdate<$today)
+                                            	   $points[$i]['status'] = 'Expired';
+                                            else if($points[$i]['status'] == 'O')
                                                 $points[$i]['status'] = 'Open';
                                             else if($points[$i]['status'] == 'E')
                                                 $points[$i]['status'] = 'Expired';

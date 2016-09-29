@@ -481,6 +481,11 @@ function redeemUserPoints()
                     $resell_voucher_id = $resellInfo[0]['voucher_id'];
                     $resellownerInfo = findByConditionArray(array('voucher_id' => $resell_voucher_id,'is_active' => 1),'voucher_owner');
                     $voucher_owner_id = $resellownerInfo[0]['id'];
+                    
+                    $save_data = array();
+                    $save_data['save_data']['voucher_status'] = 0;
+                    $voucher_edit = edit(json_encode($save_data),'vouchers',$resell_voucher_id);
+                    
                     $save_data = array();
                     $save_data['save_data']['resell_type'] = 0;
                     $voucher_owner_edit = edit(json_encode($save_data),'voucher_owner',$voucher_owner_id);

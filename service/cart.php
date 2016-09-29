@@ -36,7 +36,7 @@
                 }else{
                 $temp_cart = array();
                 $offer = findByIdArray($prod['offer_id'],'offers');
-                if(!empty($offer) && ($offer['buy_count']<$offer['quantity']))
+                if(!empty($offer) && ($offer['buy_count']<$offer['quantity'] || $prod['resell'] == 1))
                 {
                     $temp_cart['offer_id'] = $offer['id'];
                     $temp_cart['offer_percent'] = $offer['offer_percent'];
@@ -48,7 +48,7 @@
                         if(!empty($point_details))
                             $point_name = $point_details['name'];
                     }
-                    if($prod['quantity']<$offer['quantity']-$offer['buy_count'])
+                    if($prod['quantity']<$offer['quantity']-$offer['buy_count'] || $prod['resell'] == 1)
                     {
                         $temp_cart['quantity'] = $prod['quantity'];
                     }
@@ -199,7 +199,7 @@
                     if(!empty($point_details))
                         $point_name = $point_details['name'];
                 }
-                if(!empty($offer) && ($offer['buy_count']<$offer['quantity']))
+                if(!empty($offer) && ($offer['buy_count']<$offer['quantity'] || $prod['resell'] == 1))
                 {
                     $temp_cart['offer_id'] = $offer['id'];
                     $temp_cart['offer_percent'] = $offer['offer_percent'];
@@ -216,7 +216,8 @@
                     }
                     $temp_cart['resell'] = $prod['resell'];
                     $temp_cart['resell_id'] = $prod['resell_id'];
-                    if($prod['quantity']<$offer['quantity']-$offer['buy_count'])
+                    
+                    if(($prod['quantity']<$offer['quantity']-$offer['buy_count']) || ($prod['resell']==1))
                     {
                         $temp_cart['quantity'] = $prod['quantity'];
                     }
