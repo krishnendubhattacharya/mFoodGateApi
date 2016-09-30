@@ -663,4 +663,34 @@ function addNewOfferImage() {
 	
 }
 
+function getRedeemVoucher($user_id)
+{
+    $rarray = array();
+    $conditions = array();
+    $site_path = SITEURL;
+    $allPromo = findByConditionArray(array('merchant_id' => $user_id),'offers');
+    $all_promo_ids = array_column($allPromo, 'id');
+    
+    //print_r($all_promo_ids);
+    
+    $reddeem_voucher_sql = "select restaurants.title,vouchers.id,vouchers.offer_id,vouchers.price,vouchers.offer_price,vouchers.to_date,vouchers.RedeemDate,vouchers.Status from vouchers,restaurants where vouchers.RedeemRestaurant = restaurants.restaurant_id  and vouchers.Status='redeem' and vouchers.offer_id in(".implode(',',$all_promo_ids).")";
+        $reddeem_voucher_res = findByQuery($reddeem_voucher_sql);
+        if(!empty($reddeem_voucher_res)){
+            foreach($reddeem_voucher_res as $reddeem_voucher_res_key=>$reddeem_voucher_res_val){
+                $reddeem_voucher_res[$reddeem_voucher_res_key]['price']= number_format($reddeem_voucher_res[$reddeem_voucher_res_key]['price'],1,'.',',');
+                $reddeem_voucher_res[$reddeem_voucher_res_key]['offer_price']= number_format($reddeem_voucher_res[$reddeem_voucher_res_key]['offer_price'],1,'.',',');
+                $reddeem_voucher_res[$reddeem_voucher_res_key]['to_date']= date('m-d-Y',  strtotime($reddeem_voucher_res[$reddeem_voucher_res_key]['to_date']));
+                $reddeem_voucher_res[$reddeem_voucher_res_key]['RedeemDate']= date('m-d-Y',  strtotime($reddeem_voucher_res[$reddeem_voucher_res_key]['RedeemDate']));
+                $offerdetail = findByIdArray( $reddeem_voucher_res[$reddeem_voucher_res_key]['offer_id'],'offers');
+                $reddeem_voucher_res[$reddeem_voucher_res_key]['offer_title'] =  $offerdetail['title'];
+                $reddeem_voucher_res[$reddeem_voucher_res_key]['voucher_number'] =  'MFG-000000000'.$offerdetail['id'];
+            }
+            
+            $rarray = array('type' => 'success', 'data' => $reddeem_voucher_res);
+        }else{
+            $rarray = array('type' => 'success', 'data' => 'No data found');
+        }
+        echo json_encode($rarray);
+}
+
 ?>

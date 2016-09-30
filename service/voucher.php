@@ -108,7 +108,7 @@ function getExpireSoonVoucher($user_id) {
 
 function getVoucherUserMerchentDetail($vid){
   //  $sql = "SELECT * FROM vouchers, offers, users where vouchers.offer_id = offers.id and vouchers.user_id = users.id and vouchers.id=:id";
-    $sql = "SELECT vouchers.offer_id, vouchers.item_expire_date as expireDate, vouchers.view_id, vouchers.price, vouchers.created_on, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date,vouchers.voucher_status, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id, offers.item_start_date, offers.item_expire_date, offers.item_start_hour, offers.item_end_hour, offers.including_holidays FROM vouchers , offers WHERE vouchers.offer_id=offers.id and vouchers.id=:id";
+    $sql = "SELECT vouchers.offer_id,vouchers.id, vouchers.item_expire_date as expireDate, vouchers.view_id, vouchers.price, vouchers.created_on, vouchers.offer_price, vouchers.offer_percent, vouchers.from_date, vouchers.to_date,vouchers.voucher_status, vouchers.is_used, vouchers.is_active, offers.title, offers.description, offers.image, offers.benefits, offers.merchant_id, offers.item_start_date, offers.item_expire_date, offers.item_start_hour, offers.item_end_hour, offers.including_holidays FROM vouchers , offers WHERE vouchers.offer_id=offers.id and vouchers.id=:id";
     $offerId ='';
     $offer_image = array();
     $restaurant_details = array();
@@ -2701,10 +2701,20 @@ function getPromoDetails($id) {
 		$count = $stmt->rowCount();
 		if($count>0)
 		{
+                   //echo $offer->offer_to_date;
+                    $today = date('Y-m-d');
+				$checkdate = date('Y-m-d', strtotime($offer->item_expire_date));
+				if($checkdate<$today)
+				{
+					$offer->status = 'Expired';
+				}else{
+					$offer->status = '';
+				}
+                    
                     $offer->created_on = date('m-d-Y',strtotime($offer->created_on));
                     $offer->offer_from_date = date('m-d-Y',strtotime($offer->offer_from_date));
                     $todate = date('M d,Y H:i:s', strtotime($offer->offer_to_date));
-		    $offer->expire_date = $todate;
+		          $offer->expire_date = $todate;
                     $offer->offer_to_date = date('m-d-Y',strtotime($offer->offer_to_date));
                             if(empty($offer->image)){
                                     $img = $site_path.'voucher_images/default.jpg';
