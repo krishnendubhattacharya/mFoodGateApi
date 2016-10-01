@@ -479,20 +479,64 @@ function redeemUserPoints()
                     
                     //$resellPointInfo = findByConditionArray(array('id' => $resell_point_id),'point_master');
                     $resell_voucher_id = $resellInfo[0]['voucher_id'];
-                    $resellownerInfo = findByConditionArray(array('voucher_id' => $resell_voucher_id,'is_active' => 1),'voucher_owner');
-                    $voucher_owner_id = $resellownerInfo[0]['id'];
                     
-                    $save_data = array();
-                    $save_data['save_data']['voucher_status'] = 0;
-                    $voucher_edit = edit(json_encode($save_data),'vouchers',$resell_voucher_id);
-                    
-                    $save_data = array();
-                    $save_data['save_data']['resell_type'] = 0;
-                    $voucher_owner_edit = edit(json_encode($save_data),'voucher_owner',$voucher_owner_id);
-                    
-                    $save_data = array();
-                    $save_data['save_data']['ispayment'] = 0;
-                    $voucher_owner_edit = edit(json_encode($save_data),'voucher_resales',$resell_id);
+                    $resellbidInfo = findByConditionArray(array('voucher_id' => $resell_voucher_id,'user_id' => $to_user_id),'voucher_bids');
+                    if(empty($resellbidInfo)){
+                        $resellownerInfo = findByConditionArray(array('voucher_id' => $resell_voucher_id,'is_active' => 1),'voucher_owner');
+                        $voucher_owner_id = $resellownerInfo[0]['id'];
+
+                        $voucherDetail = findByConditionArray(array('id' => $resell_voucher_id),'vouchers');
+
+                        $save_data = array();
+                        $save_data['save_data']['voucher_status'] = 0;
+                        $voucher_edit = edit(json_encode($save_data),'vouchers',$resell_voucher_id);
+
+                        $save_data = array();
+                        $save_data['save_data']['resell_type'] = 2;
+                        $save_data['save_data']['is_active'] = 0;
+                        
+                        $voucher_owner_edit = edit(json_encode($save_data),'voucher_owner',$voucher_owner_id);
+
+                        $save_data = array();
+                        $save_data['save_data']['ispayment'] = 0;
+                        $save_data['save_data']['is_sold'] = '1';                        
+                        $save_data['save_data']['sold_on'] =  date('Y-m-d h:i:s');
+                        $save_data['save_data']['accept_date'] =  date('Y-m-d h:i:s');
+                        $voucher_owner_edit = edit(json_encode($save_data),'voucher_resales',$resell_id);
+                        
+                        $data = array();
+                        $data['voucher_id'] = $resell_voucher_id;
+                        $data['offer_id'] = $voucherDetail[0]['offer_id'];
+                        $data['voucher_view_id'] = $voucherDetail[0]['view_id'];
+                        $data['from_user_id'] = $resell_user_id;
+                        $data['to_user_id'] = $to_user_id;
+                        $data['price'] = $voucherDetail[0]['price'];
+                        $data['offer_price'] = $voucherDetail[0]['offer_price'];
+                        $data['offer_percent'] = $voucherDetail[0]['offer_percent'];
+                        $data['is_active'] = '1';
+                        $data['buy_price'] = $resell_price;
+                        $data['purchased_date'] = date('Y-m-d h:i:s');
+                        $data['resell_type'] = 0;
+                        $data['owner_id'] = $voucher_owner_id;
+                        $newinfo['save_data'] = $data;
+                        $new_owner_details  = add(json_encode($newinfo),'voucher_owner');
+                    }else{
+                        $resellownerInfo = findByConditionArray(array('voucher_id' => $resell_voucher_id,'is_active' => 1),'voucher_owner');
+                        $voucher_owner_id = $resellownerInfo[0]['id'];
+                        
+
+                        $save_data = array();
+                        $save_data['save_data']['voucher_status'] = 0;
+                        $voucher_edit = edit(json_encode($save_data),'vouchers',$resell_voucher_id);
+
+                        $save_data = array();
+                        $save_data['save_data']['resell_type'] = 0;
+                        $voucher_owner_edit = edit(json_encode($save_data),'voucher_owner',$voucher_owner_id);
+
+                        $save_data = array();
+                        $save_data['save_data']['ispayment'] = 0;
+                        $voucher_owner_edit = edit(json_encode($save_data),'voucher_resales',$resell_id);
+                    }
                     
                     $point_detail_data = array();
                     $point_detail_data['offer_id'] = 0;
@@ -529,11 +573,23 @@ function redeemUserPoints()
                     $from = ADMINEMAIL;
                     //$to = $saveresales->email;
                     $to = $to_user_email;  //'nits.ananya15@gmail.com';
+                    $sviewid = 'MFG-000000000'.$voucherDetail[0]['id'];
+				$sstartdate = date('d M, Y',strtotime($voucherDetail[0]['item_start_date']));
+				$senddate = date('d M, Y',strtotime($voucherDetail[0]['item_expire_date']));
+				$sprice = $voucherDetail[0]['price'];
+				$resaleprice = $resell_price;
+				$svname = $offer_details->title;
+			     
                     $subject ='Payment successfully';
                     $body ='<html><body><p>Dear '.$to_user_name.',</p>
 
                             <p>You  have successfully made payment for resell voucher<br />
-                            
+                            <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$sviewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$svname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$sstartdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$senddate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$sprice.'<br /><br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Sell price :</span>'.$resaleprice.'<br /><br />
                             <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
                             <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
 
@@ -550,8 +606,13 @@ function redeemUserPoints()
                     $subject1 =$to_user_name.' has successfully made payment for your voucher';
                     $body1 ='<html><body><p>Dear '.$resell_user_name.',</p>
 
-                            <p> '.$to_user_name. ' has successfully made payment for your voucher<br />
-                            
+                            <p> You have successfully sold voucher to '.$to_user_name. '.<br />
+                            <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$sviewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$svname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$sstartdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$senddate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$sprice.'<br /><br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Sell price :</span>'.$resaleprice.'<br /><br />
                             <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
                             <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
 

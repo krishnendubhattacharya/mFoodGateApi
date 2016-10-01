@@ -94,6 +94,7 @@ $app->get('/getLastdayPromo',  'getLastdayPromo');
 $app->get('/getHotSellingPromo',  'getHotSellingPromo');
 $app->get('/getSpecialPromo',  'getSpecialPromo');
 $app->get('/registerMemberApi/:email',  'registerMemberApi');
+$app->get('/sendSubscribeEmail/:email',  'sendSubscribeEmail');
 
 /************* Vouchers ****************/
 $app->get('/getMerchantMembershipPromo/:id','getMerchantMembershipPromo');

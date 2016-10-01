@@ -698,6 +698,22 @@ function swapinterest(){
 						if($interestedSwapDetails){
 							$new = json_decode($interestedSwapDetails);
 							//echo '<pre>';print_r($new);exit;
+								$offer_detail = findByIdArray( $voucher->offer_id,'offers');
+							     $vname = $offer_detail['title'];
+								$viewid = 'MFG-000000000'.$voucher_id;
+								$startdate = date('d M, Y',strtotime($voucher->item_start_date));
+								$enddate = date('d M, Y',strtotime($voucher->item_expire_date));
+								$price = $voucher->price;
+								
+								$svoucher = findByIdArray( $swapdetail->voucher_id,'vouchers');
+							     $sviewid = 'MFG-000000000'.$svoucher['id'];
+								$sstartdate = date('d M, Y',strtotime($svoucher['item_start_date']));
+								$senddate = date('d M, Y',strtotime($svoucher['item_expire_date']));
+								$sprice = $svoucher['price'];
+								
+								$swapoffer_detail = findByIdArray( $swapdetail->offer_id,'offers');
+							     $svname = $swapoffer_detail['title'];
+																
 								$from = ADMINEMAIL;
 								//$to = $saveresales->email;
 								$to = $to_user->email;  //'nits.ananya15@gmail.com';
@@ -705,8 +721,20 @@ function swapinterest(){
 								$body ='<html><body><p>Dear '.$to_user->first_name.' '.$to_user->last_name.',</p>
 
 									<p>'.$from_user->first_name.' '.$from_user->last_name. ' wanted to swap voucher<br />
+									<span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$viewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$vname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$startdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$enddate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$price.'<br /><br />
+								    
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Swap With:<br />
+									<span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$sviewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$svname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$sstartdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$senddate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$sprice.'<br /><br />
+								    
 									
-									<span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Url want to swap with :</span><a href="'.$new->voucher_url.'" target="_blank">'.$new->voucher_url.'</a><br />
 									If you want to swap with the voucher given by '.$from_user->first_name.' '.$from_user->last_name. ' then please Login first to the site and then click the Accept button below
 									<br />
 									<a href="'.WEBSITEURL.'acceptswap/'.$new->id.'" target="_blank" >ACCEPT</a>

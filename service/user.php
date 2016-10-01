@@ -121,6 +121,36 @@ function registerMemberApi($email)
     echo json_encode($rarray);
 }
 
+function sendSubscribeEmail($email)
+{
+    if(!empty($email))
+    {
+        $from = ADMINEMAIL;
+            //$to = $saveresales->email;
+            
+        $to = ADMINEMAIL; 
+        //$to = 'nits.anup@gmail.com'; 
+        $subject ='Email from Get in touch';
+        $body ='<html><body><p>Hi Admin,</p>
+
+                <p>New user wanted to get in touch with mFoodGate
+                </p><br />
+                <p>Email: '.$email.'</p><br /><br />
+
+                <p>Thanks,<br />
+                mFood&nbsp;Team</p>
+
+                <p>&nbsp;</p></body></html>';
+
+        sendMail($to,$subject,$body);
+        $rarray = array("type" => "success", "message" => "Successfully notification sent to mFoodGate");
+    }
+    else {
+        $rarray = array("type" => "error", "message" => "No email found.");
+    }
+    echo json_encode($rarray);
+}
+
 function getAllCustomers() {
     $result = findByConditionArray(array('user_type_id' => 2),'users');
     if(!empty($result))

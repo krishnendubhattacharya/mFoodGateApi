@@ -146,12 +146,13 @@ function getVoucherUserMerchentDetail($vid){
                         
                         $vouchers->created_on = date('d M,Y', strtotime($vouchers->created_on));
 			if(empty($vouchers->image)){
-			    $image = $site_path.'voucher_images/default.jpg';
+			    $vouchers->image = SITEURL.'voucher_images/default.jpg';
+			   // $image = $site_path.'voucher_images/default.jpg';
 			    //$vouchers->image = $image;
 			}
 			else{
 			   // for($i=0;$i<$countrestaurant;$i++){
-				$image = $site_path."voucher_images/".$vouchers->image;
+				$vouchers->image = SITEURL."voucher_images/".$vouchers->image;
 				//$vouchers->image = $image;
 				//$restaurant_details->image = $img;
 			    //}
@@ -812,20 +813,25 @@ function getResellListPostOthers($userid){
 	    $db=null;
 	    if(!empty($resales)){
 	    		for($i=0;$i<$list_count;$i++){
-			    $today = date('Y-m-d');
-			    $checkdate = date('Y-m-d', strtotime($resales[$i]->expire_date));
-			    if($checkdate<$today)
-				{
-					$resales[$i]->Status = 'Expired';
-				}else{
-					$resales[$i]->Status = '';
-				}
-			    $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
-			    $resales[$i]->expire_date = $todate;
-                            $resales[$i]->created_on = date('d M, Y', strtotime($resales[$i]->created_on));
-                            $resales[$i]->price = number_format($resales[$i]->price,1,'.',',');
-                            $resales[$i]->voucher_price = number_format($resales[$i]->voucher_price,1,'.',',');
-                            $resales[$i]->purchase_price = number_format($resales[$i]->purchase_price,1,'.',',');
+                            $reselluserbidInfo = findByConditionArray(array('voucher_id' => $resales[$i]->voucher_id,'user_id' => $userid),'voucher_bids');
+                            if(!empty($reselluserbidInfo)){
+                                unset($resales[$i]);
+                            }else{
+                                $today = date('Y-m-d');
+                                $checkdate = date('Y-m-d', strtotime($resales[$i]->expire_date));
+                                if($checkdate<$today)
+                                    {
+                                            $resales[$i]->Status = 'Expired';
+                                    }else{
+                                            $resales[$i]->Status = '';
+                                    }
+                                $todate = date('d M, Y', strtotime($resales[$i]->expire_date));
+                                $resales[$i]->expire_date = $todate;
+                                $resales[$i]->created_on = date('d M, Y', strtotime($resales[$i]->created_on));
+                                $resales[$i]->price = number_format($resales[$i]->price,1,'.',',');
+                                $resales[$i]->voucher_price = number_format($resales[$i]->voucher_price,1,'.',',');
+                                $resales[$i]->purchase_price = number_format($resales[$i]->purchase_price,1,'.',',');
+                            }
 			}
 	    		$resales = json_encode($resales);
 	    	     $result = '{"type":"success","resale_details":'.$resales.'}';
@@ -845,7 +851,7 @@ function getResellListBidOwn($userid){
 	 $resales = array();
 	   	 //$sql = "SELECT voucher_resales.voucher_id, voucher_resales.price, voucher_resales.points, voucher_resales.user_id, voucher_resales.is_sold, voucher_resales.is_active, vouchers.to_date, vouchers.price as voucher_price FROM voucher_resales, vouchers WHERE voucher_resales.voucher_id = vouchers.id and vouchers.to_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold='0' and vouchers.user_id=:user_id";
 	   	 
-	   	 $sql = "SELECT voucher_bids.id as bid_id,voucher_bids.voucher_id,voucher_bids.created_on,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points as bid_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, voucher_resales.status, vouchers.to_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price,vouchers.to_date as expire_date, offers.title,offers.id as offer_id FROM voucher_bids, voucher_resales, vouchers, offers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and offers.id = vouchers.offer_id and vouchers.item_expire_date >=:current_date and voucher_resales.is_active ='1' and voucher_resales.is_sold = 0 and voucher_bids.user_id=:user_id";
+	   	 $sql = "SELECT voucher_bids.id as bid_id,voucher_bids.voucher_id,voucher_bids.created_on,voucher_bids.user_id,voucher_bids.voucher_resale_id,voucher_bids.bid_price,voucher_bids.m_points as bid_points, voucher_bids.is_accepted, voucher_resales.price, voucher_resales.points, voucher_resales.is_sold, voucher_resales.is_active, voucher_resales.status, vouchers.to_date, vouchers.price as voucher_price,vouchers.offer_price as purchase_price,vouchers.to_date as expire_date, offers.title,offers.id as offer_id FROM voucher_bids, voucher_resales, vouchers, offers WHERE voucher_resales.id = voucher_bids.voucher_resale_id and vouchers.id = voucher_bids.voucher_id and offers.id = vouchers.offer_id and vouchers.item_expire_date >=:current_date and voucher_resales.is_active ='1' and voucher_bids.user_id=:user_id";
 	   	
 	   
 	   
@@ -985,7 +991,7 @@ function addBid(){
 	    $stmt = $db->prepare($sql1);  
 	    $stmt->bindParam("voucher_resale_id", $voucher_resale_id);
 	    $stmt->execute();
-	    //$resales = $stmt->fetchObject(); 
+	    $resales = $stmt->fetchObject(); 
 	    $resale_count = $stmt->rowCount();
 	    if($resale_count==0){
 	    		 $result = '{"type":"error","message":"Already Sold"}'; 
@@ -1008,6 +1014,45 @@ function addBid(){
 			$allinfo['save_data'] = $body;
 			$bid_details = add(json_encode($allinfo),'voucher_bids');
 				if(!empty($bid_details)){
+					    
+					    $fromUser = findByIdArray( $uid,'users');
+					    
+					    $svoucher = findByIdArray( $body->voucher_id,'vouchers');
+							     $sviewid = 'MFG-000000000'.$svoucher['id'];
+								$sstartdate = date('d M, Y',strtotime($svoucher['item_start_date']));
+								$senddate = date('d M, Y',strtotime($svoucher['item_expire_date']));
+								$sprice = $svoucher['price'];
+								$resaleprice = $resales->price;
+								$bidprice = $body->bid_price;
+								$swapoffer_detail = findByIdArray( $svoucher['offer_id'],'offers');
+							     $svname = $swapoffer_detail['title'];
+							     
+							     $toUser = findByIdArray( $resales->user_id,'users');
+							     								
+								$from = ADMINEMAIL;
+								//$to = $saveresales->email;
+								$to = $toUser['email'];  //'nits.ananya15@gmail.com';
+								$subject ='New Bid on Resell Voucher';
+								$body ='<html><body><p>Dear '.$toUser['first_name'].' '.$toUser['last_name'].',</p>
+
+									<p>'.$fromUser['first_name'].' '.$fromUser['last_name']. ' have bid your resell voucher<br />
+									<span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$sviewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$svname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$sstartdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$senddate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$sprice.'<br /><br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Resell price :</span>'.$resaleprice.'<br /><br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Bid price :</span>'.$bidprice.'<br /><br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
+									<span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
+
+									<p>Thanks,<br />
+									mFood&nbsp;Team</p>
+
+									<p>&nbsp;</p></body></html>';
+									//echo $to.'|'.$subject.'|'.$body;
+								sendMail($to,$subject,$body);
+					    
 					    //$bid_details  = json_encode($bid_details);
 					    $result = '{"type":"success","message":"You bid this voucher Successfully","bid_details":'.$bid_details.' }'; 
 				}
@@ -1208,7 +1253,7 @@ function giftVoucher(){
 			
 			if(!empty($from_user))
 			{
-				$sql = "SELECT voucher_owner.id, voucher_owner.is_active, vouchers.id as voucher_id, vouchers.offer_id, vouchers.view_id, vouchers.offer_price, vouchers.offer_percent, vouchers.price, users.first_name, users.last_name, users.email  FROM vouchers, voucher_owner, users WHERE voucher_owner.voucher_id = vouchers.id and voucher_owner.voucher_id=:vid and voucher_owner.is_active = '1' and voucher_owner.to_user_id=:userid";
+				$sql = "SELECT voucher_owner.id, voucher_owner.is_active, vouchers.id as voucher_id, vouchers.offer_id, vouchers.view_id, vouchers.item_start_date as startdate, vouchers.item_expire_date as enddate, vouchers.offer_price, vouchers.offer_percent, vouchers.price, users.first_name, users.last_name, users.email  FROM vouchers, voucher_owner, users WHERE voucher_owner.voucher_id = vouchers.id and voucher_owner.voucher_id=:vid and voucher_owner.is_active = '1' and voucher_owner.to_user_id=:userid";
 				$stmt = $db->prepare($sql);  
 				$stmt->bindParam("vid", $body->vid);
 				$stmt->bindParam("userid", $body->userid);
@@ -1218,11 +1263,13 @@ function giftVoucher(){
 				{
 					$ownerid = $voucherowner->id;
 					$offerid = $voucherowner->offer_id;
-					$viewid = $voucherowner->view_id;
+					$viewid = 'MFG-000000000'.$voucherowner->voucher_id;
 					$offer_price = $voucherowner->offer_price;
 					$offer_percent = $voucherowner->offer_percent;
 					$price = $voucherowner->price;
 					$vid = $voucherowner->voucher_id;
+					$startdate = date('d M, Y',strtotime($voucherowner->startdate));
+					$enddate = date('d M, Y',strtotime($voucherowner->enddate));
 					
 					$arr = array();
 					$arr['is_active'] = 0;
@@ -1256,6 +1303,7 @@ function giftVoucher(){
 						$new_owner_details  = add(json_encode($newinfo),'voucher_owner');
 						if(!empty($new_owner_details)){
 							$new = json_decode($new_owner_details);
+							
 						    $giveData['voucher_id'] = $body->vid;
 							$giveData['offer_id'] = $offerid;
 							$giveData['from_user_id'] = $body->userid;
@@ -1265,6 +1313,9 @@ function giftVoucher(){
 							$newgiveData['save_data'] = $giveData;
 							$new_owner_details  = add(json_encode($newgiveData),'give_voucher');
 							
+							$offer_detail = findByIdArray( $offerid,'offers');
+							$vname = $offer_detail['title'];
+							
 							$from = ADMINEMAIL;
 						    //$to = $saveresales->email;
 						    $to = $to_user->email;  //'nits.ananya15@gmail.com';
@@ -1273,6 +1324,9 @@ function giftVoucher(){
 
 							    <p>'.$from_user->first_name.' '.$from_user->last_name. ' have gifted you a voucher<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$new->voucher_view_id.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$vname.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$startdate.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$enddate.'<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$new->price.'<br />
 							    
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
