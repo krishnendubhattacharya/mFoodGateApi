@@ -139,33 +139,45 @@
                     $first_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$first_month."' and YEAR(date) = '".$first_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $first_order_res = findByQuery($first_order_sql);
                     $first_order_count = $first_order_res[0]['sum'];
-                    $first_order_count = number_format($first_order_count,0,'.',',');
+                    if(empty($first_order_count))
+                        $first_order_count = 0;                    
+                    
+                    $first_order_count_format = number_format($first_order_count,0,'.',',');
                     
                     $second_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$second_month."' and YEAR(date) = '".$second_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $second_order_res = findByQuery($second_order_sql);
                     $second_order_count = $second_order_res[0]['sum'];
-                    $second_order_count = number_format($second_order_count,0,'.',',');
+                    if(empty($second_order_count))
+                        $second_order_count = 0;
+                    $second_order_count_format = number_format($second_order_count,0,'.',',');
                     
                     $third_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$third_month."' and YEAR(date) = '".$third_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $third_order_res = findByQuery($third_order_sql);
                     $third_order_count = $third_order_res[0]['sum'];
-                    $third_order_count = number_format($third_order_count,0,'.',',');
+                    if(empty($third_order_count))
+                        $third_order_count = 0;
+                    $third_order_count_format = number_format($third_order_count,0,'.',',');
                     
                     $fourth_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$fourth_month."' and YEAR(date) = '".$fourth_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $fourth_order_res = findByQuery($fourth_order_sql);
                     $fourth_order_count = $fourth_order_res[0]['sum'];
-                    $fourth_order_count = number_format($fourth_order_count,0,'.',',');
+                    if(empty($fourth_order_count))
+                        $fourth_order_count = 0;
+                    $fourth_order_count_format = number_format($fourth_order_count,0,'.',',');
                     
                     $fifth_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$fifth_month."' and YEAR(date) = '".$fifth_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $fifth_order_res = findByQuery($fifth_order_sql);
                     $fifth_order_count = $fifth_order_res[0]['sum'];
-                    $fifth_order_count = number_format($fifth_order_count,0,'.',',');
+                    if(empty($fifth_order_count))
+                        $fifth_order_count = 0;
+                    $fifth_order_count_format = number_format($fifth_order_count,0,'.',',');
                     
                     $sixth_order_sql = "select sum(amount) as sum from orders where MONTH(date) = '".$sixth_month."' and YEAR(date) = '".$sixth_year."' and id in(".implode(',',$all_order_ids).")"; 
                     $sixth_order_res = findByQuery($sixth_order_sql);                    
                     $sixth_order_count = $sixth_order_res[0]['sum'];
-                    $sixth_order_count = number_format($sixth_order_count,0,'.',',');
-                    //echo $sixth_order_count;
+                    if(empty($sixth_order_count))
+                        $sixth_order_count = 0;
+                    $sixth_order_count_format = number_format($sixth_order_count,0,'.',',');                    
                     
                 }
                 
@@ -256,9 +268,10 @@
         $promo_graph = array('first'=>$first_promo_count,'second'=>$second_promo_count,'third'=>$third_promo_count,'fourth'=>$fourth_promo_count,'fifth'=>$fifth_promo_count,'sixth'=>$sixth_promo_count);
 
         $order_graph = array('first'=>$first_order_count,'second'=>$second_order_count,'third'=>$third_order_count,'fourth'=>$fourth_order_count,'fifth'=>$fifth_order_count,'sixth'=>$sixth_order_count);
+        $order_graph_format = array('first'=>$first_order_count_format,'second'=>$second_order_count_format,'third'=>$third_order_count_format,'fourth'=>$fourth_order_count_format,'fifth'=>$fifth_order_count_format,'sixth'=>$sixth_order_count_format);
         
         $month_name = array('first'=>$first_month_text,'second'=>$second_month_text,'third'=>$third_month_text,'fourth'=>$fourth_month_text,'fifth'=>$fifth_month_text,'sixth'=>$sixth_month_text);
-        $rarray = array('type' => 'success', 'data' => $data,'member_graph'=>$member_graph,'new_member_graph'=>$new_member_graph,'promo_graph'=>$promo_graph,'order_graph'=>$order_graph,'month_name'=>$month_name);
+        $rarray = array('type' => 'success', 'data' => $data,'member_graph'=>$member_graph,'new_member_graph'=>$new_member_graph,'promo_graph'=>$promo_graph,'order_graph'=>$order_graph,'order_graph_format'=>$order_graph_format,'month_name'=>$month_name);
         
         echo json_encode($rarray);      
         

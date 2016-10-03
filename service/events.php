@@ -310,7 +310,7 @@ function getEventsByUser($user_id)
 		
 			for($i=0;$i<$count;$i++){
 				$today = date('Y-m-d');
-				$checkdate = date('Y-m-d', strtotime($points[$i]->offer_from_date));
+				$checkdate = date('Y-m-d', strtotime($points[$i]->offer_to_date));
 				
 				
 				$created_on = date('m/d/Y', strtotime($points[$i]->created_on));
@@ -414,7 +414,7 @@ function getEventsDealByUser($user_id)
 		
 			for($i=0;$i<$count;$i++){
 				$today = date('Y-m-d');
-				$checkdate = date('Y-m-d', strtotime($points[$i]->offer_from_date));
+				$checkdate = date('Y-m-d', strtotime($points[$i]->offer_to_date));
 				
 				
 				

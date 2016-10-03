@@ -368,6 +368,7 @@ function swapdetails($sid) {
     $offerId ='';
     $offer_image = array();
     $restaurant_details = array();
+    $cur_date = date('Y-m-d H:i:s');
     $site_path = SITEURL;
 	try {
 		$db = getConnection();
@@ -392,6 +393,11 @@ function swapdetails($sid) {
                         }else{
                             $vouchers->swap_end_date = date('m-d-Y',strtotime($vouchers->offering_end_date));
                             $vouchers->swap_expire_date = date('M d,Y H:i:s',strtotime($vouchers->offering_end_date));
+                        }
+                        if($vouchers->offering_end_date >= $cur_date){
+                            $offer->swap_expire_date_status =1;
+                        }else{
+                            $offer->swap_expire_date_status =0;
                         }
 			if(empty($vouchers->image)){
 			    $image = $site_path.'voucher_images/default.jpg';

@@ -1166,6 +1166,16 @@ function saveVoucherResale(){
 						$new_owner_details  = add(json_encode($newinfo),'voucher_owner');
 						if(!empty($new_owner_details)){
 						$new = json_decode($new_owner_details);
+						    
+						    $svoucher = findByIdArray( $body->voucher_id,'vouchers');
+						     $sviewid = 'MFG-000000000'.$body->voucher_id;
+							$sstartdate = date('d M, Y',strtotime($svoucher['item_start_date']));
+							$senddate = date('d M, Y',strtotime($svoucher['item_expire_date']));
+							$sprice = $svoucher['price'];
+							
+							$swapoffer_detail = findByIdArray( $offerid,'offers');
+						     $svname = $swapoffer_detail['title'];
+						    
 						    $from = ADMINEMAIL;
 						    //$to = $saveresales->email;
 						    $to = $toUser->email;  //'nits.ananya15@gmail.com';
@@ -1173,9 +1183,12 @@ function saveVoucherResale(){
 						    $body ='<html><body><p>Dear '.$toUser->first_name.' '.$toUser->last_name.',</p>
 
 							    <p>'.$fromUser->first_name.' '.$fromUser->last_name. ' have Sold  a resale voucher<br />
-							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$new->voucher_view_id.'<br />
+							         <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$sviewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$svname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$sstartdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$senddate.'<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$new->price.'<br />
-							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Purchased Price :</span>'.$new->buy_price.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Sell Price :</span>'.$new->buy_price.'<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
 
@@ -1193,7 +1206,10 @@ function saveVoucherResale(){
 						    $body1 ='<html><body><p>Dear '.$fromUser->first_name.' '.$fromUser->last_name.',</p>
 
 							    <p> You have successfully sold voucher to '.$toUser->first_name.' '.$toUser->last_name. '<br />
-							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$new->voucher_view_id.'<br />
+							         <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$sviewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$svname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$sstartdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$senddate.'<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$new->price.'<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Sell Price :</span>'.$new->buy_price.'<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
@@ -1323,7 +1339,7 @@ function giftVoucher(){
 						    $body ='<html><body><p>Dear '.$to_user->first_name.' '.$to_user->last_name.',</p>
 
 							    <p>'.$from_user->first_name.' '.$from_user->last_name. ' have gifted you a voucher<br />
-							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$new->voucher_view_id.'<br />
+							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$viewid.'<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$vname.'<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$startdate.'<br />
 							    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$enddate.'<br />
@@ -4569,6 +4585,7 @@ function getResellPromoDetails($id,$rsid) {
         $offer_images = array();
         $point_master_details=array();
         $point_master_id = 0;
+        $cur_date = date('Y-m-d H:i:s');
         
 	try {
 		$db = getConnection();
@@ -4629,7 +4646,11 @@ function getResellPromoDetails($id,$rsid) {
                             $offer->resell_end_date = date('m-d-Y',strtotime($resellInfo[0]['offering_end_date']));
                             $offer->resell_expire_date = date('M d,Y H:i:s',strtotime($resellInfo[0]['offering_end_date']));
                         }
-                        
+                        if($resellInfo[0]['offering_end_date'] >= $cur_date){
+                            $offer->resell_expire_date_status =1;
+                        }else{
+                            $offer->resell_expire_date_status =0;
+                        }
                         
                         
                         $offer->resell_id = $rsid;
