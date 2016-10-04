@@ -259,8 +259,10 @@ function userRelatedPoint($id) {
             $point_data['point_name'] = $point_name;
             $point_data['point_expire_date'] = $point_expire_date;
             $point_data['last_point_date'] = $last_point_date;
-            $point_data['total_remaining_point'] = $total_remaining_point;
+            //$point_data['total_remaining_point'] = $total_remaining_point;
+            $point_data['total_remaining_point'] = number_format($total_remaining_point,2,'.',',');
             $user_points[] = $point_data;
+            
         }
         
     }
