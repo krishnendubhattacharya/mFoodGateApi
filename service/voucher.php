@@ -1553,10 +1553,10 @@ function getGiftedToMe($userid){
 			$stmt->execute();
 			$toUser = $stmt->fetchObject();
 			
-                        $vouchers_query = "SELECT * FROM vouchers where offer_id=".$gives[$i]->offer_id;
+                        $vouchers_query = "SELECT * FROM vouchers where offer_id=".$offerId;
                         $vouchers = findByQuery($vouchers_query,'one');
                     
-			$todate = date('M d,Y', strtotime($vouchers['item_expire_date']));
+			$todate = date('M d,Y', strtotime($offer->offer_to_date));
 		    //$offer[$i]->offer_to_date = $todate;
 			
 			$gives[$i]->voucher_name = $offer->title;
