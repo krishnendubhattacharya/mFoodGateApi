@@ -379,6 +379,15 @@ function swapdetails($sid) {
 		
 		//$vouchers->offer_to_date = $offer_to_date;
 		if(!empty($vouchers)){
+		    $today = date('Y-m-d');
+		    $checkdate = date('Y-m-d', strtotime($vouchers->offering_end_date));
+		    if($checkdate<$today)
+				{
+					$vouchers->Status = 'Expired';
+				}
+				else{
+			        $vouchers->Status = '';
+			    }
 		    $to_date = date('d M,Y', strtotime($vouchers->to_date));
 			//$offer_to_date = date('d M,Y', strtotime($vouchers->offer_to_date));
 			$vouchers->to_date = $to_date;
