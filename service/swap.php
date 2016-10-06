@@ -817,7 +817,7 @@ function swapInterestAccept($siid){
                 $secondUseremail = $secondUserInfo[0]['email'];
                 
                 $firstUsername = $firstUserInfo[0]['first_name'].' '.$firstUserInfo[0]['last_name'];
-                $secondUsername = $firstUserInfo[0]['first_name'].' '.$firstUserInfo[0]['last_name'];
+                $secondUsername = $secondUserInfo[0]['first_name'].' '.$secondUserInfo[0]['last_name'];
 	        
 	        $sql = "SELECT * from voucher_owner where to_user_id=:user_id and voucher_id=:voucher_id and is_active=1";
 	        $db = getConnection();
@@ -880,13 +880,42 @@ function swapInterestAccept($siid){
 			$editinfo['save_data'] = $arr2;
 			$voucher_owner_edit = edit(json_encode($editinfo),'voucher_owner',$second_owner_id);
                         $from = ADMINEMAIL;
+                         
+                         $fvoucher = findByIdArray( $second_voucher_id,'vouchers');//first user voucher
+                         $offer_detail = findByIdArray( $fvoucher['offer_id'],'offers');
+				     $vname = $offer_detail['title'];
+					$viewid = 'MFG-000000000'.$second_voucher_id;
+					$startdate = date('d M, Y',strtotime($fvoucher['item_start_date']));
+					$enddate = date('d M, Y',strtotime($fvoucher['item_expire_date']));
+					$price = $fvoucher['price'];
+					
+					$svoucher = findByIdArray( $first_voucher_id,'vouchers');
+				     $sviewid = 'MFG-000000000'.$svoucher['id'];
+					$sstartdate = date('d M, Y',strtotime($svoucher['item_start_date']));
+					$senddate = date('d M, Y',strtotime($svoucher['item_expire_date']));
+					$sprice = $svoucher['price'];
+					
+					$swapoffer_detail = findByIdArray( $svoucher['offer_id'],'offers');
+				     $svname = $swapoffer_detail['title'];
 								//$to = $saveresales->email;
                         $to = $firstUseremail;  //'nits.ananya15@gmail.com';
                         $subject ='Successfully Swap';
                         $body ='<html><body><p>Dear '.$firstUsername.',</p>
 
-                                <p>You have successfully swaped you voucher with the voucher of '.$secondUsername.'<br />
-                                
+                                <p>You have successfully swaped your voucher with the voucher of '.$secondUsername.'<br />
+                                <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$viewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$vname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$startdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$enddate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$price.'<br /><br />
+								    
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Swap With:<br />
+									<span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$sviewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$svname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$sstartdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$senddate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$sprice.'<br /><br />
+								    
                                 <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
                                 <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
 
@@ -901,8 +930,19 @@ function swapInterestAccept($siid){
                         $subject1 ='Successfully Swap';
                         $body1 ='<html><body><p>Dear '.$secondUsername.',</p>
 
-                                <p>You have successfully swaped you voucher with the voucher of '.$firstUsername.'<br />
-                                
+                                <p>You have successfully swaped your voucher with the voucher of '.$firstUsername.'<br />
+                                <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$sviewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$svname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$sstartdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$senddate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$sprice.'<br /><br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Swap With:<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Id :</span>'.$viewid.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Name :</span>'.$vname.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher Start Date :</span>'.$startdate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher End Date :</span>'.$enddate.'<br />
+								    <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">Voucher price :</span>'.$price.'<br /><br />
+								    
                                 <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">If we can help you with anything in the meantime just let us know by e-mailing&nbsp;</span>'.$from.'<br />
                                 <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"></span><span style="color:rgb(34, 34, 34); font-family:arial,sans-serif">!&nbsp;</span></p>
 

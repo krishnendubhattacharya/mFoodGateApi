@@ -1433,7 +1433,7 @@ function getGiftedByMe($userid){
 		
 		for($i=0;$i<$count;$i++){
 		    $offerId = $gives[$i]->offer_id;
-			$sql = "SELECT offers.id, offers.title, offers.price, offers.offer_percent, offers.offer_from_date, offers.offer_to_date, offers.image,offers.restaurant_id FROM offers where offers.id =:offerId ";
+			$sql = "SELECT offers.id, offers.title, offers.price, offers.offer_percent, offers.offer_from_date, offers.offer_to_date, offers.item_expire_date, offers.image,offers.restaurant_id FROM offers where offers.id =:offerId ";
 			$stmt = $db->prepare($sql);		
 			$stmt->bindParam("offerId", $offerId);
 			$stmt->execute();
@@ -1453,7 +1453,7 @@ function getGiftedByMe($userid){
 			$stmt->execute();
 			$toUser = $stmt->fetchObject();
 			
-			$todate = date('M d,Y', strtotime($offer->offer_to_date));
+			$todate = date('M d,Y', strtotime($offer->item_expire_date));
 		    //$offer[$i]->offer_to_date = $todate;
 			
 			$gives[$i]->voucher_name = $offer->title;
@@ -2161,6 +2161,15 @@ function getResturantPromo($rid) {
     {
         //$restaurant_details['description'] = strip_tags($restaurant_details['description']);
     }
+    $site_path = SITEURL;
+    if(empty($restaurant_details['logo'])){
+								$logo = $site_path.'restaurant_images/default.jpg';
+								$restaurant_details['linklogo'] = $img;
+							}
+							else{                            
+								$img = $site_path."restaurant_images/".$restaurant_details['logo'];
+								$restaurant_details['linklogo'] = $img;                            
+							}
     $is_active = 1;  
 	$lastdate = date('Y-m-d');
 	if(!empty($rid))

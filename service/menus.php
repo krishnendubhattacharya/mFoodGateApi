@@ -65,6 +65,8 @@
                     }
                     $t->formatprice = number_format($t->price,1,'.',',');
                     
+                    $restaurant_details = findByIdArray($t->merchantrestaurant_id,'merchantrestaurants');
+                    $t->restaurant = $restaurant_details['title'];
                     // Data binding in angularJs is automatic synchronisation of data between model and view 
                     //$t->type = ($t->type=='C'?'Credit':'Debit');
                     //$t->date = date('m/d/Y',  strtotime($t->date));
