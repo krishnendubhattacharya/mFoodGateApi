@@ -215,7 +215,7 @@ function getUser($id) {
             foreach($body->categories as $k=>$cat)
             {
                     $categoryname = findByIdArray($cat->category_id,'category');
-                    $body->categories[$k]->category = $categoryname['name'];
+                    $body->categories[$k]->category = strtoupper($categoryname['name']);
                     
             }
 	    $user_details = json_encode($body);
@@ -501,6 +501,8 @@ function addUser() {
 	$unique_field['email']=$user->email;
 	//$unique_field['username']=$user->username;
 	$rowCount = rowCount(json_encode($unique_field),'users');
+	
+	
 	if($rowCount == 0){
             $unique_code = time().rand(100000,1000000);
 	    $pass = $user->password;
