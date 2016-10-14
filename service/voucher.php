@@ -539,7 +539,7 @@ function addResale(){
             
 	    if($resale_count==0){
                
-			$body->created_on = date('Y-m-d h:i:s');
+			$body->created_on = date('Y-m-d H:i:s');
 			$body->is_sold = 0;
 			$body->is_active = 1;
                         
