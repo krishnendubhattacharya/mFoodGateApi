@@ -77,6 +77,7 @@ $app->post('/updateSubUser','updateSubUser');
 $app->get('/userRelatedPoint/:id','userRelatedPoint');
 
 $app->post('/fbloginuser', 'fbLoginUser');
+$app->post('/gplusLoginUser', 'gplusLoginUser');
 $app->post('/profileimageupload', 'profileImageUpload');
 $app->get('/testmail', 'testMail');
 $app->get('/clientlist/:id', 'getAllClientUser');
