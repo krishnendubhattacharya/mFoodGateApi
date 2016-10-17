@@ -1208,7 +1208,7 @@ function fbLoginUser(){
 		//$result = json_encode($user); 
 		$logged_in = $user->is_logged_in;
 		$db = getConnection();
-                $sql = "SELECT * FROM users WHERE fb_id=:fb_id";
+                /*$sql = "SELECT * FROM users WHERE fb_id=:fb_id";
                 $stmt = $db->prepare($sql);  
                 $stmt->bindParam("fb_id", $fb_id);
                 
@@ -1218,9 +1218,9 @@ function fbLoginUser(){
                 $user = $stmt->fetchObject();
                 $stmt = null;
                 $db = null;
-                if($user_count > 0){
+                if($user_count > 0){*/
                         $id = $user->id;
-                        //$arr['is_logged_in'] = 1;
+                        $arr['fb_id'] = $fb_id;
                         $arr['last_login'] = date('Y-m-d h:m:s');
                         $updateinfo['save_data'] = $arr;
                         // print_r($updateinfo);exit;
@@ -1235,11 +1235,11 @@ function fbLoginUser(){
                         $user_details = json_encode($user);
                         $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}';
                         }
-                }else{
+                /*}else{
                 
                         $result = '{"type":"error","message":"Email already exist,please try with another fb account"}';
                 
-                }
+                }*/
 		
 		}
 		
@@ -1304,7 +1304,7 @@ function gplusLoginUser(){
 		//$result = json_encode($user); 
 		$logged_in = $user->is_logged_in;
 		$db = getConnection();
-                $sql = "SELECT * FROM users WHERE g_id=:g_id";
+                /*$sql = "SELECT * FROM users WHERE g_id=:g_id";
                 $stmt = $db->prepare($sql);  
                 $stmt->bindParam("g_id", $g_id);
                 
@@ -1313,36 +1313,40 @@ function gplusLoginUser(){
                 //echo $count;exit;
                 $user = $stmt->fetchObject();
                 $stmt = null;
-                $db = null;
-                if($user_count > 0){
+                $db = null;*/
+                //if($user_count > 0){
                         $id = $user->id;
-                        //$arr['is_logged_in'] = 1;
+                        $arr['g_id'] = $g_id;
                         $arr['last_login'] = date('Y-m-d h:m:s');
                         $updateinfo['save_data'] = $arr;
                         // print_r($updateinfo);exit;
                         $update = edit(json_encode($updateinfo),'users',$id);
                         if(!empty($update)){
-                        //print_r($update);exit;
-                        $user->is_active=1;
-			//$user->registration_date = date('d M, Y', strtotime($update->registration_date));
-			//$user->image = $site_path . "user_images/" . $update->image;
-                        //$user->is_logged_in=1;
-                        $user->last_login=$arr['last_login'];
-                        $user_details = json_encode($user);
-                        $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}';
+		                   //print_r($update);exit;
+		                   $user->is_active=1;
+						//$user->registration_date = date('d M, Y', strtotime($update->registration_date));
+						//$user->image = $site_path . "user_images/" . $update->image;
+		                   //$user->is_logged_in=1;
+		                   $user->last_login=$arr['last_login'];
+		                   $user_details = json_encode($user);
+		                   $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}';
                         }
-                }else{
+               /* }else{
                 
                         $result = '{"type":"error","message":"Email already exist,please try with another gplus account"}';
                 
-                }
+                }*/
 		
 		}
 		
 	   // }
 	    //
-	    echo $result;
+	    
 	}
+	else{
+           $result = '{"type":"error","message":"Account cannot be created without an email."}';
+     }
+    echo $result;            
 }
 
 /*function profileImageUpload(){
