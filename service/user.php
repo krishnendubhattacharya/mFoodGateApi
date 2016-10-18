@@ -1297,6 +1297,7 @@ function gplusLoginUser(){
                 $allinfo['save_data'] = $body;
                 //$allinfo['unique_data'] = $unique_field;
                 $user_details = add(json_encode($allinfo),'users');
+                print_r($user_details);exit;
                 $result = '{"type":"success","message":"Logged In Succesfully","user_details":'.$user_details.'}';
 		//$result = '{"type":"error","message":"You are Not Valid User"}'; 
 	    }
@@ -1319,7 +1320,7 @@ function gplusLoginUser(){
                         $arr['g_id'] = $g_id;
                         $arr['last_login'] = date('Y-m-d h:m:s');
                         $updateinfo['save_data'] = $arr;
-                        // print_r($updateinfo);exit;
+                         print_r($updateinfo);exit;
                         $update = edit(json_encode($updateinfo),'users',$id);
                         if(!empty($update)){
 		                   //print_r($update);exit;
