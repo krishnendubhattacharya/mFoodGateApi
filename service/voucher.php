@@ -833,6 +833,8 @@ function getResellListPostOthers($userid){
                                 $resales[$i]->purchase_price = number_format($resales[$i]->purchase_price,1,'.',',');
                             }
 			}
+			$resales = array_values($resales);
+			
 	    		$resales = json_encode($resales);
 	    	     $result = '{"type":"success","resale_details":'.$resales.'}';
 	    }

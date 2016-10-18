@@ -1218,7 +1218,7 @@ function fbLoginUser(){
                 $user = $stmt->fetchObject();
                 $stmt = null;
                 $db = null;
-                if($user_count > 0){*/
+                if($user_count > 0){*/ 
                         $id = $user->id;
                         $arr['fb_id'] = $fb_id;
                         $arr['last_login'] = date('Y-m-d h:m:s');

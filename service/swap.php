@@ -257,6 +257,7 @@ function otherSwapList($uid) {
 		    
 		}
 		$db = null;
+		$vouchers = array_values($vouchers);
 		$vouchers =  json_encode($vouchers); 
 		$result = '{"type":"success","data":'.$vouchers.',"count":'.$count.'}'; 
 	} catch(PDOException $e) {
