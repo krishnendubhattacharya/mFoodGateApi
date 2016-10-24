@@ -1085,7 +1085,7 @@ function getforgetPass(){
 	if(!empty($email)){
 	   // echo $pass;exit;
 	    $db = getConnection();
-	    $sql = "SELECT * FROM users WHERE email=:email or username=:email";
+	    $sql = "SELECT * FROM users WHERE email=:email";
 	    $stmt = $db->prepare($sql);  
 	    $stmt->bindParam("email", $email);
 	    $stmt->execute();	
@@ -1123,7 +1123,7 @@ function getforgetPass(){
 			    ';
 		    sendMail($to,$subject,$body);
 		//print_r($update);exit;
-		$result = '{"type":"success","message":"Changed Password Succesfully"}'; 
+		$result = '{"type":"success","message":"Please check your mail for password"}'; 
 		}
 	    }
 	    //
