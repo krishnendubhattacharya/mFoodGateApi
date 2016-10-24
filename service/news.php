@@ -418,6 +418,7 @@ function getNewsDetail($id) {
 		$count = $stmt->rowCount();
 		
 		//for($i=0;$i<$count;$i++){
+			$restaurants->sharedescription = strip_tags($restaurants->description);
 		    $restaurants->date = date('m-d-Y',strtotime($restaurants->date));
 		    if(empty($restaurants->image)){
                             $img = $site_path.'news_images/default.jpg';

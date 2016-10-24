@@ -2791,7 +2791,7 @@ function getPromoDetails($id) {
 				}else{
 					$offer->status = '';
 				}
-                    
+                    $offer->sharedescription = strip_tags($offer->description );
                     $offer->created_on = date('m-d-Y',strtotime($offer->created_on));
                     $offer->offer_from_date = date('m-d-Y',strtotime($offer->offer_from_date));
                     $todate = date('M d,Y H:i:s', strtotime($offer->offer_to_date));
@@ -3374,7 +3374,7 @@ function getLaunchTodayMembership() {
 	//$lastdate = date('Y-m-d');
 	$todayDate = date('Y-m-d');
 	$site_path = SITEURL;	
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.buy_count,offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and offers.is_active=1 and offers.offer_type_id=3 and offers.buy_count < offers.quantity ORDER BY offers.offer_from_date DESC";
+        $sql = "SELECT offers.id, offers.title, offers.price, offers.offer_percent, offers.offer_from_date, offers.offer_to_date, offers.image, offers.buy_count, offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_from_date)> '$start_day' and offers.is_active=1 and offers.offer_type_id=3 and offers.buy_count < offers.quantity ORDER BY offers.offer_from_date DESC";
         
         //echo $sql;
         
@@ -3423,7 +3423,7 @@ function getActiveMembershipPromo() {
 	//$lastdate = date('Y-m-d');
 	$todayDate = date('Y-m-d');
 	$site_path = SITEURL;	
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.buy_count,offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_to_date) >=CURDATE() and offers.is_active=1 and offers.offer_type_id=3 and offers.buy_count < offers.quantity";
+        $sql = "SELECT offers.id, offers.title, offers.price, offers.offer_percent, offers.offer_from_date, offers.offer_to_date, offers.image, offers.buy_count, offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and DATE(offers.offer_to_date) >=CURDATE() and offers.is_active=1 and offers.offer_type_id=3 and offers.buy_count < offers.quantity";
         
         //echo $sql;
         
@@ -3477,7 +3477,7 @@ function getLastdayMembership() {
 	$newdate = date('Y-m-d');
 	$site_path = SITEURL;
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.buy_count,offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and offers.is_active=1 and DATE(offers.offer_to_date) >=CURDATE() and DATE(offers.offer_to_date) < '$start_day' and offers.offer_type_id=3 and offers.buy_count < offers.quantity ORDER BY offers.offer_to_date ASC";
+        $sql = "SELECT offers.id, offers.title, offers.price, offers.offer_percent, offers.offer_from_date, offers.offer_to_date, offers.image, offers.buy_count, offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and offers.is_active=1 and DATE(offers.offer_to_date) >=CURDATE() and DATE(offers.offer_to_date) < '$start_day' and offers.offer_type_id=3 and offers.buy_count < offers.quantity ORDER BY offers.offer_to_date ASC";
         
         //echo $sql;
         
@@ -3528,7 +3528,7 @@ function getHotSellingMembership() {
         $is_active = 1;  
 	$lastdate = date('Y-m-d');
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image FROM offers where DATE(offers.offer_from_date) <=CURDATE() and offers.is_active=1 and offers.offer_to_date >=:lastdate and ((offers.buy_count/offers.quantity)*100)>=$perc and offers.offer_type_id=3 and offers.buy_count < offers.quantity order by offers.buy_count DESC";
+        $sql = "SELECT offers.id, offers.title, offers.price, offers.offer_percent, offers.offer_from_date, offers.offer_to_date, offers.image, offers.buy_count, offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and offers.is_active=1 and offers.offer_to_date >=:lastdate and ((offers.buy_count/offers.quantity)*100)>=$perc and offers.offer_type_id=3 and offers.buy_count < offers.quantity order by offers.buy_count DESC";
         
         //echo $sql; limit 2
         $site_path = SITEURL;
@@ -3571,7 +3571,7 @@ function getSpecialMembership() {
         $is_active = 1;  
 	$lastdate = date('Y-m-d');
 	//$newdate = "2016-03-08";
-        $sql = "SELECT offers.id,offers.title,offers.price,offers.offer_percent,offers.offer_from_date,offers.offer_to_date,offers.image,offers.special_tag FROM offers where DATE(offers.offer_from_date) <=CURDATE() and offers.is_active=1 and offers.is_special=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id=3 and offers.buy_count < offers.quantity ORDER BY offers.offer_from_date DESC";
+        $sql = "SELECT offers.id, offers.title, offers.price, offers.offer_percent, offers.offer_from_date, offers.offer_to_date, offers.image, offers.special_tag, offers.buy_count, offers.quantity FROM offers where DATE(offers.offer_from_date) <=CURDATE() and offers.is_active=1 and offers.is_special=1 and offers.offer_to_date >=:lastdate and offers.offer_type_id=3 and offers.buy_count < offers.quantity ORDER BY offers.offer_from_date DESC";
         $site_settings = findByIdArray(1,'site_settings');
         //echo $sql;
         $site_path = SITEURL;
@@ -4608,6 +4608,7 @@ function getResellPromoDetails($id,$rsid) {
 		$count = $stmt->rowCount();
 		if($count>0)
 		{
+                    $offer->sharedescription = strip_tags($offer->description);
                     $offer->created_on = date('m-d-Y',strtotime($offer->created_on));
                     $offer->offer_from_date = date('m-d-Y',strtotime($offer->offer_from_date));
                     $todate = date('M d,Y H:i:s', strtotime($offer->offer_to_date));

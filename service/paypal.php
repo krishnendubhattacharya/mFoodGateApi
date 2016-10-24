@@ -197,6 +197,56 @@ function cart_checkout(){
     exit;
 }
 
+function cart_checkout_app(){ 
+    $rarray = array();   
+        $request = Slim::getInstance()->request();
+        $body = json_decode($request->getBody());
+        
+    if(!empty($body->cart))
+    {
+       
+        $order_data = array();
+        $order_data['user_id'] = $body->user_id;
+        $order_data['amount'] = $body->total;
+        $order_data['payment_id'] = $body->payment_id;
+        $order_data['is_paid'] = 'U';
+        $order_save = add(json_encode(array('save_data' => $order_data)),'orders');
+        
+        if($order_save)
+        {
+            $order_save = (array)json_decode($order_save);
+            
+            foreach($body->cart as $temp)
+            {
+                $temp = (array)$temp;
+                $temp_details = array();
+                $temp_details['user_id'] = $body->user_id;
+                $temp_details['offer_id'] = $temp['offer_id'];
+                $temp_details['order_id'] = $order_save['id'];
+                $temp_details['price'] = $temp['price'];
+                $temp_details['offer_price'] = $temp['offer_price'];
+                $temp_details['quantity'] = $temp['quantity'];
+                $temp_details['resell'] = $temp['resell'];
+                $temp_details['resell_id'] = $temp['resell_id'];
+                $temp_details['event'] = $temp['event'];
+                $temp_details['event_id'] = $temp['event_id'];
+                $temp_details['event_price'] = $temp['event_price'];
+                $temp_details['event_bid_id'] = $temp['event_bid_id'];
+               
+                add(json_encode(array('save_data' => $temp_details)),'order_details');
+            }
+        }
+       
+        $rarray = array('type' => 'success');
+    }
+    else
+    {
+        $rarray = array('type' => 'error');
+    }
+    echo json_encode($rarray);
+    exit;
+}
+
 function success_payment()
 {
    

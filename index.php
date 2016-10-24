@@ -229,6 +229,7 @@ $app->get('/getContent/:page_header', 'getContent');
 $app->get('/getSiteSetting', 'getSiteSetting');
 $app->post('/updateSiteSettings', 'updateSiteSettings');
 /***********Paypal Call***********/
+$app->post('/cart_checkout_app', 'cart_checkout_app');
 $app->post('/cart_checkout', 'cart_checkout');
 $app->post('/success_payment', 'success_payment');
 
