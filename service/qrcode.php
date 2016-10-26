@@ -41,8 +41,9 @@ function genMembershipQrCode(){
     }    
     if(!empty($_GET['member_id']))
     {
-        $code_string .= $_GET['member_id'];
+        $code_string .= $_GET['member_id'].',';
     }
+    $code_string .= date('Y-m-d');
     if(!empty($code_string))
     {
         echo QRcode::png($code_string,false,'L',9,0);

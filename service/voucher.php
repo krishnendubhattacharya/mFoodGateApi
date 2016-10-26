@@ -1153,7 +1153,7 @@ function saveVoucherResale(){
 						$data = array();
 						$data['voucher_id'] = $body->voucher_id;
 						$data['offer_id'] = $offerid;
-						$data['voucher_view_id'] = $viewid;
+						$data['voucher_view_id'] = 'MFG-000000000'.$body->voucher_id;
 						$data['from_user_id'] = $body->from_user_id;
 						$data['to_user_id'] = $body->to_user_id;
 						$data['price'] = $price;

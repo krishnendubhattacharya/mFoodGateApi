@@ -1111,11 +1111,11 @@ function getforgetPass(){
 		    $subject ='Forgot Password';
 		    $body ='<html><body><p>Dear User,</p>
 
-			    <pre>Your Password has been changed on mFoodGate&nbsp;.<br />
+			    <p>Your Password has been changed on mFoodGate&nbsp;.<br />
 			    Your new login details:<br />
 			   <strong> Email: "'.$user->email.'";<br />
 			    Password: "'.$pass.'"</strong><br />
-			    You can now login to your account and can change your password.</pre>
+			    You can now login to your account and can change your password.</p>
 			    <p>Thanks,<br />
 			    mFood&nbsp;Team</p>
 
