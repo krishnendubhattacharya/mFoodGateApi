@@ -149,7 +149,22 @@ function checkOfferId($promo_id)
     if(!empty($results)){
         $rarray = array('type' => 'error', 'message' => 'Promo Expired');
     }else{
-        $rarray = array('type' => 'success', 'message' => 'ok');
+        $sql = "select * from offers where id ='".$promo_id."'";
+        $results = findByQuery($sql);
+        //echo '<pre>';print_r($results);
+        if(($results[0]['offer_price']>0) && (($results[0]['quantity'] - $results[0]['buy_count']) >0))
+        {
+        	$rarray = array('type' => 'success', 'message' => 'ok');
+        }else{
+            if(($results[0]['offer_price'] <= 0)){
+                $rarray = array('type' => 'error', 'message' => 'You cannot add the voucher as the price is 0.');
+            }
+            if(($results[0]['quantity'] - $results[0]['buy_count']) <= 0){
+                $rarray = array('type' => 'error', 'message' => 'Out of Stock');
+            }
+        	
+        }
+        
     }
     echo json_encode($rarray);
 }

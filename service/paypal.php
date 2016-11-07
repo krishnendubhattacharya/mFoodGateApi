@@ -182,7 +182,7 @@ function cart_checkout(){
                 $temp_details['event_id'] = $temp['event_id'];
                 $temp_details['event_price'] = $temp['event_price'];
                 $temp_details['event_bid_id'] = $temp['event_bid_id'];
-               
+                $temp_details['typemem'] = $temp['typemem'];
                 add(json_encode(array('save_data' => $temp_details)),'order_details');
             }
         }
@@ -232,7 +232,7 @@ function cart_checkout_app(){
                 $temp_details['event_id'] = $temp['event_id'];
                 $temp_details['event_price'] = $temp['event_price'];
                 $temp_details['event_bid_id'] = $temp['event_bid_id'];
-               
+                $temp_details['typemem'] = $temp['typemem'];
                 add(json_encode(array('save_data' => $temp_details)),'order_details');
             }
         }
@@ -269,6 +269,23 @@ function success_payment()
             $db = null;
             if($user)
             {
+                $userforEmail = findByConditionArray(array('id' => $user->user_id),'users');
+                $emailForEmail = $userforEmail[0]['email'];
+                $nameForEmail = $userforEmail[0]['first_name'].' '.$userforEmail[0]['last_name'];
+                $toMain = $emailForEmail;  //'nits.ananya15@gmail.com';
+                $subjectMain ='Download App Link';
+                $bodyMain ='<html><body><p>Dear '.$nameForEmail.',</p>
+
+                            <p>You can download the app from the link below:<br />
+                            <span style="color:rgb(34, 34, 34); font-family:arial,sans-serif"><a href="https://linkmaker.itunes.apple.com/en-us/" target="_blank">Download From Apple Store</a> | <a href="https://play.google.com/store?utm_source=apac_med&amp;utm_medium=hasem&amp;utm_content=Jun2515&amp;utm_campaign=evergreen&amp;pcampaignid=MKT-DR-apac-in-all-med-hasem-py-evergreen-Jun2515-1-en-bkws&amp;gclid=Cj0KEQjwzq63BRCrtIuGjImRoIIBEiQAGLHdYT7z3GaJyAPj3q9T0zqoX5Try5Eh6WEgR8Dvh7EEnMgaAscR8P8HAQ&amp;gclsrc=aw.ds" target="_blank">Download From Google Store</a> </span></p>
+
+                            <p>Thanks,<br />
+                            mFood&nbsp;Team</p>
+
+                            <p>&nbsp;</p></body></html>';
+
+                    
+                    
                 //echo $user->id;
                 $sql = "SELECT * FROM order_details WHERE order_id=:order_id";
                 $db = getConnection();
@@ -280,6 +297,11 @@ function success_payment()
                 
                 foreach($order_details as $order_detail)
                 {
+                    if($order_detail->typemem=='App' || $order_detail->typemem=='Both')
+                    {
+                    	sendMail($toMain,$subjectMain,$bodyMain);
+                    }
+                    
                     if($order_detail->event == 0){
                         $qty = $order_detail->quantity;
                     $offer_details = json_decode(findById($order_detail->offer_id,'offers'));
