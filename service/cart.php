@@ -352,7 +352,8 @@
         $details = findByQuery($qry,'one');
         if(!empty($details))
         {
-            delete('cart',$details['id']);
+            $cart_id = $details['id'];
+            delete('cart',$cart_id);
         }
     }
     

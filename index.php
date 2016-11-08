@@ -39,6 +39,7 @@ require 'service/cart.php';
 require 'service/qrcode.php';
 require 'service/icon.php';
 require 'service/dashboard.php';
+require 'service/cart_cron.php';
 require_once 'service/voucher_pdf.php';
 require_once 'service/merchantrestaurants.php';
 require_once 'service/merchantoutlet.php';
@@ -433,6 +434,9 @@ $app->delete('/deleteMerchantMenuCategory/:id','deleteMerchantMenuCategory');
 /******************** QR Code ********************/
 $app->get('/genVoucherQrCode', 'genVoucherQrCode');
 $app->get('/genMembershipQrCode', 'genMembershipQrCode');
+
+/******************** Cart Cron Code ********************/
+$app->get('/cornForCartValidity', 'cornForCartValidity');
 
 /******************** Dashboard ********************/
 $app->get('/getAllInfoUptoDate/:merchant_id', 'getAllInfoUptoDate');

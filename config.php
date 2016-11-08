@@ -10,6 +10,8 @@ define("MAILPORT","587");
 //define("ISSSL",true);
 define("SITEURL","http://107.170.152.166/mFoodGateAPI/");
 define("WEBSITEURL","http://107.170.152.166/mFood/#/");
+define("VALIDITYFORCART","72 hours");
+
 
 /*************** Paypal Details ***************/
 define("PAYPAL_CLIENT_ID","ATDKp0ZoSqKOTPk39c_ZKiFVVrGmhS-nvGyj7dwyq7x6eAIwcxBOQscynDDhNLhOb4JBKuCtkSziQ-pU");
