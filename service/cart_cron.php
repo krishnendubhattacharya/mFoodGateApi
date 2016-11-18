@@ -2,8 +2,7 @@
 
 function cornForCartValidity(){
     $cur_time = time();
-    //echo $cur_time;
-    
+    //echo $cur_time;    
     $cartsql = "select * from cart where  validity <= '".$cur_time."'";
     $cartres = findByQuery($cartsql);    
     if(!empty($cartres)){

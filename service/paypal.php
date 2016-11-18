@@ -9,7 +9,6 @@ use PayPal\Api\Payment;
 use PayPal\Api\RedirectUrls; 
 use PayPal\Api\Transaction;
 
-
 function cart_checkout(){ 
     $rarray = array();   
         $request = Slim::getInstance()->request();
@@ -182,7 +181,12 @@ function cart_checkout(){
                 $temp_details['event_id'] = $temp['event_id'];
                 $temp_details['event_price'] = $temp['event_price'];
                 $temp_details['event_bid_id'] = $temp['event_bid_id'];
-                $temp_details['typemem'] = $temp['typemem'];
+                if(isset($temp['typemem']))
+                {
+                	$temp_details['typemem'] = $temp['typemem'];
+                }else{
+                	$temp_details['typemem'] = '';
+                }
                 add(json_encode(array('save_data' => $temp_details)),'order_details');
             }
         }

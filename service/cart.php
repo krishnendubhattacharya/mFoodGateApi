@@ -1,7 +1,7 @@
 <?php
     function getCartByUser($user_id)
     {
-        $cart =  array();
+        $cart =  array(); 
         $point_name='';
         $all_cart = findByConditionArray(array('user_id' => $user_id),'cart');
         if(!empty($all_cart))

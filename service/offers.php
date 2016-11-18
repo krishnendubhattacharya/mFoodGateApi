@@ -2,8 +2,7 @@
 function getAllOffers()
 {
     $rarray = array();
-    $conditions = array();
-    
+    $conditions = array();    
     $restaurants = findByConditionArray(array(),'offers');
     if(!empty($restaurants))
     {

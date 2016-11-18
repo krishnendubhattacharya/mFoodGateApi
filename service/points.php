@@ -80,8 +80,7 @@ function getMyPoints($user_id){
         //echo '<pre>';
 
         
-        //$pointsid = array_column($point_res, 'id');
-        
+        //$pointsid = array_column($point_res, 'id');        
             foreach($point_master_res as $point_key=>$point_val){
                 $point_data = array();
                 $point_id = $point_val['id'];
