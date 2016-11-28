@@ -394,8 +394,8 @@ function success_payment()
                             
                     }
                     /********* Update Offer *************/
-                    $up_query = "UPDATE offers SET buy_count=buy_count+".$order_detail->quantity." where id=".$order_detail->offer_id;
-                    updateByQuery($up_query);
+                    //$up_query = "UPDATE offers SET buy_count=buy_count+".$order_detail->quantity." where id=".$order_detail->offer_id;
+                    //updateByQuery($up_query);
                 }elseif($order_detail->resell == 1){
                     $resell_id = $order_detail->resell_id;
                     $resellInfo = findByConditionArray(array('id' => $resell_id),'voucher_resales');
