@@ -209,14 +209,18 @@ function getMerResDetail($mid,$rid,$uid,$vid) {
                         $member_membership_end_date = date('d M,Y', strtotime($memberIdDetails[0]['membership_end_date']));
                         $member_membership_name = $memberIdDetails[0]['name'];
                 }else{
+                   $members = "SELECT * FROM `users` WHERE id=$uid"; 
+                   $memberDetails = findByQuery($members);    
                         $member_membership_id = '';
                         $member_membership_end_date ='';
-                        $member_membership_name ='';
+                        $member_membership_name = $memberDetails[0]['first_name'].' '.$memberDetails[0]['last_name'];
                 }
         }else{
+                $members = "SELECT * FROM `users` WHERE id=$uid"; 
+                $memberDetails = findByQuery($members);
                 $member_membership_id = '';
                 $member_membership_end_date ='';
-                $member_membership_name ='';
+                $member_membership_name = $memberDetails[0]['first_name'].' '.$memberDetails[0]['last_name'];
         }
        $result = array('type' => 'success', 'restaurant_id' => $restaurant_id, 'merchant_id' => $merchant_id, 'member_id' => $member_membership_id,'expire_date'=>$member_membership_end_date,'memname'=>$member_membership_name);
        echo json_encode($result);	
